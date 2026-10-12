@@ -2458,7 +2458,7 @@ export default function Home({
           ) : activeNav === "About Us" ? (
             <AboutUsSection />
           ) : activeNav === "Settings" ? (
-            <SettingsSection />
+            <SettingsSection user={authenticatedUser} portal={portal} />
           ) : activeNav === "Partners" ? (
             <PartnersSection
               currentUser={authenticatedUser}

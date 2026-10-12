@@ -470,7 +470,20 @@ export default function Landing() {
               </ul>
             </div>
 
-            {/* Column 4: Contact Us */}
+            {/* Column 4: Legal */}
+            <div className="lp-footer-col">
+              <h4 className="lp-footer-col-title">Legal</h4>
+              <ul className="lp-footer-nav-list">
+                <li>
+                  <Link href="/privacy-policy">Privacy Policy</Link>
+                </li>
+                <li>
+                  <Link href="/terms-of-service">Terms of Service</Link>
+                </li>
+              </ul>
+            </div>
+
+            {/* Column 5: Contact Us */}
             <div className="lp-footer-col">
               <h4 className="lp-footer-col-title">Contact Us</h4>
               <div className="lp-footer-contact-details">
@@ -497,8 +510,13 @@ export default function Landing() {
           {/* Bottom Bar */}
           <div className="lp-footer-bottom">
             <span className="lp-footer-copy">
-              © {new Date().getFullYear()}  Insight Education. All rights reserved.
+              © {new Date().getFullYear()} Insight Education. All rights reserved.
             </span>
+            <div className="lp-footer-bottom-links" aria-label="Legal links">
+              <Link href="/privacy-policy">Privacy Policy</Link>
+              <span aria-hidden="true">•</span>
+              <Link href="/terms-of-service">Terms of Service</Link>
+            </div>
           </div>
         </div>
       </footer>
