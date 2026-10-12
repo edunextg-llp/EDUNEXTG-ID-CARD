@@ -239,12 +239,6 @@ export default function Login() {
                     <span>Partner</span>
                   </button>
                 </div>
-                <div className="mt-2 text-[11px] font-medium text-muted-foreground flex items-center gap-1.5">
-                  <span className="h-1.5 w-1.5 rounded-full bg-primary shrink-0" />
-                  {selectedPortal === "admin" && "Super Administrator portal — manage schools, templates & system"}
-                  {selectedPortal === "school" && "School workspace — manage student records & card approvals"}
-                  {selectedPortal === "partner" && "Partner portal — place bulk print orders & track dispatches"}
-                </div>
               </div>
 
               <div className="mt-6 space-y-4">

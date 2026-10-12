@@ -8,6 +8,7 @@ import {
   School,
   Users,
   PackageCheck,
+  ChevronLeft,
   ChevronRight,
   Menu,
   X,
@@ -30,12 +31,19 @@ const NAV_LINKS = [
 ] as const;
 
 /* ───────────────────────────────────────────
-   Client logos (1–11, design order L → R)
+   Client logos (all partner school & institution logos)
    ─────────────────────────────────────────── */
-const CLIENT_LOGOS = Array.from({ length: 11 }, (_, i) => {
+const ORIGINAL_CLIENT_LOGOS = Array.from({ length: 11 }, (_, i) => {
   const n = String(i + 1).padStart(2, "0");
   return { src: `/home/client-${n}.jpg`, alt: `Client school logo ${i + 1}`, featured: i === 5 };
 });
+
+const EXTRA_CLIENT_LOGOS = Array.from({ length: 22 }, (_, i) => {
+  const n = String(i + 1).padStart(2, "0");
+  return { src: `/home/client-extra-${n}.webp`, alt: `Client institution logo ${i + 12}`, featured: false };
+});
+
+const CLIENT_LOGOS = [...ORIGINAL_CLIENT_LOGOS, ...EXTRA_CLIENT_LOGOS];
 
 /* ───────────────────────────────────────────
    Product cards data
@@ -83,12 +91,49 @@ const STATS = [
   { icon: ShieldCheck, value: "Best", label: "Quality" },
 ] as const;
 
+/* ───────────────────────────────────────────
+   Hero Carousel Images
+   ─────────────────────────────────────────── */
+const HERO_IMAGES = [
+  {
+    image: "/home/carousel-slide-1.jpg",
+    alt: "ID cards, holders, lanyards, clips and clamps displayed together",
+  },
+  {
+    image: "/home/carousel-slide-2.jpg",
+    alt: "Custom school ID cards, printed lanyards and holders",
+  },
+  {
+    image: "/home/carousel-slide-3.jpg",
+    alt: "Institutional custom printed ribbons and identity cards",
+  },
+] as const;
+
 /* ═══════════════════════════════════════════
    Landing Component
    ═══════════════════════════════════════════ */
 export default function Landing() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("home");
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+
+  /* ── Auto-slide carousel rotation (every 3.5s) ── */
+  useEffect(() => {
+    if (isPaused) return;
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % HERO_IMAGES.length);
+    }, 3500);
+    return () => clearInterval(timer);
+  }, [isPaused]);
+
+  const nextSlide = useCallback(() => {
+    setCurrentSlide((prev) => (prev + 1) % HERO_IMAGES.length);
+  }, []);
+
+  const prevSlide = useCallback(() => {
+    setCurrentSlide((prev) => (prev - 1 + HERO_IMAGES.length) % HERO_IMAGES.length);
+  }, []);
 
   /* ── Set document title ── */
   useEffect(() => {
@@ -217,8 +262,37 @@ export default function Landing() {
       </header>
 
       <main>
-        {/* ════════════ HERO ════════════ */}
-        <section id="home" className="lp-hero">
+        {/* ════════════ FULL-WIDTH HERO CAROUSEL ════════════ */}
+        <section
+          id="home"
+          className="lp-hero lp-hero-full-bg"
+          onMouseEnter={() => setIsPaused(true)}
+          onMouseLeave={() => setIsPaused(false)}
+        >
+          {/* Full-width carousel background */}
+          <div className="lp-hero-full-carousel" aria-roledescription="carousel">
+            {HERO_IMAGES.map((item, idx) => {
+              const isActive = idx === currentSlide;
+              return (
+                <div
+                  key={idx}
+                  className={`lp-hero-full-slide ${isActive ? "active" : ""}`}
+                  aria-hidden={!isActive}
+                >
+                  <img
+                    src={item.image}
+                    alt={item.alt}
+                    width={1920}
+                    height={500}
+                    loading={idx === 0 ? "eager" : "lazy"}
+                    className="lp-hero-full-img"
+                  />
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Hero text placed in the left space with no box */}
           <div className="lp-hero-content">
             <p className="lp-hero-tagline">IDENTITY &nbsp;|&nbsp; SECURITY &nbsp;|&nbsp; PROFESSIONALISM</p>
             <h1 className="font-heading">
@@ -230,17 +304,45 @@ export default function Landing() {
               Quality ID Cards, Lanyards, Holders &amp; Accessories for Schools, Colleges, Institutions &amp;
               Organizations.
             </p>
-            <a href="#products" className="lp-hero-cta" onClick={(e) => handleNavClick(e, "#products")}>
+            <a
+              href="#products"
+              className="lp-hero-cta"
+              onClick={(e) => handleNavClick(e, "#products")}
+            >
               Explore Our Products <ArrowRight size={18} />
             </a>
           </div>
-          <div className="lp-hero-image">
-            <img
-              src="/home/hero-products.jpg"
-              alt="ID cards, lanyards, holders and clamps displayed together"
-              width={988}
-              height={380}
-            />
+
+          {/* Carousel Controls */}
+          <button
+            type="button"
+            className="lp-carousel-arrow lp-carousel-prev"
+            onClick={prevSlide}
+            aria-label="Previous slide"
+          >
+            <ChevronLeft size={22} />
+          </button>
+          <button
+            type="button"
+            className="lp-carousel-arrow lp-carousel-next"
+            onClick={nextSlide}
+            aria-label="Next slide"
+          >
+            <ChevronRight size={22} />
+          </button>
+
+          <div className="lp-carousel-dots" role="tablist" aria-label="Hero carousel pagination">
+            {HERO_IMAGES.map((_, idx) => (
+              <button
+                key={idx}
+                type="button"
+                className={`lp-carousel-dot ${idx === currentSlide ? "active" : ""}`}
+                onClick={() => setCurrentSlide(idx)}
+                aria-label={`Go to slide ${idx + 1}`}
+                role="tab"
+                aria-selected={idx === currentSlide}
+              />
+            ))}
           </div>
         </section>
 
@@ -253,23 +355,8 @@ export default function Landing() {
               <span className="line" />
             </div>
 
-            {/* Desktop: static row */}
-            <div className="lp-clients-panel">
-              {CLIENT_LOGOS.map((logo, i) => (
-                <img
-                  key={i}
-                  src={logo.src}
-                  alt={logo.alt}
-                  className={logo.featured ? "featured" : ""}
-                  loading="lazy"
-                  width={logo.featured ? 72 : 50}
-                  height={logo.featured ? 72 : 50}
-                />
-              ))}
-            </div>
-
-            {/* Mobile: marquee */}
-            <div className="lp-clients-marquee">
+            {/* Infinite looping horizontal scrollable client logos (no scroll bar) */}
+            <div className="lp-clients-marquee" tabIndex={0} role="region" aria-label="Our Clients list">
               <div className="lp-marquee-track">
                 {[...CLIENT_LOGOS, ...CLIENT_LOGOS].map((logo, i) => (
                   <img
@@ -278,8 +365,8 @@ export default function Landing() {
                     alt={logo.alt}
                     className={logo.featured ? "featured" : ""}
                     loading="lazy"
-                    width={logo.featured ? 68 : 48}
-                    height={logo.featured ? 68 : 48}
+                    width={logo.featured ? 72 : 50}
+                    height={logo.featured ? 72 : 50}
                   />
                 ))}
               </div>
@@ -497,7 +584,7 @@ export default function Landing() {
           {/* Bottom Bar */}
           <div className="lp-footer-bottom">
             <span className="lp-footer-copy">
-              © {new Date().getFullYear()}  Insight Education. All rights reserved.
+              © {new Date().getFullYear()} Insight Education. All rights reserved.
             </span>
           </div>
         </div>

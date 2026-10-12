@@ -445,39 +445,73 @@ button:active:not(:disabled) { transform: scale(0.97); }
   text-underline-offset: 4px;
 }
 
-/* ===================== HERO ===================== */
-.landing-root .lp-hero {
+/* ===================== FULL-WIDTH HERO CAROUSEL ===================== */
+.landing-root .lp-hero.lp-hero-full-bg {
   position: relative;
-  min-height: 380px;
+  min-height: 480px;
   display: flex;
+  align-items: center;
   overflow: hidden;
-  background: linear-gradient(135deg, var(--lp-hero-blue) 0%, #eaf7fb 50%, #f0f8f0 100%);
+  background: #f7fafc;
 }
 
-.landing-root .lp-hero-content {
+/* Full background carousel spanning edge to edge */
+.landing-root .lp-hero-full-carousel {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+.landing-root .lp-hero-full-slide {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.75s ease-in-out, visibility 0.75s ease-in-out;
+}
+
+.landing-root .lp-hero-full-slide.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.landing-root .lp-hero-full-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center right;
+  display: block;
+}
+
+/* Text naturally placed over the left area of the image without any box */
+.landing-root .lp-hero.lp-hero-full-bg .lp-hero-content {
   position: relative;
-  z-index: 2;
-  flex: 0 0 50%;
-  max-width: 50%;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  padding: 48px 0 48px 80px;
+  z-index: 3;
+  width: 100%;
+  max-width: 580px;
+  padding: 60px 24px 60px 80px;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 
 .landing-root .lp-hero-tagline {
-  font-size: 12px;
-  letter-spacing: 3px;
+  font-size: 13px;
+  letter-spacing: 2.5px;
   color: var(--lp-teal);
   text-transform: uppercase;
-  font-weight: 700;
-  margin-bottom: 12px;
+  font-weight: 800;
+  margin-bottom: 14px;
 }
 
 .landing-root .lp-hero h1 {
   font-family: "Caladea", "Georgia", serif;
   font-weight: 700;
-  font-size: 48px;
+  font-size: 46px;
   color: var(--lp-dark-green);
   line-height: 1.15;
   margin: 0 0 16px 0;
@@ -485,10 +519,11 @@ button:active:not(:disabled) { transform: scale(0.97); }
 
 .landing-root .lp-hero-desc {
   font-size: 15px;
-  color: var(--lp-text-light);
+  color: #334155;
   margin-bottom: 24px;
-  max-width: 420px;
+  max-width: 440px;
   line-height: 1.6;
+  font-weight: 500;
 }
 
 .landing-root .lp-hero-cta {
@@ -499,34 +534,91 @@ button:active:not(:disabled) { transform: scale(0.97); }
   color: #fff;
   font-weight: 700;
   font-size: 15px;
-  padding: 12px 28px;
+  padding: 13px 30px;
   border-radius: 14px;
   border: none;
   text-decoration: none;
   transition: background 0.2s, transform 0.2s;
   width: fit-content;
-  box-shadow: 0 2px 8px rgba(0, 137, 77, 0.2);
+  box-shadow: 0 4px 14px rgba(0, 137, 77, 0.25);
 }
 
 .landing-root .lp-hero-cta:hover {
   background: #007040;
-  transform: translateY(-1px);
+  transform: translateY(-2px);
 }
 
-.landing-root .lp-hero-image {
+/* Carousel Prev/Next Buttons on the banner */
+.landing-root .lp-carousel-arrow {
   position: absolute;
-  right: 0;
-  top: 0;
-  bottom: 0;
-  width: 60%;
-  z-index: 1;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 5;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid rgba(0, 137, 77, 0.2);
+  color: var(--lp-dark-green);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.12);
+  transition: all 0.2s ease;
+  opacity: 0.85;
 }
 
-.landing-root .lp-hero-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center;
+.landing-root .lp-hero:hover .lp-carousel-arrow {
+  opacity: 1;
+}
+
+.landing-root .lp-carousel-arrow:hover {
+  background: #ffffff;
+  color: var(--lp-green);
+  transform: translateY(-50%) scale(1.08);
+}
+
+.landing-root .lp-carousel-prev {
+  left: 20px;
+}
+
+.landing-root .lp-carousel-next {
+  right: 20px;
+}
+
+/* Carousel Pagination Dots */
+.landing-root .lp-carousel-dots {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.75);
+  padding: 5px 12px;
+  border-radius: 20px;
+  backdrop-filter: blur(4px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.landing-root .lp-carousel-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(0, 137, 77, 0.35);
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.3s ease;
+}
+
+.landing-root .lp-carousel-dot.active {
+  width: 22px;
+  border-radius: 10px;
+  background: var(--lp-green);
 }
 
 /* =================== OUR CLIENTS =================== */
@@ -587,15 +679,24 @@ button:active:not(:disabled) { transform: scale(0.97); }
   height: 72px;
 }
 
-/* Client marquee for small screens */
+/* Client marquee horizontal loop scroll (no scrollbar) */
 .landing-root .lp-clients-marquee {
-  display: none;
-  overflow: hidden;
+  display: flex;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE / Edge */
   background: var(--lp-green-light);
   border-radius: 24px;
   border: 1px solid rgba(0, 137, 77, 0.15);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
   padding: 20px 0;
+  position: relative;
+  cursor: grab;
+}
+
+.landing-root .lp-clients-marquee::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
 }
 
 .landing-root .lp-clients-marquee:hover .lp-marquee-track {
@@ -604,10 +705,11 @@ button:active:not(:disabled) { transform: scale(0.97); }
 
 .landing-root .lp-marquee-track {
   display: flex;
-  gap: 32px;
+  gap: 36px;
   align-items: center;
-  animation: lp-marquee 25s linear infinite;
+  animation: lp-marquee 48s linear infinite;
   width: max-content;
+  padding: 0 16px;
 }
 
 @keyframes lp-marquee {
@@ -616,14 +718,22 @@ button:active:not(:disabled) { transform: scale(0.97); }
 }
 
 .landing-root .lp-marquee-track img {
-  height: 48px;
+  height: 52px;
+  max-width: 130px;
   width: auto;
   object-fit: contain;
   flex-shrink: 0;
+  transition: transform 0.2s ease, filter 0.2s ease;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.landing-root .lp-marquee-track img:hover {
+  transform: scale(1.1);
 }
 
 .landing-root .lp-marquee-track img.featured {
-  height: 68px;
+  height: 72px;
 }
 
 /* ================= PRODUCTS ================= */
@@ -1382,8 +1492,8 @@ button:active:not(:disabled) { transform: scale(0.97); }
 
 .landing-root .lp-footer-grid {
   display: grid;
-  grid-template-columns: 1.4fr 1fr 1fr 1.2fr;
-  gap: 40px;
+  grid-template-columns: 1.4fr 1fr 1.1fr 1.3fr;
+  gap: 32px;
   margin-bottom: 48px;
 }
 
@@ -1619,22 +1729,38 @@ button:active:not(:disabled) { transform: scale(0.97); }
     display: flex;
   }
 
-  /* Hero stacked on mobile */
-  .landing-root .lp-hero {
-    flex-direction: column;
-    min-height: auto;
+  /* Hero on mobile */
+  .landing-root .lp-hero.lp-hero-full-bg {
+    min-height: 440px;
+    align-items: flex-start;
   }
 
-  .landing-root .lp-hero-content {
-    flex: none;
+  .landing-root .lp-hero.lp-hero-full-bg .lp-hero-content {
     max-width: 100%;
-    padding: 32px 24px;
+    padding: 36px 20px 48px;
+    text-align: left;
   }
 
-  .landing-root .lp-hero-image {
-    position: relative;
-    width: 100%;
-    height: 220px;
+  .landing-root .lp-hero-desc {
+    max-width: 100%;
+  }
+
+  .landing-root .lp-carousel-arrow {
+    width: 32px;
+    height: 32px;
+  }
+
+  .landing-root .lp-carousel-prev {
+    left: 8px;
+  }
+
+  .landing-root .lp-carousel-next {
+    right: 8px;
+  }
+
+  .landing-root .lp-carousel-dots {
+    bottom: 8px;
+    padding: 3px 8px;
   }
 
   .landing-root .lp-hero h1 {
@@ -1647,7 +1773,7 @@ button:active:not(:disabled) { transform: scale(0.97); }
   }
 
   .landing-root .lp-clients-marquee {
-    display: block;
+    display: flex;
   }
 
   .landing-root .lp-section-title h2 {
