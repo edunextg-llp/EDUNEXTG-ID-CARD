@@ -92,56 +92,20 @@ const STATS = [
 ] as const;
 
 /* ───────────────────────────────────────────
-   Hero Carousel Slides data
+   Hero Carousel Images
    ─────────────────────────────────────────── */
-const HERO_SLIDES = [
+const HERO_IMAGES = [
   {
-    tagline: "IDENTITY  |  SECURITY  |  PROFESSIONALISM",
-    title: (
-      <>
-        Complete ID Card &amp;
-        <br />
-        Lanyard Solutions
-      </>
-    ),
-    desc: "Quality ID Cards, Lanyards, Holders & Accessories for Schools, Colleges, Institutions & Organizations.",
     image: "/home/hero-products.jpg",
     alt: "ID cards, lanyards, holders and clamps displayed together",
-    ctaText: "Explore Our Products",
-    ctaHref: "#products",
-    isExternalOrRoute: false,
   },
   {
-    tagline: "MANUFACTURING  |  PRECISION  |  DURABILITY",
-    title: (
-      <>
-        Custom Printed Cards
-        <br />
-        &amp; Institutional Ribbons
-      </>
-    ),
-    desc: "High-definition PVC thermal printing, premium satin lanyards, and custom corporate branding.",
-    image: "/home/banner-products.jpg",
-    alt: "Institutional banners and product accessories",
-    ctaText: "View All Products",
-    ctaHref: "/products",
-    isExternalOrRoute: true,
+    image: "/home/carousel-slide-2.jpg",
+    alt: "Custom school ID cards, printed lanyards and holders",
   },
   {
-    tagline: "RELIABILITY  |  BULK CAPACITY  |  SPEED",
-    title: (
-      <>
-        End-to-End Solutions
-        <br />
-        For 500+ Schools
-      </>
-    ),
-    desc: "Seamless ordering, instant school data integration, fast dispatch, and dedicated institutional support.",
-    image: "/home/product-lanyards.jpg",
-    alt: "Premium custom printed lanyards showcase",
-    ctaText: "Contact Our Team",
-    ctaHref: "/contact-us",
-    isExternalOrRoute: true,
+    image: "/home/carousel-slide-3.jpg",
+    alt: "Institutional custom printed ribbons and identity cards",
   },
 ] as const;
 
@@ -154,21 +118,21 @@ export default function Landing() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
 
-  /* ── Auto-slide carousel rotation (every 3s) ── */
+  /* ── Auto-slide carousel rotation (every 4s) ── */
   useEffect(() => {
     if (isPaused) return;
     const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % HERO_SLIDES.length);
-    }, 3000);
+      setCurrentSlide((prev) => (prev + 1) % HERO_IMAGES.length);
+    }, 4000);
     return () => clearInterval(timer);
   }, [isPaused]);
 
   const nextSlide = useCallback(() => {
-    setCurrentSlide((prev) => (prev + 1) % HERO_SLIDES.length);
+    setCurrentSlide((prev) => (prev + 1) % HERO_IMAGES.length);
   }, []);
 
   const prevSlide = useCallback(() => {
-    setCurrentSlide((prev) => (prev - 1 + HERO_SLIDES.length) % HERO_SLIDES.length);
+    setCurrentSlide((prev) => (prev - 1 + HERO_IMAGES.length) % HERO_IMAGES.length);
   }, []);
 
   /* ── Set document title ── */
@@ -298,85 +262,84 @@ export default function Landing() {
       </header>
 
       <main>
-        {/* ════════════ HERO CAROUSEL ════════════ */}
+        {/* ════════════ HERO WITH IMAGE CAROUSEL ════════════ */}
         <section
           id="home"
-          className="lp-hero lp-hero-carousel"
+          className="lp-hero"
           onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => setIsPaused(false)}
-          aria-roledescription="carousel"
-          aria-label="Highlighted Products and Solutions"
         >
-          {HERO_SLIDES.map((slide, idx) => {
-            const isActive = idx === currentSlide;
-            return (
-              <div
-                key={idx}
-                className={`lp-hero-slide ${isActive ? "active" : ""}`}
-                aria-hidden={!isActive}
-              >
-                <div className="lp-hero-content">
-                  <p className="lp-hero-tagline">{slide.tagline}</p>
-                  <h1 className="font-heading">{slide.title}</h1>
-                  <p className="lp-hero-desc">{slide.desc}</p>
-                  {slide.isExternalOrRoute ? (
-                    <Link href={slide.ctaHref} className="lp-hero-cta">
-                      {slide.ctaText} <ArrowRight size={18} />
-                    </Link>
-                  ) : (
-                    <a
-                      href={slide.ctaHref}
-                      className="lp-hero-cta"
-                      onClick={(e) => handleNavClick(e, slide.ctaHref)}
-                    >
-                      {slide.ctaText} <ArrowRight size={18} />
-                    </a>
-                  )}
-                </div>
-                <div className="lp-hero-image">
+          <div className="lp-hero-content">
+            <p className="lp-hero-tagline">IDENTITY &nbsp;|&nbsp; SECURITY &nbsp;|&nbsp; PROFESSIONALISM</p>
+            <h1 className="font-heading">
+              Complete ID Card &amp;
+              <br />
+              Lanyard Solutions
+            </h1>
+            <p className="lp-hero-desc">
+              Quality ID Cards, Lanyards, Holders &amp; Accessories for Schools, Colleges, Institutions &amp;
+              Organizations.
+            </p>
+            <a
+              href="#products"
+              className="lp-hero-cta"
+              onClick={(e) => handleNavClick(e, "#products")}
+            >
+              Explore Our Products <ArrowRight size={18} />
+            </a>
+          </div>
+
+          <div className="lp-hero-image lp-hero-carousel-container" aria-roledescription="carousel">
+            {HERO_IMAGES.map((item, idx) => {
+              const isActive = idx === currentSlide;
+              return (
+                <div
+                  key={idx}
+                  className={`lp-hero-image-slide ${isActive ? "active" : ""}`}
+                  aria-hidden={!isActive}
+                >
                   <img
-                    src={slide.image}
-                    alt={slide.alt}
+                    src={item.image}
+                    alt={item.alt}
                     width={988}
                     height={380}
                     loading={idx === 0 ? "eager" : "lazy"}
                   />
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
 
-          {/* Carousel Arrows */}
-          <button
-            type="button"
-            className="lp-carousel-arrow lp-carousel-prev"
-            onClick={prevSlide}
-            aria-label="Previous slide"
-          >
-            <ChevronLeft size={22} />
-          </button>
-          <button
-            type="button"
-            className="lp-carousel-arrow lp-carousel-next"
-            onClick={nextSlide}
-            aria-label="Next slide"
-          >
-            <ChevronRight size={22} />
-          </button>
+            {/* Carousel Controls */}
+            <button
+              type="button"
+              className="lp-carousel-arrow lp-carousel-prev"
+              onClick={prevSlide}
+              aria-label="Previous slide"
+            >
+              <ChevronLeft size={20} />
+            </button>
+            <button
+              type="button"
+              className="lp-carousel-arrow lp-carousel-next"
+              onClick={nextSlide}
+              aria-label="Next slide"
+            >
+              <ChevronRight size={20} />
+            </button>
 
-          {/* Carousel Indicators / Dots */}
-          <div className="lp-carousel-dots" role="tablist" aria-label="Hero carousel pagination">
-            {HERO_SLIDES.map((_, idx) => (
-              <button
-                key={idx}
-                type="button"
-                className={`lp-carousel-dot ${idx === currentSlide ? "active" : ""}`}
-                onClick={() => setCurrentSlide(idx)}
-                aria-label={`Go to slide ${idx + 1}`}
-                role="tab"
-                aria-selected={idx === currentSlide}
-              />
-            ))}
+            <div className="lp-carousel-dots" role="tablist" aria-label="Hero carousel pagination">
+              {HERO_IMAGES.map((_, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  className={`lp-carousel-dot ${idx === currentSlide ? "active" : ""}`}
+                  onClick={() => setCurrentSlide(idx)}
+                  aria-label={`Go to slide ${idx + 1}`}
+                  role="tab"
+                  aria-selected={idx === currentSlide}
+                />
+              ))}
+            </div>
           </div>
         </section>
 
