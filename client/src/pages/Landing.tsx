@@ -118,12 +118,12 @@ export default function Landing() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
 
-  /* ── Auto-slide carousel rotation (every 3.5s) ── */
+  /* ── Auto-slide carousel rotation (every 3s) ── */
   useEffect(() => {
     if (isPaused) return;
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % HERO_IMAGES.length);
-    }, 3500);
+    }, 3000);
     return () => clearInterval(timer);
   }, [isPaused]);
 
