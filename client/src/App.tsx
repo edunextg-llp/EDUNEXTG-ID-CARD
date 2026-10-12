@@ -21,10 +21,6 @@ const AboutUsPage = lazy(() => import("./pages/AboutUsPage"));
 const ProductsPage = lazy(() => import("./pages/ProductsPage"));
 const NoticePage = lazy(() => import("./pages/NoticePage"));
 const ContactUsPage = lazy(() => import("./pages/ContactUsPage"));
-const PrivacyPolicyPage = lazy(() => import("./pages/PrivacyPolicyPage"));
-const TermsOfServicePage = lazy(() => import("./pages/TermsOfServicePage"));
-const SchoolServiceAgreementPage = lazy(() => import("./pages/SchoolServiceAgreementPage"));
-const DataProcessingAgreementPage = lazy(() => import("./pages/DataProcessingAgreementPage"));
 
 function getPortalForRole(role: string): "admin" | "school" | "partner" {
   if (role === "SUPER_ADMIN") return "admin";
@@ -192,10 +188,6 @@ function Router() {
       <Route path="/products"><ProductsPage /></Route>
       <Route path="/notice"><NoticePage /></Route>
       <Route path="/contact-us"><ContactUsPage /></Route>
-      <Route path="/privacy-policy"><PrivacyPolicyPage /></Route>
-      <Route path="/terms-of-service"><TermsOfServicePage /></Route>
-      <Route path="/legal/school-service-agreement"><SchoolServiceAgreementPage /></Route>
-      <Route path="/legal/data-processing-agreement"><DataProcessingAgreementPage /></Route>
       <Route path="/"><Landing /></Route>
       <Route><PortalRedirect /></Route>
     </Switch>

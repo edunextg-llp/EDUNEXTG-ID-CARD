@@ -7,16 +7,8 @@ import {
   Laptop,
   Check,
   Palette,
-  Scale,
-  ShieldCheck,
-  ExternalLink,
-  Building,
 } from "lucide-react";
 import type { ApiAuthUser } from "@/lib/api";
-import {
-  schoolServiceAgreementData,
-  dataProcessingAgreementData,
-} from "@/legal-docs";
 
 interface SettingsSectionProps {
   user?: ApiAuthUser;
@@ -178,122 +170,6 @@ export default function SettingsSection({ user, portal = "admin" }: SettingsSect
             </div>
           </CardContent>
         </Card>
-
-      {/* ════════════ SECTION 2: LEGAL & COMPLIANCE (ADMIN PANEL) ════════════ */}
-      {isAdmin && (
-        <div className="space-y-6">
-          <Card className="rounded-2xl border-border bg-card shadow-sm overflow-hidden">
-            <CardHeader className="pb-4 border-b border-border">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
-                    <Scale className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <CardTitle className="text-base sm:text-lg font-bold text-card-foreground">
-                      Legal &amp; Compliance
-                    </CardTitle>
-                    <CardDescription className="text-xs text-muted-foreground mt-0.5">
-                      Institutional agreement templates and data processing frameworks for school onboarding under Indian law.
-                    </CardDescription>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <span className="text-xs px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 font-medium">
-                    India DPDP Act 2023 Compliant
-                  </span>
-                </div>
-              </div>
-            </CardHeader>
-
-            <CardContent className="pt-6 space-y-6">
-              {/* Legal Agreement Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Box 1: MSA */}
-                <div className="relative p-5 rounded-2xl border border-border bg-card hover:border-emerald-500/60 hover:bg-muted/30 transition-all flex flex-col justify-between">
-                  <div>
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex items-center gap-2.5">
-                        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700 dark:bg-emerald-900/60 dark:text-emerald-300">
-                          <Building className="h-4 w-4" />
-                        </div>
-                        <div>
-                          <h3 className="text-sm font-bold text-card-foreground">
-                            School Service Agreement (MSA)
-                          </h3>
-                          <span className="text-[11px] text-muted-foreground">
-                            Master Services Agreement
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <p className="text-xs text-muted-foreground mt-3 leading-relaxed">
-                      Governs software portal access, template design workflows, PVC card manufacturing, turnaround SLAs, warranty, and commercial terms with educational institutions.
-                    </p>
-                  </div>
-
-                  <div className="mt-5 pt-3 border-t border-border/80 flex items-center justify-between text-xs">
-                    <span className="text-[11px] text-muted-foreground">
-                      {schoolServiceAgreementData.placeholders.length} placeholders pending
-                    </span>
-                    <a
-                      href="/legal/school-service-agreement"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-800 hover:bg-emerald-100 transition-colors"
-                    >
-                      View Agreement
-                      <ExternalLink className="h-3 w-3" />
-                    </a>
-                  </div>
-                </div>
-
-                {/* Box 2: DPA */}
-                <div className="relative p-5 rounded-2xl border border-border bg-card hover:border-emerald-500/60 hover:bg-muted/30 transition-all flex flex-col justify-between">
-                  <div>
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex items-center gap-2.5">
-                        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700 dark:bg-emerald-900/60 dark:text-emerald-300">
-                          <ShieldCheck className="h-4 w-4" />
-                        </div>
-                        <div>
-                          <h3 className="text-sm font-bold text-card-foreground">
-                            Data Processing Agreement (DPA)
-                          </h3>
-                          <span className="text-[11px] text-muted-foreground">
-                            Data Fiduciary &amp; Processor Terms
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <p className="text-xs text-muted-foreground mt-3 leading-relaxed">
-                      DPDP Act 2023 schedule for handling student minor records, staff data, photographs, security safeguards, incident notifications, and post-order purging.
-                    </p>
-                  </div>
-
-                  <div className="mt-5 pt-3 border-t border-border/80 flex items-center justify-between text-xs">
-                    <span className="text-[11px] text-muted-foreground">
-                      {dataProcessingAgreementData.placeholders.length} placeholders pending
-                    </span>
-                    <a
-                      href="/legal/data-processing-agreement"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-800 hover:bg-emerald-100 transition-colors"
-                    >
-                      View Agreement
-                      <ExternalLink className="h-3 w-3" />
-                    </a>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
     </div>
   );
 }
