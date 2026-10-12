@@ -8,6 +8,7 @@ import {
   School,
   Users,
   PackageCheck,
+  ChevronLeft,
   ChevronRight,
   Menu,
   X,
@@ -30,12 +31,19 @@ const NAV_LINKS = [
 ] as const;
 
 /* ───────────────────────────────────────────
-   Client logos (1–11, design order L → R)
+   Client logos (all partner school & institution logos)
    ─────────────────────────────────────────── */
-const CLIENT_LOGOS = Array.from({ length: 11 }, (_, i) => {
+const ORIGINAL_CLIENT_LOGOS = Array.from({ length: 11 }, (_, i) => {
   const n = String(i + 1).padStart(2, "0");
   return { src: `/home/client-${n}.jpg`, alt: `Client school logo ${i + 1}`, featured: i === 5 };
 });
+
+const EXTRA_CLIENT_LOGOS = Array.from({ length: 22 }, (_, i) => {
+  const n = String(i + 1).padStart(2, "0");
+  return { src: `/home/client-extra-${n}.webp`, alt: `Client institution logo ${i + 12}`, featured: false };
+});
+
+const CLIENT_LOGOS = [...ORIGINAL_CLIENT_LOGOS, ...EXTRA_CLIENT_LOGOS];
 
 /* ───────────────────────────────────────────
    Product cards data
@@ -83,12 +91,85 @@ const STATS = [
   { icon: ShieldCheck, value: "Best", label: "Quality" },
 ] as const;
 
+/* ───────────────────────────────────────────
+   Hero Carousel Slides data
+   ─────────────────────────────────────────── */
+const HERO_SLIDES = [
+  {
+    tagline: "IDENTITY  |  SECURITY  |  PROFESSIONALISM",
+    title: (
+      <>
+        Complete ID Card &amp;
+        <br />
+        Lanyard Solutions
+      </>
+    ),
+    desc: "Quality ID Cards, Lanyards, Holders & Accessories for Schools, Colleges, Institutions & Organizations.",
+    image: "/home/hero-products.jpg",
+    alt: "ID cards, lanyards, holders and clamps displayed together",
+    ctaText: "Explore Our Products",
+    ctaHref: "#products",
+    isExternalOrRoute: false,
+  },
+  {
+    tagline: "MANUFACTURING  |  PRECISION  |  DURABILITY",
+    title: (
+      <>
+        Custom Printed Cards
+        <br />
+        &amp; Institutional Ribbons
+      </>
+    ),
+    desc: "High-definition PVC thermal printing, premium satin lanyards, and custom corporate branding.",
+    image: "/home/banner-products.jpg",
+    alt: "Institutional banners and product accessories",
+    ctaText: "View All Products",
+    ctaHref: "/products",
+    isExternalOrRoute: true,
+  },
+  {
+    tagline: "RELIABILITY  |  BULK CAPACITY  |  SPEED",
+    title: (
+      <>
+        End-to-End Solutions
+        <br />
+        For 500+ Schools
+      </>
+    ),
+    desc: "Seamless ordering, instant school data integration, fast dispatch, and dedicated institutional support.",
+    image: "/home/product-lanyards.jpg",
+    alt: "Premium custom printed lanyards showcase",
+    ctaText: "Contact Our Team",
+    ctaHref: "/contact-us",
+    isExternalOrRoute: true,
+  },
+] as const;
+
 /* ═══════════════════════════════════════════
    Landing Component
    ═══════════════════════════════════════════ */
 export default function Landing() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("home");
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+
+  /* ── Auto-slide carousel rotation (every 3s) ── */
+  useEffect(() => {
+    if (isPaused) return;
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % HERO_SLIDES.length);
+    }, 3000);
+    return () => clearInterval(timer);
+  }, [isPaused]);
+
+  const nextSlide = useCallback(() => {
+    setCurrentSlide((prev) => (prev + 1) % HERO_SLIDES.length);
+  }, []);
+
+  const prevSlide = useCallback(() => {
+    setCurrentSlide((prev) => (prev - 1 + HERO_SLIDES.length) % HERO_SLIDES.length);
+  }, []);
 
   /* ── Set document title ── */
   useEffect(() => {
@@ -217,30 +298,85 @@ export default function Landing() {
       </header>
 
       <main>
-        {/* ════════════ HERO ════════════ */}
-        <section id="home" className="lp-hero">
-          <div className="lp-hero-content">
-            <p className="lp-hero-tagline">IDENTITY &nbsp;|&nbsp; SECURITY &nbsp;|&nbsp; PROFESSIONALISM</p>
-            <h1 className="font-heading">
-              Complete ID Card &amp;
-              <br />
-              Lanyard Solutions
-            </h1>
-            <p className="lp-hero-desc">
-              Quality ID Cards, Lanyards, Holders &amp; Accessories for Schools, Colleges, Institutions &amp;
-              Organizations.
-            </p>
-            <a href="#products" className="lp-hero-cta" onClick={(e) => handleNavClick(e, "#products")}>
-              Explore Our Products <ArrowRight size={18} />
-            </a>
-          </div>
-          <div className="lp-hero-image">
-            <img
-              src="/home/hero-products.jpg"
-              alt="ID cards, lanyards, holders and clamps displayed together"
-              width={988}
-              height={380}
-            />
+        {/* ════════════ HERO CAROUSEL ════════════ */}
+        <section
+          id="home"
+          className="lp-hero lp-hero-carousel"
+          onMouseEnter={() => setIsPaused(true)}
+          onMouseLeave={() => setIsPaused(false)}
+          aria-roledescription="carousel"
+          aria-label="Highlighted Products and Solutions"
+        >
+          {HERO_SLIDES.map((slide, idx) => {
+            const isActive = idx === currentSlide;
+            return (
+              <div
+                key={idx}
+                className={`lp-hero-slide ${isActive ? "active" : ""}`}
+                aria-hidden={!isActive}
+              >
+                <div className="lp-hero-content">
+                  <p className="lp-hero-tagline">{slide.tagline}</p>
+                  <h1 className="font-heading">{slide.title}</h1>
+                  <p className="lp-hero-desc">{slide.desc}</p>
+                  {slide.isExternalOrRoute ? (
+                    <Link href={slide.ctaHref} className="lp-hero-cta">
+                      {slide.ctaText} <ArrowRight size={18} />
+                    </Link>
+                  ) : (
+                    <a
+                      href={slide.ctaHref}
+                      className="lp-hero-cta"
+                      onClick={(e) => handleNavClick(e, slide.ctaHref)}
+                    >
+                      {slide.ctaText} <ArrowRight size={18} />
+                    </a>
+                  )}
+                </div>
+                <div className="lp-hero-image">
+                  <img
+                    src={slide.image}
+                    alt={slide.alt}
+                    width={988}
+                    height={380}
+                    loading={idx === 0 ? "eager" : "lazy"}
+                  />
+                </div>
+              </div>
+            );
+          })}
+
+          {/* Carousel Arrows */}
+          <button
+            type="button"
+            className="lp-carousel-arrow lp-carousel-prev"
+            onClick={prevSlide}
+            aria-label="Previous slide"
+          >
+            <ChevronLeft size={22} />
+          </button>
+          <button
+            type="button"
+            className="lp-carousel-arrow lp-carousel-next"
+            onClick={nextSlide}
+            aria-label="Next slide"
+          >
+            <ChevronRight size={22} />
+          </button>
+
+          {/* Carousel Indicators / Dots */}
+          <div className="lp-carousel-dots" role="tablist" aria-label="Hero carousel pagination">
+            {HERO_SLIDES.map((_, idx) => (
+              <button
+                key={idx}
+                type="button"
+                className={`lp-carousel-dot ${idx === currentSlide ? "active" : ""}`}
+                onClick={() => setCurrentSlide(idx)}
+                aria-label={`Go to slide ${idx + 1}`}
+                role="tab"
+                aria-selected={idx === currentSlide}
+              />
+            ))}
           </div>
         </section>
 
@@ -253,23 +389,8 @@ export default function Landing() {
               <span className="line" />
             </div>
 
-            {/* Desktop: static row */}
-            <div className="lp-clients-panel">
-              {CLIENT_LOGOS.map((logo, i) => (
-                <img
-                  key={i}
-                  src={logo.src}
-                  alt={logo.alt}
-                  className={logo.featured ? "featured" : ""}
-                  loading="lazy"
-                  width={logo.featured ? 72 : 50}
-                  height={logo.featured ? 72 : 50}
-                />
-              ))}
-            </div>
-
-            {/* Mobile: marquee */}
-            <div className="lp-clients-marquee">
+            {/* Infinite looping horizontal scrollable client logos (no scroll bar) */}
+            <div className="lp-clients-marquee" tabIndex={0} role="region" aria-label="Our Clients list">
               <div className="lp-marquee-track">
                 {[...CLIENT_LOGOS, ...CLIENT_LOGOS].map((logo, i) => (
                   <img
@@ -278,8 +399,8 @@ export default function Landing() {
                     alt={logo.alt}
                     className={logo.featured ? "featured" : ""}
                     loading="lazy"
-                    width={logo.featured ? 68 : 48}
-                    height={logo.featured ? 68 : 48}
+                    width={logo.featured ? 72 : 50}
+                    height={logo.featured ? 72 : 50}
                   />
                 ))}
               </div>
