@@ -96,8 +96,8 @@ const STATS = [
    ─────────────────────────────────────────── */
 const HERO_IMAGES = [
   {
-    image: "/home/hero-products.jpg",
-    alt: "ID cards, lanyards, holders and clamps displayed together",
+    image: "/home/carousel-slide-1.jpg",
+    alt: "ID cards, holders, lanyards, clips and clamps displayed together",
   },
   {
     image: "/home/carousel-slide-2.jpg",
@@ -118,12 +118,12 @@ export default function Landing() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
 
-  /* ── Auto-slide carousel rotation (every 4s) ── */
+  /* ── Auto-slide carousel rotation (every 3.5s) ── */
   useEffect(() => {
     if (isPaused) return;
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % HERO_IMAGES.length);
-    }, 4000);
+    }, 3500);
     return () => clearInterval(timer);
   }, [isPaused]);
 
@@ -262,13 +262,37 @@ export default function Landing() {
       </header>
 
       <main>
-        {/* ════════════ HERO WITH IMAGE CAROUSEL ════════════ */}
+        {/* ════════════ FULL-WIDTH HERO CAROUSEL ════════════ */}
         <section
           id="home"
-          className="lp-hero"
+          className="lp-hero lp-hero-full-bg"
           onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => setIsPaused(false)}
         >
+          {/* Full-width carousel background */}
+          <div className="lp-hero-full-carousel" aria-roledescription="carousel">
+            {HERO_IMAGES.map((item, idx) => {
+              const isActive = idx === currentSlide;
+              return (
+                <div
+                  key={idx}
+                  className={`lp-hero-full-slide ${isActive ? "active" : ""}`}
+                  aria-hidden={!isActive}
+                >
+                  <img
+                    src={item.image}
+                    alt={item.alt}
+                    width={1920}
+                    height={500}
+                    loading={idx === 0 ? "eager" : "lazy"}
+                    className="lp-hero-full-img"
+                  />
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Hero text placed in the left space with no box */}
           <div className="lp-hero-content">
             <p className="lp-hero-tagline">IDENTITY &nbsp;|&nbsp; SECURITY &nbsp;|&nbsp; PROFESSIONALISM</p>
             <h1 className="font-heading">
@@ -289,57 +313,36 @@ export default function Landing() {
             </a>
           </div>
 
-          <div className="lp-hero-image lp-hero-carousel-container" aria-roledescription="carousel">
-            {HERO_IMAGES.map((item, idx) => {
-              const isActive = idx === currentSlide;
-              return (
-                <div
-                  key={idx}
-                  className={`lp-hero-image-slide ${isActive ? "active" : ""}`}
-                  aria-hidden={!isActive}
-                >
-                  <img
-                    src={item.image}
-                    alt={item.alt}
-                    width={988}
-                    height={380}
-                    loading={idx === 0 ? "eager" : "lazy"}
-                  />
-                </div>
-              );
-            })}
+          {/* Carousel Controls */}
+          <button
+            type="button"
+            className="lp-carousel-arrow lp-carousel-prev"
+            onClick={prevSlide}
+            aria-label="Previous slide"
+          >
+            <ChevronLeft size={22} />
+          </button>
+          <button
+            type="button"
+            className="lp-carousel-arrow lp-carousel-next"
+            onClick={nextSlide}
+            aria-label="Next slide"
+          >
+            <ChevronRight size={22} />
+          </button>
 
-            {/* Carousel Controls */}
-            <button
-              type="button"
-              className="lp-carousel-arrow lp-carousel-prev"
-              onClick={prevSlide}
-              aria-label="Previous slide"
-            >
-              <ChevronLeft size={20} />
-            </button>
-            <button
-              type="button"
-              className="lp-carousel-arrow lp-carousel-next"
-              onClick={nextSlide}
-              aria-label="Next slide"
-            >
-              <ChevronRight size={20} />
-            </button>
-
-            <div className="lp-carousel-dots" role="tablist" aria-label="Hero carousel pagination">
-              {HERO_IMAGES.map((_, idx) => (
-                <button
-                  key={idx}
-                  type="button"
-                  className={`lp-carousel-dot ${idx === currentSlide ? "active" : ""}`}
-                  onClick={() => setCurrentSlide(idx)}
-                  aria-label={`Go to slide ${idx + 1}`}
-                  role="tab"
-                  aria-selected={idx === currentSlide}
-                />
-              ))}
-            </div>
+          <div className="lp-carousel-dots" role="tablist" aria-label="Hero carousel pagination">
+            {HERO_IMAGES.map((_, idx) => (
+              <button
+                key={idx}
+                type="button"
+                className={`lp-carousel-dot ${idx === currentSlide ? "active" : ""}`}
+                onClick={() => setCurrentSlide(idx)}
+                aria-label={`Go to slide ${idx + 1}`}
+                role="tab"
+                aria-selected={idx === currentSlide}
+              />
+            ))}
           </div>
         </section>
 
