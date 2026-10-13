@@ -837,56 +837,72 @@ button:active:not(:disabled) { transform: scale(0.97); }
   height: 72px;
 }
 
-/* Client marquee horizontal loop scroll (no scrollbar) */
-.landing-root .lp-clients-marquee {
+/* =================== OUR CLIENTS: DUAL-ROW LOGO MARQUEE =================== */
+.landing-root .lp-clients-marquee-container {
   display: flex;
-  overflow-x: auto;
-  overflow-y: hidden;
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE / Edge */
+  flex-direction: column;
+  gap: 16px;
   background: var(--lp-green-light);
   border-radius: 24px;
   border: 1px solid rgba(0, 137, 77, 0.15);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
-  padding: 20px 0;
+  padding: 24px 0;
   position: relative;
-  cursor: grab;
+  overflow: hidden;
+  /* Edge fade masks on left and right */
+  mask-image: linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%);
 }
 
-.landing-root .lp-clients-marquee::-webkit-scrollbar {
-  display: none; /* Chrome, Safari, Opera */
+.landing-root .lp-marquee-viewport {
+  width: 100%;
+  overflow: hidden;
+  display: flex;
 }
 
 .landing-root .lp-marquee-track {
   display: flex;
-  gap: 36px;
-  align-items: center;
-  animation: lp-marquee 48s linear infinite;
   width: max-content;
-  padding: 0 16px;
+  will-change: transform;
 }
 
-@keyframes lp-marquee {
+.landing-root .lp-marquee-track-left {
+  animation: lp-marquee-left 34s linear infinite;
+}
+
+.landing-root .lp-marquee-track-right {
+  animation: lp-marquee-right 34s linear infinite;
+}
+
+@keyframes lp-marquee-left {
   0% { transform: translateX(0); }
   100% { transform: translateX(-50%); }
 }
 
-.landing-root .lp-marquee-track img {
+@keyframes lp-marquee-right {
+  0% { transform: translateX(-50%); }
+  100% { transform: translateX(0); }
+}
+
+.landing-root .lp-marquee-group {
+  display: flex;
+  align-items: center;
+  gap: 40px;
+  padding: 0 20px;
+  flex-shrink: 0;
+}
+
+.landing-root .lp-marquee-group img {
   height: 52px;
   max-width: 130px;
   width: auto;
   object-fit: contain;
   flex-shrink: 0;
-  transition: transform 0.2s ease, filter 0.2s ease;
   user-select: none;
   -webkit-user-drag: none;
 }
 
-.landing-root .lp-marquee-track img:hover {
-  transform: scale(1.1);
-}
-
-.landing-root .lp-marquee-track img.featured {
+.landing-root .lp-marquee-group img.featured {
   height: 72px;
 }
 
@@ -2827,7 +2843,460 @@ button:active:not(:disabled) { transform: scale(0.97); }
   background: #eef7f0;
 }
 
-/* 4. Disable all animations under prefers-reduced-motion */
+/* =================== CARD FLIP =================== */
+.landing-root .lp-card-flip-container {
+  perspective: 1000px;
+  width: 100%;
+  height: 100%;
+  min-height: 270px;
+  position: relative;
+  display: flex;
+}
+
+.landing-root .lp-card-flip-btn {
+  background: transparent;
+  border: none;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  cursor: pointer;
+  border-radius: 18px;
+  text-align: left;
+  outline: none;
+  position: relative;
+}
+
+.landing-root .lp-card-flip-btn:focus-visible {
+  outline: 3px solid var(--lp-green, #00894d);
+  outline-offset: 4px;
+}
+
+.landing-root .lp-card-flip-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 270px;
+  transform-style: preserve-3d;
+  transition: transform 500ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.landing-root .lp-card-flip-btn[aria-pressed="true"] .lp-card-flip-inner {
+  transform: rotateY(180deg);
+}
+
+@media (hover: hover) {
+  .landing-root .lp-card-flip-btn:hover .lp-card-flip-inner {
+    transform: rotateY(180deg);
+  }
+  .landing-root .lp-card-flip-btn[aria-pressed="true"]:hover .lp-card-flip-inner {
+    transform: rotateY(0deg);
+  }
+}
+
+.landing-root .lp-card-flip-face {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  border-radius: 18px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.landing-root .lp-card-flip-front {
+  background: linear-gradient(145deg, #ffffff 0%, #f4fbf7 100%);
+  border: 1px solid rgba(0, 137, 77, 0.25);
+  color: var(--lp-text, #333333);
+}
+
+.landing-root .lp-card-flip-back {
+  background: linear-gradient(145deg, #1b4a7c 0%, #102d4e 100%);
+  border: 1px solid rgba(27, 74, 124, 0.4);
+  color: #ffffff;
+  transform: rotateY(180deg);
+}
+
+.landing-root .lp-card-header {
+  background: linear-gradient(90deg, #1b4a7c 0%, #00894d 100%);
+  color: #ffffff;
+  padding: 8px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.landing-root .lp-card-school-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.landing-root .lp-card-type-tag {
+  background: rgba(255, 255, 255, 0.25);
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 10px;
+  letter-spacing: 0.5px;
+}
+
+.landing-root .lp-card-body {
+  display: flex;
+  padding: 12px 14px;
+  gap: 12px;
+  flex: 1;
+}
+
+.landing-root .lp-card-photo-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.landing-root .lp-card-photo-frame {
+  width: 76px;
+  height: 94px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 2px solid #00894d;
+  background: #eef2ef;
+}
+
+.landing-root .lp-card-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.landing-root .lp-card-blood-pill {
+  font-size: 10px;
+  font-weight: 700;
+  color: #c92a2a;
+  background: #ffe3e3;
+  padding: 2px 6px;
+  border-radius: 6px;
+}
+
+.landing-root .lp-card-details-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.landing-root .lp-card-student-name {
+  font-size: 16px;
+  font-weight: 800;
+  color: #1b4a7c;
+  margin: 0 0 2px 0;
+  line-height: 1.2;
+}
+
+.landing-root .lp-card-student-role {
+  font-size: 11px;
+  font-weight: 600;
+  color: #00894d;
+  margin: 0 0 8px 0;
+}
+
+.landing-root .lp-card-meta-list {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 11px;
+}
+
+.landing-root .lp-card-meta-label {
+  color: #666;
+  margin-right: 4px;
+}
+
+.landing-root .lp-card-meta-val {
+  font-weight: 700;
+  color: #222;
+}
+
+.landing-root .lp-card-footer {
+  padding: 8px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px dashed rgba(0, 0, 0, 0.08);
+  margin-top: auto;
+}
+
+.landing-root .lp-card-chip {
+  width: 32px;
+  height: 24px;
+  background: linear-gradient(135deg, #d4af37 0%, #f3e5ab 50%, #aa771c 100%);
+  border-radius: 4px;
+  border: 1px solid #996515;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  padding: 2px 4px;
+}
+
+.landing-root .lp-card-chip-line {
+  display: block;
+  height: 1px;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.landing-root .lp-card-flip-hint {
+  position: absolute;
+  bottom: 8px;
+  right: 12px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  background: rgba(0, 0, 0, 0.06);
+  padding: 2px 8px;
+  border-radius: 12px;
+  color: #444;
+}
+
+.landing-root .lp-card-flip-back .lp-card-flip-hint {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+}
+
+.landing-root .lp-card-back-header {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 8px 14px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.landing-root .lp-card-back-body {
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 11px;
+  flex: 1;
+}
+
+.landing-root .lp-card-back-field {
+  display: flex;
+  gap: 6px;
+}
+
+.landing-root .lp-card-back-label {
+  opacity: 0.75;
+  min-width: 96px;
+}
+
+.landing-root .lp-card-back-val {
+  font-weight: 700;
+}
+
+.landing-root .lp-card-back-notice {
+  font-size: 9.5px;
+  opacity: 0.8;
+  line-height: 1.3;
+  margin-top: 3px;
+  font-style: italic;
+}
+
+.landing-root .lp-card-barcode-box {
+  margin-top: 6px;
+  background: #ffffff;
+  color: #000000;
+  padding: 5px 10px;
+  border-radius: 6px;
+  text-align: center;
+}
+
+.landing-root .lp-card-barcode-lines {
+  height: 22px;
+  background: repeating-linear-gradient(
+    to right,
+    #000 0px,
+    #000 2px,
+    transparent 2px,
+    transparent 4px,
+    #000 4px,
+    #000 7px,
+    transparent 7px,
+    transparent 9px
+  );
+}
+
+.landing-root .lp-card-barcode-text {
+  font-family: monospace;
+  font-size: 9px;
+  letter-spacing: 2px;
+}
+
+.landing-root .lp-card-sign-row {
+  margin-top: auto;
+  text-align: right;
+  font-size: 9px;
+  opacity: 0.85;
+}
+.landing-root .lp-card-sign-line {
+  border-top: 1px solid rgba(255, 255, 255, 0.35);
+  display: inline-block;
+  padding-top: 2px;
+}
+
+/* =================== FAQ ACCORDION =================== */
+.landing-root .lp-faq-section {
+  padding: 56px 0;
+  background: var(--lp-bg, #ffffff);
+}
+
+.landing-root .lp-faq-subtitle {
+  text-align: center;
+  max-width: 640px;
+  margin: -16px auto 36px;
+  color: var(--lp-text-light, #666666);
+  font-size: 15px;
+}
+
+.landing-root .lp-faq-list {
+  max-width: 860px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.landing-root .lp-faq-item {
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1px solid rgba(0, 137, 77, 0.16);
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.03);
+  overflow: hidden;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.landing-root .lp-faq-item:focus-within {
+  border-color: var(--lp-green, #00894d);
+}
+
+.landing-root .lp-faq-trigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 24px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  color: var(--lp-dark-blue, #1b4a7c);
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.4;
+  outline: none;
+  gap: 16px;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.landing-root .lp-faq-trigger:hover {
+  background: var(--lp-green-lighter, #e6f1e3);
+}
+
+.landing-root .lp-faq-trigger:focus-visible {
+  outline: 2px solid var(--lp-green, #00894d);
+  outline-offset: -2px;
+  background: var(--lp-green-lighter, #e6f1e3);
+}
+
+.landing-root .lp-faq-question-text {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.landing-root .lp-faq-index {
+  color: var(--lp-green, #00894d);
+  font-size: 14px;
+}
+
+.landing-root .lp-faq-chevron {
+  color: var(--lp-green, #00894d);
+  flex-shrink: 0;
+  transition: transform 250ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.landing-root .lp-faq-chevron.open {
+  transform: rotate(180deg);
+}
+
+.landing-root .lp-faq-panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 280ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.landing-root .lp-faq-panel[data-open="true"] {
+  grid-template-rows: 1fr;
+}
+
+.landing-root .lp-faq-content {
+  overflow: hidden;
+  min-height: 0;
+}
+
+.landing-root .lp-faq-content p {
+  padding: 0 24px 20px 50px;
+  margin: 0;
+  color: var(--lp-text, #333333);
+  font-size: 14.5px;
+  line-height: 1.65;
+}
+
+/* =================== DARK THEME STYLING =================== */
+.dark .landing-root .lp-faq-item {
+  background: var(--card, #173534);
+  border-color: var(--border, #294344);
+  color: var(--foreground, #eaf4f0);
+}
+.dark .landing-root .lp-faq-trigger {
+  color: #ffffff;
+}
+.dark .landing-root .lp-faq-trigger:hover,
+.dark .landing-root .lp-faq-trigger:focus-visible {
+  background: rgba(64, 200, 187, 0.15);
+}
+.dark .landing-root .lp-faq-content p {
+  color: #d1dfdc;
+}
+.dark .landing-root .lp-card-flip-front {
+  background: #173534;
+  border-color: rgba(64, 200, 187, 0.3);
+  color: #eaf4f0;
+}
+.dark .landing-root .lp-card-student-name {
+  color: #40c8bb;
+}
+.dark .landing-root .lp-card-meta-label {
+  color: #a6c0bb;
+}
+.dark .landing-root .lp-card-meta-val {
+  color: #ffffff;
+}
+.dark .landing-root .lp-card-flip-hint {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+/* =================== PREFERS-REDUCED-MOTION OVERRIDES =================== */
 @media (prefers-reduced-motion: reduce) {
   .landing-root,
   .landing-root *,
@@ -2847,9 +3316,71 @@ button:active:not(:disabled) { transform: scale(0.97); }
     opacity: 1 !important;
     transform: none !important;
   }
+
+  /* Logo Marquee: show static wrapped grid */
+  .landing-root .lp-clients-marquee-container {
+    mask-image: none !important;
+    -webkit-mask-image: none !important;
+    overflow: visible !important;
+  }
+  .landing-root .lp-marquee-viewport {
+    overflow: visible !important;
+  }
   .landing-root .lp-marquee-track {
     animation: none !important;
+    transform: none !important;
+    display: flex !important;
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+    width: 100% !important;
+  }
+  .landing-root .lp-marquee-group[aria-hidden="true"] {
+    display: none !important;
+  }
+  .landing-root .lp-marquee-group {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+    gap: 20px !important;
+    padding: 0 !important;
+  }
+
+  /* Card Flip: crossfade instead of 3D rotating */
+  .landing-root .lp-card-flip-inner {
+    transform: none !important;
+    transition: none !important;
+  }
+  .landing-root .lp-card-flip-face {
+    transform: none !important;
+    backface-visibility: visible !important;
+    -webkit-backface-visibility: visible !important;
+    transition: opacity 250ms ease !important;
+  }
+  .landing-root .lp-card-flip-btn[aria-pressed="false"] .lp-card-flip-front {
+    opacity: 1 !important;
+    pointer-events: auto !important;
+  }
+  .landing-root .lp-card-flip-btn[aria-pressed="false"] .lp-card-flip-back {
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
+  .landing-root .lp-card-flip-btn[aria-pressed="true"] .lp-card-flip-front {
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
+  .landing-root .lp-card-flip-btn[aria-pressed="true"] .lp-card-flip-back {
+    opacity: 1 !important;
+    pointer-events: auto !important;
+  }
+
+  /* FAQ Accordion: instant open/close with no motion */
+  .landing-root .lp-faq-chevron {
+    transition: none !important;
+  }
+  .landing-root .lp-faq-panel {
+    transition: none !important;
   }
 }
+
 
 

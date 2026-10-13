@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import PublicLayout from "@/components/PublicLayout";
 import { useRevealOnScroll } from "@/hooks/useRevealOnScroll";
+import IdCardFlip from "@/components/IdCardFlip";
 
 interface ProductItem {
   id: string;
@@ -79,17 +80,24 @@ export default function ProductsPage() {
           <div className="lp-products-showcase-grid lp-stagger-grid">
             {PRODUCTS_DATA.map((product) => (
               <div key={product.id} className="lp-product-showcase-card">
-                <div className="lp-product-showcase-image-wrapper">
-                  <img
-                    src={product.image}
-                    alt={product.displayTitle}
-                    className="lp-product-showcase-image"
-                    loading="lazy"
-                    width={400}
-                    height={280}
-                  />
-                  <span className="lp-product-category-tag">{product.title}</span>
-                </div>
+                {product.id === "id-cards" ? (
+                  <div className="lp-product-showcase-image-wrapper lp-product-showcase-flip-wrapper" style={{ overflow: "visible", height: "auto", minHeight: "270px" }}>
+                    <IdCardFlip />
+                    <span className="lp-product-category-tag" style={{ zIndex: 10 }}>{product.title}</span>
+                  </div>
+                ) : (
+                  <div className="lp-product-showcase-image-wrapper">
+                    <img
+                      src={product.image}
+                      alt={product.displayTitle}
+                      className="lp-product-showcase-image"
+                      loading="lazy"
+                      width={400}
+                      height={280}
+                    />
+                    <span className="lp-product-category-tag">{product.title}</span>
+                  </div>
+                )}
 
                 <div className="lp-product-showcase-content">
                   <h3 className="font-heading">{product.displayTitle}</h3>

@@ -11,9 +11,11 @@ import {
 } from "lucide-react";
 import { prefetchRoute } from "@/lib/prefetchRoute";
 import { useRevealOnScroll } from "@/hooks/useRevealOnScroll";
+import FaqAccordion from "@/components/FaqAccordion";
 
 export default function ContactUsPage() {
   const contactReveal = useRevealOnScroll<HTMLElement>();
+  const faqReveal = useRevealOnScroll<HTMLElement>();
 
   useEffect(() => {
     document.title = "Contact Us · Insight Education ID Card Solutions";
@@ -29,13 +31,13 @@ export default function ContactUsPage() {
             <span className="lp-page-badge">DIRECT CONTACT</span>
             <h1 className="font-heading">Contact Our Institutional Team</h1>
             <p>
-              Direct contact channels for school principals, college administrators, and institutional purchase teams across India.
+              Direct contact channels and official inquiry desk for school principals, college administrators, and institutional purchase teams across India.
             </p>
           </div>
         </div>
       </section>
 
-      {/* ════════════ CONTACT CARDS SECTION (NO FORM) ════════════ */}
+      {/* ════════════ CONTACT CARDS & FORM SECTION ════════════ */}
       <section
         className={`lp-contact-section py-12 lp-reveal-on-scroll ${contactReveal.revealed ? "is-revealed" : ""}`}
         ref={contactReveal.ref}
@@ -137,6 +139,14 @@ export default function ContactUsPage() {
             </div>
           </div>
         </div>
+      </section>
+
+      {/* ════════════ FAQ ACCORDION SECTION ════════════ */}
+      <section
+        className={`lp-reveal-on-scroll ${faqReveal.revealed ? "is-revealed" : ""}`}
+        ref={faqReveal.ref}
+      >
+        <FaqAccordion />
       </section>
     </PublicLayout>
   );

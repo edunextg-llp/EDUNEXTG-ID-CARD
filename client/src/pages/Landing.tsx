@@ -8,6 +8,7 @@ import {
   School,
   Users,
   PackageCheck,
+  Award,
   ChevronLeft,
   ChevronRight,
   Menu,
@@ -21,6 +22,9 @@ import {
 } from "lucide-react";
 import { prefetchRoute } from "@/lib/prefetchRoute";
 import { useRevealOnScroll } from "@/hooks/useRevealOnScroll";
+import LogoMarquee from "@/components/LogoMarquee";
+import StatItem from "@/components/StatItem";
+import FaqAccordion from "@/components/FaqAccordion";
 
 /* ───────────────────────────────────────────
    Nav links
@@ -84,13 +88,13 @@ const WHY_FEATURES = [
 ] as const;
 
 /* ───────────────────────────────────────────
-   Stats data
+   Stats data (Real institutional figures from codebase)
    ─────────────────────────────────────────── */
 const STATS = [
-  { icon: School, value: "500+", label: "Schools" },
-  { icon: Users, value: "1000+", label: "Happy Clients" },
-  { icon: PackageCheck, value: "100+", label: "Orders Completed" },
-  { icon: ShieldCheck, value: "Best", label: "Quality" },
+  { icon: School, target: 500, suffix: "+", label: "Schools Served" },
+  { icon: Users, target: 1000, suffix: "+", label: "Happy Clients" },
+  { icon: PackageCheck, target: 100, suffix: "+", label: "Orders Completed" },
+  { icon: Award, target: 10, suffix: "+", label: "Years in Business" },
 ] as const;
 
 /* ───────────────────────────────────────────
@@ -441,22 +445,8 @@ export default function Landing() {
               <span className="line" />
             </div>
 
-            {/* Infinite looping horizontal scrollable client logos */}
-            <div className="lp-clients-marquee" tabIndex={0} role="region" aria-label="Our Clients list">
-              <div className="lp-marquee-track">
-                {[...CLIENT_LOGOS, ...CLIENT_LOGOS].map((logo, i) => (
-                  <img
-                    key={i}
-                    src={logo.src}
-                    alt={logo.alt}
-                    className={logo.featured ? "featured" : ""}
-                    loading="lazy"
-                    width={logo.featured ? 72 : 50}
-                    height={logo.featured ? 72 : 50}
-                  />
-                ))}
-              </div>
-            </div>
+            {/* Infinite looping horizontal continuous dual-row client logos */}
+            <LogoMarquee logos={CLIENT_LOGOS} />
           </div>
         </section>
 
@@ -539,13 +529,13 @@ export default function Landing() {
           <div className="lp-container">
             <div className="lp-stats-panel lp-stagger-grid">
               {STATS.map((s) => (
-                <div key={s.label} className="lp-stat-item">
-                  <s.icon size={52} className="lp-stat-icon" />
-                  <div className="lp-stat-text">
-                    <h3>{s.value}</h3>
-                    <p>{s.label}</p>
-                  </div>
-                </div>
+                <StatItem
+                  key={s.label}
+                  icon={s.icon}
+                  target={s.target}
+                  suffix={s.suffix}
+                  label={s.label}
+                />
               ))}
             </div>
           </div>
@@ -591,6 +581,8 @@ export default function Landing() {
             </div>
           </div>
         </section>
+        {/* ════════════ FREQUENTLY ASKED QUESTIONS ════════════ */}
+        <FaqAccordion />
       </main>
 
       {/* ════════════ FOOTER (Expanded) ════════════ */}
