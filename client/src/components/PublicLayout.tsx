@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import {
   ShieldCheck,
@@ -10,6 +10,7 @@ import {
   Mail,
   Clock,
 } from "lucide-react";
+import { prefetchRoute } from "@/lib/prefetchRoute";
 
 export const PUBLIC_NAV_LINKS = [
   { label: "Home", href: "/" },
@@ -27,19 +28,67 @@ export default function PublicLayout({ children, activePath }: PublicLayoutProps
   const [location] = useLocation();
   const currentPath = activePath || location;
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  // 1. Scroll to top on route change
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "instant" });
+  }, [currentPath]);
+
+  // 2. Track window scroll for sticky header shrinkage and soft shadow
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20);
+    };
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // 3. Body scroll lock when mobile drawer is open
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      const scrollY = window.scrollY;
+      document.body.style.overflow = "hidden";
+      document.body.style.touchAction = "none";
+      return () => {
+        document.body.style.overflow = "";
+        document.body.style.touchAction = "";
+        window.scrollTo(0, scrollY);
+      };
+    }
+  }, [mobileMenuOpen]);
+
+  // Close mobile drawer on desktop resize
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 768) setMobileMenuOpen(false);
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   return (
     <div className="landing-root">
       {/* ════════════ HEADER ════════════ */}
-      <header className="lp-header" role="banner">
+      <header
+        className={`lp-header ${scrolled ? "scrolled" : ""}`}
+        role="banner"
+      >
         <div className="lp-header-inner">
-          <Link href="/">
+          <Link
+            href="/"
+            onMouseEnter={() => prefetchRoute("/")}
+            onTouchStart={() => prefetchRoute("/")}
+            className="lp-logo-link"
+          >
             <img
               src="/insight-education-logo.png"
               alt="Insight Education logo"
               className="lp-logo"
               width={160}
               height={64}
+              fetchPriority="high"
             />
           </Link>
 
@@ -56,6 +105,8 @@ export default function PublicLayout({ children, activePath }: PublicLayoutProps
                         ? "active"
                         : ""
                     }
+                    onMouseEnter={() => prefetchRoute(link.href)}
+                    onTouchStart={() => prefetchRoute(link.href)}
                   >
                     {link.label}
                   </Link>
@@ -66,7 +117,12 @@ export default function PublicLayout({ children, activePath }: PublicLayoutProps
 
           <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
             {/* Login button */}
-            <a href="/login" className="lp-portal-btn">
+            <a
+              href="/login"
+              className="lp-portal-btn"
+              onMouseEnter={() => prefetchRoute("/login")}
+              onTouchStart={() => prefetchRoute("/login")}
+            >
               <LockKeyhole size={16} />
               Login
             </a>
@@ -83,7 +139,14 @@ export default function PublicLayout({ children, activePath }: PublicLayoutProps
           </div>
         </div>
 
-        {/* Mobile nav drawer */}
+        {/* Mobile backdrop overlay */}
+        <div
+          className={`lp-mobile-backdrop ${mobileMenuOpen ? "open" : ""}`}
+          onClick={() => setMobileMenuOpen(false)}
+          aria-hidden={!mobileMenuOpen}
+        />
+
+        {/* Mobile nav drawer with smooth slide/fade and link click auto-close */}
         <nav
           className={`lp-mobile-nav ${mobileMenuOpen ? "open" : ""}`}
           aria-label="Mobile navigation"
@@ -99,6 +162,7 @@ export default function PublicLayout({ children, activePath }: PublicLayoutProps
                   : ""
               }
               onClick={() => setMobileMenuOpen(false)}
+              onTouchStart={() => prefetchRoute(link.href)}
             >
               {link.label}
             </Link>
@@ -107,6 +171,8 @@ export default function PublicLayout({ children, activePath }: PublicLayoutProps
             href="/login"
             className="lp-portal-btn"
             style={{ alignSelf: "flex-start", marginTop: 8 }}
+            onClick={() => setMobileMenuOpen(false)}
+            onTouchStart={() => prefetchRoute("/login")}
           >
             <LockKeyhole size={16} />
             Login
@@ -114,8 +180,10 @@ export default function PublicLayout({ children, activePath }: PublicLayoutProps
         </nav>
       </header>
 
-      {/* ════════════ MAIN CONTENT ════════════ */}
-      <main>{children}</main>
+      {/* ════════════ MAIN CONTENT (with page route transition) ════════════ */}
+      <main className="lp-page-route-transition" key={currentPath}>
+        {children}
+      </main>
 
       {/* ════════════ FOOTER (Expanded) ════════════ */}
       <footer className="lp-footer" role="contentinfo">
@@ -123,7 +191,11 @@ export default function PublicLayout({ children, activePath }: PublicLayoutProps
           <div className="lp-footer-grid">
             {/* Column 1: About Us / Brand */}
             <div className="lp-footer-col">
-              <Link href="/">
+              <Link
+                href="/"
+                onMouseEnter={() => prefetchRoute("/")}
+                onTouchStart={() => prefetchRoute("/")}
+              >
                 <img
                   src="/insight-education-logo.png"
                   alt="Insight Education logo"
@@ -148,19 +220,57 @@ export default function PublicLayout({ children, activePath }: PublicLayoutProps
               <h4 className="lp-footer-col-title">Quick Navigation</h4>
               <ul className="lp-footer-nav-list">
                 <li>
-                  <Link href="/">Home</Link>
+                  <Link
+                    href="/"
+                    onMouseEnter={() => prefetchRoute("/")}
+                    onTouchStart={() => prefetchRoute("/")}
+                  >
+                    Home
+                  </Link>
                 </li>
                 <li>
-                  <Link href="/about-us">About Us</Link>
+                  <Link
+                    href="/about-us"
+                    onMouseEnter={() => prefetchRoute("/about-us")}
+                    onTouchStart={() => prefetchRoute("/about-us")}
+                  >
+                    About Us
+                  </Link>
                 </li>
                 <li>
-                  <Link href="/products">Products</Link>
+                  <Link
+                    href="/products"
+                    onMouseEnter={() => prefetchRoute("/products")}
+                    onTouchStart={() => prefetchRoute("/products")}
+                  >
+                    Products
+                  </Link>
                 </li>
                 <li>
-                  <Link href="/contact-us">Contact Us</Link>
+                  <Link
+                    href="/contact-us"
+                    onMouseEnter={() => prefetchRoute("/contact-us")}
+                    onTouchStart={() => prefetchRoute("/contact-us")}
+                  >
+                    Contact Us
+                  </Link>
                 </li>
                 <li>
-                  <a href="/login" className="lp-footer-login-link">
+                  <Link
+                    href="/privacy"
+                    onMouseEnter={() => prefetchRoute("/privacy")}
+                    onTouchStart={() => prefetchRoute("/privacy")}
+                  >
+                    Privacy Policy
+                  </Link>
+                </li>
+                <li>
+                  <a
+                    href="/login"
+                    className="lp-footer-login-link"
+                    onMouseEnter={() => prefetchRoute("/login")}
+                    onTouchStart={() => prefetchRoute("/login")}
+                  >
                     <LockKeyhole size={13} />
                     School Portal Login
                   </a>
@@ -173,19 +283,49 @@ export default function PublicLayout({ children, activePath }: PublicLayoutProps
               <h4 className="lp-footer-col-title">Our Products</h4>
               <ul className="lp-footer-nav-list">
                 <li>
-                  <Link href="/products">Institutional &amp; School ID Cards</Link>
+                  <Link
+                    href="/products"
+                    onMouseEnter={() => prefetchRoute("/products")}
+                    onTouchStart={() => prefetchRoute("/products")}
+                  >
+                    Institutional &amp; School ID Cards
+                  </Link>
                 </li>
                 <li>
-                  <Link href="/products">Custom Printed &amp; Plain Lanyards</Link>
+                  <Link
+                    href="/products"
+                    onMouseEnter={() => prefetchRoute("/products")}
+                    onTouchStart={() => prefetchRoute("/products")}
+                  >
+                    Custom Printed &amp; Plain Lanyards
+                  </Link>
                 </li>
                 <li>
-                  <Link href="/products">Durable ID Card Holders</Link>
+                  <Link
+                    href="/products"
+                    onMouseEnter={() => prefetchRoute("/products")}
+                    onTouchStart={() => prefetchRoute("/products")}
+                  >
+                    Durable ID Card Holders
+                  </Link>
                 </li>
                 <li>
-                  <Link href="/products">Metal Hooks &amp; Retractable Yoyos</Link>
+                  <Link
+                    href="/products"
+                    onMouseEnter={() => prefetchRoute("/products")}
+                    onTouchStart={() => prefetchRoute("/products")}
+                  >
+                    Metal Hooks &amp; Retractable Yoyos
+                  </Link>
                 </li>
                 <li>
-                  <Link href="/contact-us">Customized Institutional Packages</Link>
+                  <Link
+                    href="/contact-us"
+                    onMouseEnter={() => prefetchRoute("/contact-us")}
+                    onTouchStart={() => prefetchRoute("/contact-us")}
+                  >
+                    Customized Institutional Packages
+                  </Link>
                 </li>
               </ul>
             </div>
@@ -219,6 +359,15 @@ export default function PublicLayout({ children, activePath }: PublicLayoutProps
             <span className="lp-footer-copy">
               © {new Date().getFullYear()} Insight Education Solutions. All rights reserved.
             </span>
+            <div className="flex items-center gap-4 text-xs text-[#888]">
+              <Link
+                href="/privacy"
+                className="hover:underline"
+                onMouseEnter={() => prefetchRoute("/privacy")}
+              >
+                Privacy Policy
+              </Link>
+            </div>
           </div>
         </div>
       </footer>

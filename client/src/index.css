@@ -127,6 +127,9 @@
 
 @layer base {
   * { @apply border-border outline-ring/50; }
+  html, body {
+    transition: background-color 200ms ease, color 200ms ease, border-color 200ms ease;
+  }
   body {
     @apply bg-background text-foreground;
     font-family: "Manrope", ui-sans-serif, system-ui, sans-serif;
@@ -333,6 +336,19 @@ button:active:not(:disabled) { transform: scale(0.97); }
   display: flex;
   align-items: center;
   box-shadow: 0 1px 8px rgba(0, 0, 0, 0.06);
+  transition: height 200ms cubic-bezier(0.16, 1, 0.3, 1),
+              background 200ms cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 200ms cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: height, box-shadow;
+}
+
+.landing-root .lp-header.scrolled {
+  height: calc(var(--lp-header-height) - 16px);
+  background: rgba(231, 243, 233, 0.95);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 4px 20px -2px rgba(11, 106, 162, 0.12),
+              0 2px 6px -1px rgba(0, 0, 0, 0.05);
 }
 
 .landing-root .lp-header-inner {
@@ -349,6 +365,16 @@ button:active:not(:disabled) { transform: scale(0.97); }
   height: 64px;
   width: auto;
   flex-shrink: 0;
+  transition: height 200ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.landing-root .lp-header.scrolled .lp-logo {
+  height: 50px;
+}
+
+.landing-root .lp-logo-link {
+  display: inline-flex;
+  align-items: center;
 }
 
 .landing-root .lp-nav {
@@ -365,18 +391,36 @@ button:active:not(:disabled) { transform: scale(0.97); }
   color: var(--lp-teal);
   font-weight: 600;
   font-size: 15px;
-  transition: color 0.2s;
+  padding: 8px 4px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  touch-action: manipulation;
+  transition: color 180ms ease, transform 180ms ease;
   position: relative;
 }
 
-.landing-root .lp-nav a:hover {
-  color: var(--lp-navy);
+@media (hover: hover) {
+  .landing-root .lp-nav a:hover {
+    color: var(--lp-navy);
+  }
+}
+
+.landing-root .lp-nav a:active {
+  transform: scale(0.98);
+}
+
+.landing-root .lp-nav a:focus-visible {
+  outline: 2px solid var(--lp-green);
+  outline-offset: 4px;
+  border-radius: 4px;
 }
 
 .landing-root .lp-nav a.active {
   text-decoration: underline;
-  text-underline-offset: 4px;
-  text-decoration-thickness: 2px;
+  text-underline-offset: 6px;
+  text-decoration-thickness: 2.5px;
+  color: var(--lp-navy);
 }
 
 .landing-root .lp-portal-btn {
@@ -388,18 +432,32 @@ button:active:not(:disabled) { transform: scale(0.97); }
   font-weight: 700;
   font-size: 14px;
   padding: 10px 20px;
+  min-height: 44px;
   border-radius: 30px;
   border: none;
   text-decoration: none;
   box-shadow: 0 2px 8px rgba(38, 48, 127, 0.25);
-  transition: background 0.2s, transform 0.2s;
+  touch-action: manipulation;
+  transition: background 180ms ease, transform 180ms ease, box-shadow 180ms ease;
   white-space: nowrap;
   flex-shrink: 0;
 }
 
-.landing-root .lp-portal-btn:hover {
-  background: #1e2668;
-  transform: translateY(-1px);
+@media (hover: hover) {
+  .landing-root .lp-portal-btn:hover {
+    background: #1e2668;
+    transform: translateY(-1.5px);
+    box-shadow: 0 4px 14px rgba(38, 48, 127, 0.35);
+  }
+}
+
+.landing-root .lp-portal-btn:active {
+  transform: scale(0.97);
+}
+
+.landing-root .lp-portal-btn:focus-visible {
+  outline: 2px solid var(--lp-green);
+  outline-offset: 3px;
 }
 
 /* Hamburger */
@@ -407,28 +465,76 @@ button:active:not(:disabled) { transform: scale(0.97); }
   display: none;
   background: none;
   border: none;
-  padding: 8px;
+  padding: 10px;
+  min-width: 44px;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
   color: var(--lp-teal);
+  touch-action: manipulation;
+  border-radius: 8px;
+  transition: background-color 160ms ease, transform 160ms ease;
+}
+
+.landing-root .lp-hamburger:active {
+  transform: scale(0.92);
+}
+
+.landing-root .lp-hamburger:focus-visible {
+  outline: 2px solid var(--lp-teal);
+  outline-offset: 2px;
+}
+
+/* Mobile backdrop */
+.landing-root .lp-mobile-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.38);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  z-index: 98;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 220ms ease;
+}
+
+.landing-root .lp-mobile-backdrop.open {
+  display: block;
+  opacity: 1;
+  pointer-events: auto;
 }
 
 /* Mobile nav */
 .landing-root .lp-mobile-nav {
-  display: none;
+  display: flex;
   position: fixed;
   top: var(--lp-header-height);
   left: 0;
   right: 0;
   background: var(--lp-header-bg);
-  padding: 16px 24px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  padding: 16px 24px 24px;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.12);
   z-index: 99;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-12px);
+  transition: opacity 200ms cubic-bezier(0.16, 1, 0.3, 1),
+              transform 200ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.landing-root .lp-header.scrolled ~ .lp-mobile-nav,
+.landing-root .lp-header.scrolled .lp-mobile-nav {
+  top: calc(var(--lp-header-height) - 16px);
 }
 
 .landing-root .lp-mobile-nav.open {
-  display: flex;
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
 }
 
 .landing-root .lp-mobile-nav a {
@@ -436,11 +542,23 @@ button:active:not(:disabled) { transform: scale(0.97); }
   color: var(--lp-teal);
   font-weight: 600;
   font-size: 16px;
-  padding: 10px 0;
+  padding: 12px 4px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  touch-action: manipulation;
   border-bottom: 1px solid rgba(11, 106, 162, 0.12);
+  transition: color 160ms ease, padding-left 160ms ease;
+}
+
+.landing-root .lp-mobile-nav a:active {
+  padding-left: 6px;
+  color: var(--lp-navy);
 }
 
 .landing-root .lp-mobile-nav a.active {
+  font-weight: 700;
+  color: var(--lp-navy);
   text-decoration: underline;
   text-underline-offset: 4px;
 }
@@ -471,7 +589,9 @@ button:active:not(:disabled) { transform: scale(0.97); }
   height: 100%;
   opacity: 0;
   visibility: hidden;
-  transition: opacity 0.75s ease-in-out, visibility 0.75s ease-in-out;
+  transition: opacity 600ms cubic-bezier(0.4, 0, 0.2, 1),
+              visibility 600ms cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: opacity;
 }
 
 .landing-root .lp-hero-full-slide.active {
@@ -538,14 +658,26 @@ button:active:not(:disabled) { transform: scale(0.97); }
   border-radius: 14px;
   border: none;
   text-decoration: none;
-  transition: background 0.2s, transform 0.2s;
+  transition: background 180ms ease, transform 180ms ease;
   width: fit-content;
   box-shadow: 0 4px 14px rgba(0, 137, 77, 0.25);
+  touch-action: manipulation;
 }
 
-.landing-root .lp-hero-cta:hover {
-  background: #007040;
-  transform: translateY(-2px);
+@media (hover: hover) {
+  .landing-root .lp-hero-cta:hover {
+    background: #007040;
+    transform: translateY(-2px);
+  }
+}
+
+.landing-root .lp-hero-cta:active {
+  transform: scale(0.97);
+}
+
+.landing-root .lp-hero-cta:focus-visible {
+  outline: 2px solid var(--lp-green);
+  outline-offset: 3px;
 }
 
 /* Carousel Prev/Next Buttons on the banner */
@@ -554,10 +686,12 @@ button:active:not(:disabled) { transform: scale(0.97); }
   top: 50%;
   transform: translateY(-50%);
   z-index: 5;
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.88);
+  background: rgba(255, 255, 255, 0.9);
   border: 1px solid rgba(0, 137, 77, 0.2);
   color: var(--lp-dark-green);
   display: flex;
@@ -565,18 +699,29 @@ button:active:not(:disabled) { transform: scale(0.97); }
   justify-content: center;
   cursor: pointer;
   box-shadow: 0 3px 12px rgba(0, 0, 0, 0.12);
-  transition: all 0.2s ease;
-  opacity: 0.85;
+  transition: background 180ms ease, color 180ms ease, transform 180ms ease, box-shadow 180ms ease;
+  opacity: 0.9;
+  touch-action: manipulation;
 }
 
-.landing-root .lp-hero:hover .lp-carousel-arrow {
-  opacity: 1;
+@media (hover: hover) {
+  .landing-root .lp-hero:hover .lp-carousel-arrow {
+    opacity: 1;
+  }
+  .landing-root .lp-carousel-arrow:hover {
+    background: #ffffff;
+    color: var(--lp-green);
+    transform: translateY(-50%) scale(1.08);
+  }
 }
 
-.landing-root .lp-carousel-arrow:hover {
-  background: #ffffff;
-  color: var(--lp-green);
-  transform: translateY(-50%) scale(1.08);
+.landing-root .lp-carousel-arrow:active {
+  transform: translateY(-50%) scale(0.94);
+}
+
+.landing-root .lp-carousel-arrow:focus-visible {
+  outline: 2px solid var(--lp-green);
+  outline-offset: 2px;
 }
 
 .landing-root .lp-carousel-prev {
@@ -597,28 +742,41 @@ button:active:not(:disabled) { transform: scale(0.97); }
   display: flex;
   align-items: center;
   gap: 8px;
-  background: rgba(255, 255, 255, 0.75);
-  padding: 5px 12px;
-  border-radius: 20px;
-  backdrop-filter: blur(4px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.85);
+  padding: 6px 14px;
+  border-radius: 24px;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
 }
 
 .landing-root .lp-carousel-dot {
-  width: 8px;
-  height: 8px;
+  width: 9px;
+  height: 9px;
+  min-width: 9px;
+  min-height: 9px;
   border-radius: 50%;
   background: rgba(0, 137, 77, 0.35);
   border: none;
   cursor: pointer;
   padding: 0;
-  transition: all 0.3s ease;
+  transition: width 240ms cubic-bezier(0.34, 1.56, 0.64, 1),
+              background 240ms ease,
+              border-radius 240ms ease,
+              box-shadow 240ms ease;
+  touch-action: manipulation;
+}
+
+.landing-root .lp-carousel-dot:focus-visible {
+  outline: 2px solid var(--lp-green);
+  outline-offset: 2px;
 }
 
 .landing-root .lp-carousel-dot.active {
-  width: 22px;
-  border-radius: 10px;
+  width: 26px;
+  border-radius: 12px;
   background: var(--lp-green);
+  box-shadow: 0 0 10px rgba(0, 137, 77, 0.4);
 }
 
 /* =================== OUR CLIENTS =================== */
@@ -697,10 +855,6 @@ button:active:not(:disabled) { transform: scale(0.97); }
 
 .landing-root .lp-clients-marquee::-webkit-scrollbar {
   display: none; /* Chrome, Safari, Opera */
-}
-
-.landing-root .lp-clients-marquee:hover .lp-marquee-track {
-  animation-play-state: paused;
 }
 
 .landing-root .lp-marquee-track {
@@ -853,12 +1007,15 @@ button:active:not(:disabled) { transform: scale(0.97); }
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
 }
 
-.landing-root .lp-product-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+@media (hover: hover) {
+  .landing-root .lp-product-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.12);
+    border-color: rgba(0, 137, 77, 0.25);
+  }
 }
 
 .landing-root .lp-product-card .card-img {
@@ -898,8 +1055,10 @@ button:active:not(:disabled) { transform: scale(0.97); }
 }
 
 .landing-root .lp-arrow-btn {
-  width: 38px;
-  height: 38px;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
   border-radius: 50%;
   background: var(--lp-dark-blue-card);
   color: #fff;
@@ -907,14 +1066,27 @@ button:active:not(:disabled) { transform: scale(0.97); }
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.2s, transform 0.15s;
+  transition: background 180ms ease, transform 180ms ease, box-shadow 180ms ease;
   text-decoration: none;
   flex-shrink: 0;
+  touch-action: manipulation;
 }
 
-.landing-root .lp-arrow-btn:hover {
-  background: #142d5c;
-  transform: scale(1.05);
+@media (hover: hover) {
+  .landing-root .lp-arrow-btn:hover {
+    background: #142d5c;
+    transform: scale(1.06);
+    box-shadow: 0 4px 12px rgba(26, 60, 120, 0.3);
+  }
+}
+
+.landing-root .lp-arrow-btn:active {
+  transform: scale(0.95);
+}
+
+.landing-root .lp-arrow-btn:focus-visible {
+  outline: 2px solid var(--lp-green);
+  outline-offset: 3px;
 }
 
 .landing-root .lp-arrow-btn-green {
@@ -922,8 +1094,10 @@ button:active:not(:disabled) { transform: scale(0.97); }
   color: var(--lp-green-card-accent);
 }
 
-.landing-root .lp-arrow-btn-green:hover {
-  background: #f0f0f0;
+@media (hover: hover) {
+  .landing-root .lp-arrow-btn-green:hover {
+    background: #f0f0f0;
+  }
 }
 
 /* ============= WHY CHOOSE ============= */
@@ -1159,16 +1333,31 @@ button:active:not(:disabled) { transform: scale(0.97); }
   font-weight: 700;
   font-size: 14px;
   padding: 10px 24px;
+  min-height: 44px;
   border-radius: 12px;
   border: none;
   text-decoration: none;
   width: fit-content;
-  transition: background 0.2s;
+  transition: background 180ms ease, transform 180ms ease, box-shadow 180ms ease;
   box-shadow: 0 2px 6px rgba(0, 137, 77, 0.2);
+  touch-action: manipulation;
 }
 
-.landing-root .lp-custom-banner-text .lp-banner-cta:hover {
-  background: #007040;
+@media (hover: hover) {
+  .landing-root .lp-custom-banner-text .lp-banner-cta:hover {
+    background: #007040;
+    transform: translateY(-1.5px);
+    box-shadow: 0 4px 12px rgba(0, 137, 77, 0.35);
+  }
+}
+
+.landing-root .lp-custom-banner-text .lp-banner-cta:active {
+  transform: scale(0.97);
+}
+
+.landing-root .lp-custom-banner-text .lp-banner-cta:focus-visible {
+  outline: 2px solid #ffffff;
+  outline-offset: 3px;
 }
 
 .landing-root .lp-banner-image {
@@ -2229,13 +2418,15 @@ button:active:not(:disabled) { transform: scale(0.97); }
   align-items: flex-start;
   gap: 18px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
-  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
 }
 
-.landing-root .lp-contact-direct-grid .lp-contact-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0, 137, 77, 0.12);
-  border-color: var(--lp-green);
+@media (hover: hover) {
+  .landing-root .lp-contact-direct-grid .lp-contact-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 137, 77, 0.12);
+    border-color: var(--lp-green);
+  }
 }
 
 .landing-root .lp-contact-direct-grid .lp-contact-icon-box {
@@ -2282,19 +2473,33 @@ button:active:not(:disabled) { transform: scale(0.97); }
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 16px;
+  padding: 10px 18px;
+  min-height: 44px;
   border-radius: 8px;
   font-size: 13px;
   font-weight: 700;
   text-decoration: none;
   background: var(--lp-green);
   color: #ffffff;
-  transition: background 0.2s, transform 0.15s;
+  transition: background 180ms ease, transform 180ms ease, box-shadow 180ms ease;
+  touch-action: manipulation;
 }
 
-.landing-root .lp-contact-cta-btn:hover {
-  background: #007040;
-  transform: translateY(-1px);
+@media (hover: hover) {
+  .landing-root .lp-contact-cta-btn:hover {
+    background: #007040;
+    transform: translateY(-1.5px);
+    box-shadow: 0 4px 12px rgba(0, 137, 77, 0.3);
+  }
+}
+
+.landing-root .lp-contact-cta-btn:active {
+  transform: scale(0.97);
+}
+
+.landing-root .lp-contact-cta-btn:focus-visible {
+  outline: 2px solid var(--lp-green);
+  outline-offset: 3px;
 }
 
 .landing-root .lp-contact-cta-btn.secondary {
@@ -2303,8 +2508,10 @@ button:active:not(:disabled) { transform: scale(0.97); }
   border: 1px solid rgba(0, 137, 77, 0.25);
 }
 
-.landing-root .lp-contact-cta-btn.secondary:hover {
-  background: #def0e6;
+@media (hover: hover) {
+  .landing-root .lp-contact-cta-btn.secondary:hover {
+    background: #def0e6;
+  }
 }
 
 .landing-root .lp-contact-portal-banner {
@@ -2343,15 +2550,30 @@ button:active:not(:disabled) { transform: scale(0.97); }
   font-weight: 700;
   font-size: 14px;
   padding: 12px 24px;
+  min-height: 44px;
   border-radius: 12px;
   text-decoration: none;
   white-space: nowrap;
-  transition: background 0.2s;
+  transition: background 180ms ease, transform 180ms ease, box-shadow 180ms ease;
+  touch-action: manipulation;
   flex-shrink: 0;
 }
 
-.landing-root .lp-contact-portal-btn:hover {
-  background: #007040;
+@media (hover: hover) {
+  .landing-root .lp-contact-portal-btn:hover {
+    background: #007040;
+    transform: translateY(-1.5px);
+    box-shadow: 0 4px 14px rgba(0, 137, 77, 0.35);
+  }
+}
+
+.landing-root .lp-contact-portal-btn:active {
+  transform: scale(0.97);
+}
+
+.landing-root .lp-contact-portal-btn:focus-visible {
+  outline: 2px solid #ffffff;
+  outline-offset: 3px;
 }
 
 @media (max-width: 768px) {
@@ -2532,6 +2754,101 @@ button:active:not(:disabled) { transform: scale(0.97); }
   }
   .landing-root .lp-login-brand-col {
     display: none;
+  }
+}
+
+/* ======================================================
+   PUBLIC PAGE SMOOTHNESS SUITE (Transitions, Reveals, Skeletons)
+   ====================================================== */
+
+/* 1. Route transitions (fade/slide 200ms) */
+.landing-root .lp-page-route-transition {
+  animation: lp-page-enter 200ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: opacity, transform;
+}
+
+@keyframes lp-page-enter {
+  0% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 2. Reveal on scroll (fade-up once) */
+.landing-root .lp-reveal-on-scroll {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 350ms cubic-bezier(0.16, 1, 0.3, 1),
+              transform 350ms cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+.landing-root .lp-reveal-on-scroll.is-revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Staggered card / feature reveals */
+.landing-root .lp-reveal-on-scroll.is-revealed .lp-stagger-grid > *:nth-child(1) {
+  animation: lp-card-stagger 300ms cubic-bezier(0.16, 1, 0.3, 1) 0ms forwards;
+}
+.landing-root .lp-reveal-on-scroll.is-revealed .lp-stagger-grid > *:nth-child(2) {
+  animation: lp-card-stagger 300ms cubic-bezier(0.16, 1, 0.3, 1) 50ms forwards;
+}
+.landing-root .lp-reveal-on-scroll.is-revealed .lp-stagger-grid > *:nth-child(3) {
+  animation: lp-card-stagger 300ms cubic-bezier(0.16, 1, 0.3, 1) 100ms forwards;
+}
+.landing-root .lp-reveal-on-scroll.is-revealed .lp-stagger-grid > *:nth-child(4) {
+  animation: lp-card-stagger 300ms cubic-bezier(0.16, 1, 0.3, 1) 150ms forwards;
+}
+
+@keyframes lp-card-stagger {
+  0% {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 3. Skeleton / Blur Placeholders for imagery */
+.landing-root .lp-hero-full-carousel {
+  background: linear-gradient(135deg, #e8f4f1 0%, #ddf1f8 50%, #e2ece5 100%);
+}
+
+.landing-root .lp-clients-marquee,
+.landing-root .lp-clients-panel {
+  background: #eef7f0;
+}
+
+/* 4. Disable all animations under prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  .landing-root,
+  .landing-root *,
+  .landing-root *::before,
+  .landing-root *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .landing-root .lp-reveal-on-scroll {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .landing-root .lp-page-route-transition {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .landing-root .lp-marquee-track {
+    animation: none !important;
   }
 }
 

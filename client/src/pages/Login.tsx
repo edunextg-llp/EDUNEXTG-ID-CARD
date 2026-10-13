@@ -1,6 +1,6 @@
 import { FormEvent, useEffect, useState } from "react";
 import { useLocation } from "wouter";
-import { Eye, EyeOff, ShieldAlert, ShieldCheck, Layers, Zap, GraduationCap, Handshake } from "lucide-react";
+import { Eye, EyeOff, ShieldAlert, ShieldCheck, Layers, Zap, GraduationCap, Handshake, Loader2, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -24,6 +24,8 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [validationError, setValidationError] = useState<string | null>(null);
   const [showContactAdminModal, setShowContactAdminModal] = useState(false);
 
   useEffect(() => {
@@ -44,8 +46,11 @@ export default function Login() {
 
   async function submit(event: FormEvent) {
     event.preventDefault();
+    setValidationError(null);
     if (!username.trim() || password.length < 8) {
-      return toast.error("Enter your username or ID and a password of at least 8 characters");
+      const msg = "Please enter your username/ID and a password of at least 8 characters.";
+      setValidationError(msg);
+      return toast.error(msg);
     }
 
     setBusy(true);
@@ -60,43 +65,47 @@ export default function Login() {
       if (selectedPortal === "admin" && !isSuperAdmin) {
         await api.auth.logout().catch(() => undefined);
         const actualRoleName = isPartner ? "Partner" : "School";
-        toast.error("Account role mismatch", {
-          description: `This account is a ${actualRoleName} account. Please select the "${actualRoleName}" option above to sign in.`,
-        });
+        const msg = `This account is a ${actualRoleName} account. Please select the "${actualRoleName}" tab above.`;
+        setValidationError(msg);
+        toast.error("Account role mismatch", { description: msg });
         return;
       }
 
       if (selectedPortal === "school" && !isSchool) {
         await api.auth.logout().catch(() => undefined);
         const actualRoleName = isSuperAdmin ? "Admin" : "Partner";
-        toast.error("Account role mismatch", {
-          description: `This account is an ${actualRoleName} account. Please select the "${actualRoleName}" option above to sign in.`,
-        });
+        const msg = `This account is an ${actualRoleName} account. Please select the "${actualRoleName}" tab above.`;
+        setValidationError(msg);
+        toast.error("Account role mismatch", { description: msg });
         return;
       }
 
       if (selectedPortal === "partner" && !isPartner) {
         await api.auth.logout().catch(() => undefined);
         const actualRoleName = isSuperAdmin ? "Admin" : "School";
-        toast.error("Account role mismatch", {
-          description: `This account is a ${actualRoleName} account. Please select the "${actualRoleName}" option above to sign in.`,
-        });
+        const msg = `This account is a ${actualRoleName} account. Please select the "${actualRoleName}" tab above.`;
+        setValidationError(msg);
+        toast.error("Account role mismatch", { description: msg });
         return;
       }
 
+      setSuccess(true);
       toast.success("Signed in successfully");
-      if (selectedPortal === "admin") {
-        navigate("/admin");
-      } else if (selectedPortal === "partner") {
-        navigate("/partner");
-      } else {
-        navigate("/school");
-      }
+      setTimeout(() => {
+        if (selectedPortal === "admin") {
+          navigate("/admin");
+        } else if (selectedPortal === "partner") {
+          navigate("/partner");
+        } else {
+          navigate("/school");
+        }
+      }, 350);
     } catch (error) {
       await api.auth.logout().catch(() => undefined);
-      toast.error("Unable to sign in", {
-        description: error instanceof Error ? error.message : "Invalid credentials",
-      });
+      const msg = error instanceof Error ? error.message : "Invalid credentials";
+      setValidationError(msg);
+      toast.error("Unable to sign in", { description: msg });
+      // Keep username and password input on failure so user doesn't have to retype everything
     } finally {
       setBusy(false);
     }
@@ -285,12 +294,38 @@ export default function Login() {
                 </div>
               </div>
 
+              {validationError && (
+                <div
+                  role="alert"
+                  className="mt-4 p-3 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-xs font-semibold flex items-start gap-2 animate-in fade-in slide-in-from-top-1 duration-200"
+                >
+                  <ShieldAlert className="h-4 w-4 shrink-0 mt-0.5" />
+                  <span>{validationError}</span>
+                </div>
+              )}
+
               <Button
                 type="submit"
-                disabled={busy}
-                className="mt-7 h-11 w-full rounded-xl bg-primary font-bold text-primary-foreground hover:bg-primary/90 cursor-pointer"
+                disabled={busy || success}
+                className={`mt-6 h-11 w-full rounded-xl font-bold cursor-pointer transition-all duration-200 ${
+                  success
+                    ? "bg-[#00894d] text-white"
+                    : "bg-primary text-primary-foreground hover:bg-primary/90"
+                }`}
               >
-                {busy ? "Signing in…" : "Sign In"}
+                {busy ? (
+                  <span className="inline-flex items-center gap-2">
+                    <Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none" />
+                    Signing in…
+                  </span>
+                ) : success ? (
+                  <span className="inline-flex items-center gap-2 animate-in fade-in duration-200">
+                    <CheckCircle2 className="h-4 w-4" />
+                    Success! Redirecting…
+                  </span>
+                ) : (
+                  "Sign In"
+                )}
               </Button>
 
               <div className="mt-4 flex items-center justify-center text-xs font-semibold text-primary">
