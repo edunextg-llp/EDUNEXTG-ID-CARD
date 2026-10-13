@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { prefetchRoute } from "@/lib/prefetchRoute";
 import { useRevealOnScroll } from "@/hooks/useRevealOnScroll";
+import StatItem from "@/components/StatItem";
 
 const WHY_FEATURES = [
   { icon: ShieldCheck, title: "Quality Products", desc: "Durable and reliable PVC materials engineered to withstand everyday student and staff use." },
@@ -25,10 +26,10 @@ const WHY_FEATURES = [
 ] as const;
 
 const STATS = [
-  { icon: School, value: "500+", label: "Schools & Colleges" },
-  { icon: Users, value: "1000+", label: "Happy Clients" },
-  { icon: PackageCheck, value: "100+", label: "Orders Completed" },
-  { icon: ShieldCheck, value: "Best", label: "Quality Assurance" },
+  { icon: School, target: 500, suffix: "+", label: "Schools & Colleges" },
+  { icon: Users, target: 1000, suffix: "+", label: "Happy Clients" },
+  { icon: PackageCheck, target: 100, suffix: "+", label: "Orders Completed" },
+  { icon: Award, target: 10, suffix: "+", label: "Years in Business" },
 ] as const;
 
 const CLIENT_LOGOS = Array.from({ length: 11 }, (_, i) => {
@@ -159,13 +160,13 @@ export default function AboutUsPage() {
         <div className="lp-container">
           <div className="lp-stats-panel lp-stagger-grid">
             {STATS.map((s) => (
-              <div key={s.label} className="lp-stat-item">
-                <s.icon size={52} className="lp-stat-icon" />
-                <div className="lp-stat-text">
-                  <h3>{s.value}</h3>
-                  <p>{s.label}</p>
-                </div>
-              </div>
+              <StatItem
+                key={s.label}
+                icon={s.icon}
+                target={s.target}
+                suffix={s.suffix}
+                label={s.label}
+              />
             ))}
           </div>
         </div>
