@@ -19,7 +19,6 @@ const ResetPassword = lazy(() =>
 const Landing = lazy(() => import("./pages/Landing"));
 const AboutUsPage = lazy(() => import("./pages/AboutUsPage"));
 const ProductsPage = lazy(() => import("./pages/ProductsPage"));
-const NoticePage = lazy(() => import("./pages/NoticePage"));
 const ContactUsPage = lazy(() => import("./pages/ContactUsPage"));
 
 function getPortalForRole(role: string): "admin" | "school" | "partner" {
@@ -186,7 +185,6 @@ function Router() {
       <Route path="/about"><ProtectedPortal portal="school" initialNav="About Us" /></Route>
       <Route path="/about-us"><AboutUsPage /></Route>
       <Route path="/products"><ProductsPage /></Route>
-      <Route path="/notice"><NoticePage /></Route>
       <Route path="/contact-us"><ContactUsPage /></Route>
       <Route path="/"><Landing /></Route>
       <Route><PortalRedirect /></Route>
