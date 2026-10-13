@@ -12,9 +12,10 @@ import {
   Award,
   Clock,
   Truck,
-  CheckCircle2,
   ArrowRight,
 } from "lucide-react";
+import { prefetchRoute } from "@/lib/prefetchRoute";
+import { useRevealOnScroll } from "@/hooks/useRevealOnScroll";
 
 const WHY_FEATURES = [
   { icon: ShieldCheck, title: "Quality Products", desc: "Durable and reliable PVC materials engineered to withstand everyday student and staff use." },
@@ -36,9 +37,14 @@ const CLIENT_LOGOS = Array.from({ length: 11 }, (_, i) => {
 });
 
 export default function AboutUsPage() {
+  const storyReveal = useRevealOnScroll<HTMLElement>();
+  const whyReveal = useRevealOnScroll<HTMLElement>();
+  const statsReveal = useRevealOnScroll<HTMLElement>();
+  const clientsReveal = useRevealOnScroll<HTMLElement>();
+
   useEffect(() => {
     document.title = "About Us · Insight Education ID Card Solutions";
-    window.scrollTo(0, 0);
+    window.scrollTo({ top: 0, behavior: "instant" });
   }, []);
 
   return (
@@ -57,7 +63,10 @@ export default function AboutUsPage() {
       </section>
 
       {/* ════════════ MISSION & STORY ════════════ */}
-      <section className="lp-about-story-section">
+      <section
+        className={`lp-about-story-section lp-reveal-on-scroll ${storyReveal.revealed ? "is-revealed" : ""}`}
+        ref={storyReveal.ref}
+      >
         <div className="lp-container">
           <div className="lp-about-story-grid">
             <div className="lp-about-story-text">
@@ -72,7 +81,7 @@ export default function AboutUsPage() {
                 From high-density digital smart cards and satin sublimation lanyards to tamper-resistant holders and digital cloud management, our full suite covers every step of the identity lifecycle.
               </p>
 
-              <div className="lp-about-highlights-grid">
+              <div className="lp-about-highlights-grid lp-stagger-grid">
                 <div className="lp-about-highlight-box">
                   <Award size={24} className="text-[#00894d] mb-2" />
                   <h4 className="font-bold text-sm text-[#1d5a2e]">ISO 9001:2015</h4>
@@ -97,6 +106,9 @@ export default function AboutUsPage() {
                   src="/home/hero-products.jpg"
                   alt="Insight Education identity showcase"
                   className="rounded-2xl shadow-xl w-full object-cover"
+                  loading="lazy"
+                  width={600}
+                  height={450}
                 />
                 <div className="lp-about-experience-pill">
                   <span className="text-2xl font-black text-[#00894d]">10+</span>
@@ -109,7 +121,10 @@ export default function AboutUsPage() {
       </section>
 
       {/* ════════════ WHY CHOOSE US ════════════ */}
-      <section className="lp-why-choose">
+      <section
+        className={`lp-why-choose lp-reveal-on-scroll ${whyReveal.revealed ? "is-revealed" : ""}`}
+        ref={whyReveal.ref}
+      >
         <div className="lp-container">
           <div className="lp-why-inner">
             <div className="lp-why-left">
@@ -121,7 +136,7 @@ export default function AboutUsPage() {
               <p>We deliver reliable, high-quality and customized ID card solutions to meet your every need</p>
               <div className="lp-why-underline" />
             </div>
-            <div className="lp-why-features">
+            <div className="lp-why-features lp-stagger-grid">
               {WHY_FEATURES.map((f) => (
                 <div key={f.title} className="lp-why-feature">
                   <div className="lp-why-icon">
@@ -137,9 +152,12 @@ export default function AboutUsPage() {
       </section>
 
       {/* ════════════ STATS ════════════ */}
-      <section className="lp-stats">
+      <section
+        className={`lp-stats lp-reveal-on-scroll ${statsReveal.revealed ? "is-revealed" : ""}`}
+        ref={statsReveal.ref}
+      >
         <div className="lp-container">
-          <div className="lp-stats-panel">
+          <div className="lp-stats-panel lp-stagger-grid">
             {STATS.map((s) => (
               <div key={s.label} className="lp-stat-item">
                 <s.icon size={52} className="lp-stat-icon" />
@@ -154,7 +172,10 @@ export default function AboutUsPage() {
       </section>
 
       {/* ════════════ OUR CLIENTS ════════════ */}
-      <section className="lp-clients py-12">
+      <section
+        className={`lp-clients py-12 lp-reveal-on-scroll ${clientsReveal.revealed ? "is-revealed" : ""}`}
+        ref={clientsReveal.ref}
+      >
         <div className="lp-container">
           <div className="lp-section-title">
             <span className="line" />
@@ -186,7 +207,12 @@ export default function AboutUsPage() {
               <h3 className="text-2xl font-bold font-heading mb-2">Ready to Upgrade Your Institution's ID Cards?</h3>
               <p className="text-sm opacity-90">Talk to our campus identity consultant today for free design samples and pricing.</p>
             </div>
-            <Link href="/contact-us" className="lp-banner-cta">
+            <Link
+              href="/contact-us"
+              className="lp-banner-cta"
+              onMouseEnter={() => prefetchRoute("/contact-us")}
+              onTouchStart={() => prefetchRoute("/contact-us")}
+            >
               Get in Touch <ArrowRight size={16} />
             </Link>
           </div>

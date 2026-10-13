@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Route, Switch, useLocation } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import SchoolLoader from "./components/SchoolLoader";
+import TopProgressBar from "./components/TopProgressBar";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { api, type ApiAuthUser } from "./lib/api";
 
@@ -19,8 +20,9 @@ const ResetPassword = lazy(() =>
 const Landing = lazy(() => import("./pages/Landing"));
 const AboutUsPage = lazy(() => import("./pages/AboutUsPage"));
 const ProductsPage = lazy(() => import("./pages/ProductsPage"));
-const NoticePage = lazy(() => import("./pages/NoticePage"));
 const ContactUsPage = lazy(() => import("./pages/ContactUsPage"));
+const PrivacyPolicyPage = lazy(() => import("./pages/PrivacyPolicyPage"));
+const NotFoundPage = lazy(() => import("./pages/NotFoundPage"));
 
 function getPortalForRole(role: string): "admin" | "school" | "partner" {
   if (role === "SUPER_ADMIN") return "admin";
@@ -186,28 +188,40 @@ function Router() {
       <Route path="/about"><ProtectedPortal portal="school" initialNav="About Us" /></Route>
       <Route path="/about-us"><AboutUsPage /></Route>
       <Route path="/products"><ProductsPage /></Route>
-      <Route path="/notice"><NoticePage /></Route>
       <Route path="/contact-us"><ContactUsPage /></Route>
+      <Route path="/privacy"><PrivacyPolicyPage /></Route>
       <Route path="/"><Landing /></Route>
-      <Route><PortalRedirect /></Route>
+      <Route><NotFoundPage /></Route>
     </Switch>
   );
 }
 
-function PortalRedirect() {
-  const [, navigate] = useLocation();
-  useEffect(() => {
-    api.auth
-      .me()
-      .then((user) => {
-        const correctPortal = getPortalForRole(user.role);
-        navigate(correctPortal === "admin" ? "/admin" : correctPortal === "partner" ? "/partner" : "/school");
-      })
-      .catch(() => navigate("/login"));
-  }, [navigate]);
-  return <SchoolLoader label="Checking your school session…" />;
+function RootFallback() {
+  const [location] = useLocation();
+  const isPublicPage =
+    location === "/" ||
+    location === "/about-us" ||
+    location === "/products" ||
+    location === "/contact-us" ||
+    location === "/privacy";
+
+  if (isPublicPage) {
+    return <TopProgressBar />;
+  }
+  return <SchoolLoader />;
 }
 
 export default function App() {
-  return <ErrorBoundary><ThemeProvider defaultPreference="light" switchable={true}><TooltipProvider><Toaster /><Suspense fallback={<SchoolLoader />}><Router /></Suspense></TooltipProvider></ThemeProvider></ErrorBoundary>;
+  return (
+    <ErrorBoundary>
+      <ThemeProvider defaultPreference="light" switchable={true}>
+        <TooltipProvider>
+          <Toaster />
+          <Suspense fallback={<RootFallback />}>
+            <Router />
+          </Suspense>
+        </TooltipProvider>
+      </ThemeProvider>
+    </ErrorBoundary>
+  );
 }

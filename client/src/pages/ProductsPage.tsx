@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import PublicLayout from "@/components/PublicLayout";
+import { useRevealOnScroll } from "@/hooks/useRevealOnScroll";
 
 interface ProductItem {
   id: string;
@@ -46,9 +47,11 @@ const PRODUCTS_DATA: ProductItem[] = [
 ];
 
 export default function ProductsPage() {
+  const showcaseReveal = useRevealOnScroll<HTMLElement>();
+
   useEffect(() => {
     document.title = "Products · Insight Education ID Card Solutions";
-    window.scrollTo(0, 0);
+    window.scrollTo({ top: 0, behavior: "instant" });
   }, []);
 
   return (
@@ -67,10 +70,13 @@ export default function ProductsPage() {
       </section>
 
       {/* ════════════ PRODUCTS LIST ════════════ */}
-      <section className="lp-products-catalog-section">
+      <section
+        className={`lp-products-catalog-section lp-reveal-on-scroll ${showcaseReveal.revealed ? "is-revealed" : ""}`}
+        ref={showcaseReveal.ref}
+      >
         <div className="lp-container">
           {/* Minimal Product Showcase Grid */}
-          <div className="lp-products-showcase-grid">
+          <div className="lp-products-showcase-grid lp-stagger-grid">
             {PRODUCTS_DATA.map((product) => (
               <div key={product.id} className="lp-product-showcase-card">
                 <div className="lp-product-showcase-image-wrapper">
@@ -78,6 +84,9 @@ export default function ProductsPage() {
                     src={product.image}
                     alt={product.displayTitle}
                     className="lp-product-showcase-image"
+                    loading="lazy"
+                    width={400}
+                    height={280}
                   />
                   <span className="lp-product-category-tag">{product.title}</span>
                 </div>

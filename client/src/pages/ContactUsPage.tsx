@@ -5,19 +5,19 @@ import {
   Phone,
   Mail,
   MapPin,
-  Clock,
-  School,
   LockKeyhole,
   ArrowRight,
   ShieldCheck,
-  PackageCheck,
-  CheckCircle2,
 } from "lucide-react";
+import { prefetchRoute } from "@/lib/prefetchRoute";
+import { useRevealOnScroll } from "@/hooks/useRevealOnScroll";
 
 export default function ContactUsPage() {
+  const contactReveal = useRevealOnScroll<HTMLElement>();
+
   useEffect(() => {
     document.title = "Contact Us · Insight Education ID Card Solutions";
-    window.scrollTo(0, 0);
+    window.scrollTo({ top: 0, behavior: "instant" });
   }, []);
 
   return (
@@ -36,10 +36,13 @@ export default function ContactUsPage() {
       </section>
 
       {/* ════════════ CONTACT CARDS SECTION (NO FORM) ════════════ */}
-      <section className="lp-contact-section py-12">
+      <section
+        className={`lp-contact-section py-12 lp-reveal-on-scroll ${contactReveal.revealed ? "is-revealed" : ""}`}
+        ref={contactReveal.ref}
+      >
         <div className="lp-container">
           <div className="lp-contact-direct-wrap">
-            <div className="lp-contact-direct-grid">
+            <div className="lp-contact-direct-grid lp-stagger-grid">
               {/* Phone & WhatsApp */}
               <div className="lp-contact-card">
                 <div className="lp-contact-icon-box">
@@ -100,8 +103,6 @@ export default function ContactUsPage() {
                 </div>
               </div>
 
-
-
               {/* Quality Guarantee */}
               <div className="lp-contact-card">
                 <div className="lp-contact-icon-box">
@@ -125,7 +126,12 @@ export default function ContactUsPage() {
                   Access your institution portal to approve card proofs, review student data, and monitor live printing status.
                 </p>
               </div>
-              <Link href="/login" className="lp-contact-portal-btn">
+              <Link
+                href="/login"
+                className="lp-contact-portal-btn"
+                onMouseEnter={() => prefetchRoute("/login")}
+                onTouchStart={() => prefetchRoute("/login")}
+              >
                 <LockKeyhole size={16} /> School Portal Login <ArrowRight size={16} />
               </Link>
             </div>
@@ -135,4 +141,3 @@ export default function ContactUsPage() {
     </PublicLayout>
   );
 }
-

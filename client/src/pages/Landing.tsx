@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { Link } from "wouter";
 import {
   ShieldCheck,
@@ -19,6 +19,8 @@ import {
   Mail,
   Clock,
 } from "lucide-react";
+import { prefetchRoute } from "@/lib/prefetchRoute";
+import { useRevealOnScroll } from "@/hooks/useRevealOnScroll";
 
 /* ───────────────────────────────────────────
    Nav links
@@ -61,22 +63,22 @@ const PRODUCT_CARDS = [
   },
   {
     title: "ID CARD HOLDERS",
-    subtitle: "Different Styles & Sizes",
+    subtitle: "Durable Holders in Multiple Sizes",
     image: "/home/product-holders.jpg",
   },
   {
     title: "CLAMPS & HOOKS",
-    subtitle: "Metal Hooks, Plastic Clamps & Attachments",
+    subtitle: "Clips, Hooks & Yoyos for Daily Use",
     image: "/home/product-clips.jpg",
   },
 ] as const;
 
 /* ───────────────────────────────────────────
-   Why-choose features
+   Why choose us features
    ─────────────────────────────────────────── */
 const WHY_FEATURES = [
-  { icon: ShieldCheck, title: "Quality Products", desc: "Durable and reliable products." },
-  { icon: PenSquare, title: "Custom Design", desc: "Your logo, your style, your identity." },
+  { icon: ShieldCheck, title: "Quality Products", desc: "Durable and reliable ID cards and accessories." },
+  { icon: PenSquare, title: "Custom Design", desc: "Design cards tailored to your school's identity." },
   { icon: Settings, title: "Professional Finishing", desc: "Complete ID card professional look." },
   { icon: Handshake, title: "Complete ID Card Solutions", desc: "From card to lanyard, we provide everything." },
 ] as const;
@@ -116,16 +118,25 @@ export default function Landing() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("home");
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [isPaused, setIsPaused] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
 
-  /* ── Auto-slide carousel rotation (every 3.5s) ── */
+  // Reveal-on-scroll section hooks
+  const clientsReveal = useRevealOnScroll<HTMLElement>();
+  const productsReveal = useRevealOnScroll<HTMLElement>();
+  const whyReveal = useRevealOnScroll<HTMLElement>();
+  const statsReveal = useRevealOnScroll<HTMLElement>();
+  const bannerReveal = useRevealOnScroll<HTMLElement>();
+
+  // Touch swipe support for Hero Carousel
+  const touchStartXRef = useRef<number | null>(null);
+
+  /* ── Auto-slide carousel rotation (every 3s, continuous without hover pause) ── */
   useEffect(() => {
-    if (isPaused) return;
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % HERO_IMAGES.length);
-    }, 3500);
+    }, 3000);
     return () => clearInterval(timer);
-  }, [isPaused]);
+  }, []);
 
   const nextSlide = useCallback(() => {
     setCurrentSlide((prev) => (prev + 1) % HERO_IMAGES.length);
@@ -135,14 +146,56 @@ export default function Landing() {
     setCurrentSlide((prev) => (prev - 1 + HERO_IMAGES.length) % HERO_IMAGES.length);
   }, []);
 
-  /* ── Set document title ── */
+  // Touch handlers for carousel swipe
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartXRef.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartXRef.current === null) return;
+    const touchEndX = e.changedTouches[0].clientX;
+    const diff = touchStartXRef.current - touchEndX;
+    if (diff > 45) {
+      nextSlide();
+    } else if (diff < -45) {
+      prevSlide();
+    }
+    touchStartXRef.current = null;
+  };
+
+  /* ── Track scroll for sticky header shrinkage ── */
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20);
+    };
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  /* ── Set document title & scroll to top ── */
   useEffect(() => {
     const prev = document.title;
     document.title = "Insight Education · ID Cards & Lanyard Solutions";
+    window.scrollTo({ top: 0, behavior: "instant" });
     return () => {
       document.title = prev;
     };
   }, []);
+
+  /* ── Body scroll lock when mobile menu is open ── */
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      const scrollY = window.scrollY;
+      document.body.style.overflow = "hidden";
+      document.body.style.touchAction = "none";
+      return () => {
+        document.body.style.overflow = "";
+        document.body.style.touchAction = "";
+        window.scrollTo(0, scrollY);
+      };
+    }
+  }, [mobileMenuOpen]);
 
   /* ── Close mobile menu on resize ── */
   useEffect(() => {
@@ -171,15 +224,23 @@ export default function Landing() {
   return (
     <div className="landing-root">
       {/* ════════════ HEADER ════════════ */}
-      <header className="lp-header" role="banner">
+      <header
+        className={`lp-header ${scrolled ? "scrolled" : ""}`}
+        role="banner"
+      >
         <div className="lp-header-inner">
-          <a href="#home" onClick={(e) => handleNavClick(e, "#home")}>
+          <a
+            href="#home"
+            onClick={(e) => handleNavClick(e, "#home")}
+            className="lp-logo-link"
+          >
             <img
               src="/insight-education-logo.png"
               alt="Insight Education logo"
               className="lp-logo"
               width={160}
               height={64}
+              fetchPriority="high"
             />
           </a>
 
@@ -200,6 +261,8 @@ export default function Landing() {
                     <Link
                       href={link.href}
                       className={activeSection === link.href.replace("/", "") ? "active" : ""}
+                      onMouseEnter={() => prefetchRoute(link.href)}
+                      onTouchStart={() => prefetchRoute(link.href)}
                     >
                       {link.label}
                     </Link>
@@ -211,7 +274,12 @@ export default function Landing() {
 
           <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
             {/* Login button */}
-            <a href="/login" className="lp-portal-btn">
+            <a
+              href="/login"
+              className="lp-portal-btn"
+              onMouseEnter={() => prefetchRoute("/login")}
+              onTouchStart={() => prefetchRoute("/login")}
+            >
               <LockKeyhole size={16} />
               Login
             </a>
@@ -227,6 +295,13 @@ export default function Landing() {
             </button>
           </div>
         </div>
+
+        {/* Mobile backdrop overlay */}
+        <div
+          className={`lp-mobile-backdrop ${mobileMenuOpen ? "open" : ""}`}
+          onClick={() => setMobileMenuOpen(false)}
+          aria-hidden={!mobileMenuOpen}
+        />
 
         {/* Mobile nav drawer */}
         <nav
@@ -249,12 +324,19 @@ export default function Landing() {
                 href={link.href}
                 className={activeSection === link.href.replace("/", "") ? "active" : ""}
                 onClick={() => setMobileMenuOpen(false)}
+                onTouchStart={() => prefetchRoute(link.href)}
               >
                 {link.label}
               </Link>
             )
           ))}
-          <a href="/login" className="lp-portal-btn" style={{ alignSelf: "flex-start", marginTop: 8 }}>
+          <a
+            href="/login"
+            className="lp-portal-btn"
+            style={{ alignSelf: "flex-start", marginTop: 8 }}
+            onClick={() => setMobileMenuOpen(false)}
+            onTouchStart={() => prefetchRoute("/login")}
+          >
             <LockKeyhole size={16} />
             Login
           </a>
@@ -266,10 +348,10 @@ export default function Landing() {
         <section
           id="home"
           className="lp-hero lp-hero-full-bg"
-          onMouseEnter={() => setIsPaused(true)}
-          onMouseLeave={() => setIsPaused(false)}
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
         >
-          {/* Full-width carousel background */}
+          {/* Full-width carousel background with crossfade */}
           <div className="lp-hero-full-carousel" aria-roledescription="carousel">
             {HERO_IMAGES.map((item, idx) => {
               const isActive = idx === currentSlide;
@@ -285,6 +367,7 @@ export default function Landing() {
                     width={1920}
                     height={500}
                     loading={idx === 0 ? "eager" : "lazy"}
+                    fetchPriority={idx === 0 ? "high" : "auto"}
                     className="lp-hero-full-img"
                   />
                 </div>
@@ -347,7 +430,10 @@ export default function Landing() {
         </section>
 
         {/* ════════════ OUR CLIENTS ════════════ */}
-        <section className="lp-clients">
+        <section
+          className={`lp-clients lp-reveal-on-scroll ${clientsReveal.revealed ? "is-revealed" : ""}`}
+          ref={clientsReveal.ref}
+        >
           <div className="lp-container">
             <div className="lp-section-title">
               <span className="line" />
@@ -355,7 +441,7 @@ export default function Landing() {
               <span className="line" />
             </div>
 
-            {/* Infinite looping horizontal scrollable client logos (no scroll bar) */}
+            {/* Infinite looping horizontal scrollable client logos */}
             <div className="lp-clients-marquee" tabIndex={0} role="region" aria-label="Our Clients list">
               <div className="lp-marquee-track">
                 {[...CLIENT_LOGOS, ...CLIENT_LOGOS].map((logo, i) => (
@@ -375,9 +461,13 @@ export default function Landing() {
         </section>
 
         {/* ════════════ PRODUCTS ════════════ */}
-        <section id="products" className="lp-products">
+        <section
+          id="products"
+          className={`lp-products lp-reveal-on-scroll ${productsReveal.revealed ? "is-revealed" : ""}`}
+          ref={productsReveal.ref}
+        >
           <div className="lp-container">
-            <div className="lp-products-grid">
+            <div className="lp-products-grid lp-stagger-grid">
               {PRODUCT_CARDS.map((card) => (
                 <div key={card.title} className="lp-product-card">
                   <img
@@ -392,7 +482,13 @@ export default function Landing() {
                     <h3>{card.title}</h3>
                     <p>{card.subtitle}</p>
                     <div className="card-body-footer">
-                      <Link href="/contact-us" className="lp-arrow-btn" aria-label={`Inquire about ${card.title}`}>
+                      <Link
+                        href="/contact-us"
+                        className="lp-arrow-btn"
+                        aria-label={`Inquire about ${card.title}`}
+                        onMouseEnter={() => prefetchRoute("/contact-us")}
+                        onTouchStart={() => prefetchRoute("/contact-us")}
+                      >
                         <ChevronRight size={18} />
                       </Link>
                     </div>
@@ -404,7 +500,11 @@ export default function Landing() {
         </section>
 
         {/* ════════════ ABOUT US / WHY CHOOSE ════════════ */}
-        <section id="about" className="lp-why-choose">
+        <section
+          id="about"
+          className={`lp-why-choose lp-reveal-on-scroll ${whyReveal.revealed ? "is-revealed" : ""}`}
+          ref={whyReveal.ref}
+        >
           <div className="lp-container">
             <div className="lp-why-inner">
               <div className="lp-why-left">
@@ -416,7 +516,7 @@ export default function Landing() {
                 <p>We deliver reliable, high-quality and customized ID card solutions to meet your every need</p>
                 <div className="lp-why-underline" />
               </div>
-              <div className="lp-why-features">
+              <div className="lp-why-features lp-stagger-grid">
                 {WHY_FEATURES.map((f) => (
                   <div key={f.title} className="lp-why-feature">
                     <div className="lp-why-icon">
@@ -432,9 +532,12 @@ export default function Landing() {
         </section>
 
         {/* ════════════ STATS ════════════ */}
-        <section className="lp-stats">
+        <section
+          className={`lp-stats lp-reveal-on-scroll ${statsReveal.revealed ? "is-revealed" : ""}`}
+          ref={statsReveal.ref}
+        >
           <div className="lp-container">
-            <div className="lp-stats-panel">
+            <div className="lp-stats-panel lp-stagger-grid">
               {STATS.map((s) => (
                 <div key={s.label} className="lp-stat-item">
                   <s.icon size={52} className="lp-stat-icon" />
@@ -449,7 +552,10 @@ export default function Landing() {
         </section>
 
         {/* ════════════ CUSTOM REQUIREMENT BANNER ════════════ */}
-        <section className="lp-banner-section">
+        <section
+          className={`lp-banner-section lp-reveal-on-scroll ${bannerReveal.revealed ? "is-revealed" : ""}`}
+          ref={bannerReveal.ref}
+        >
           <div className="lp-container">
             <div className="lp-banner-row">
               <div className="lp-custom-banner">
@@ -463,7 +569,12 @@ export default function Landing() {
                     Choose your card design, holder, ribbon, colour, clamp and finishing according to your
                     institution's requirements.
                   </p>
-                  <Link href="/contact-us" className="lp-banner-cta">
+                  <Link
+                    href="/contact-us"
+                    className="lp-banner-cta"
+                    onMouseEnter={() => prefetchRoute("/contact-us")}
+                    onTouchStart={() => prefetchRoute("/contact-us")}
+                  >
                     Get Customized Now <ArrowRight size={16} />
                   </Link>
                 </div>
@@ -508,7 +619,7 @@ export default function Landing() {
               </div>
             </div>
 
-            {/* Column 2: Quick Links (About Us, Products, Notice, Contact Us) */}
+            {/* Column 2: Quick Links */}
             <div className="lp-footer-col">
               <h4 className="lp-footer-col-title">Quick Navigation</h4>
               <ul className="lp-footer-nav-list">
@@ -518,16 +629,48 @@ export default function Landing() {
                   </a>
                 </li>
                 <li>
-                  <Link href="/about-us">About Us</Link>
+                  <Link
+                    href="/about-us"
+                    onMouseEnter={() => prefetchRoute("/about-us")}
+                    onTouchStart={() => prefetchRoute("/about-us")}
+                  >
+                    About Us
+                  </Link>
                 </li>
                 <li>
-                  <Link href="/products">Products</Link>
+                  <Link
+                    href="/products"
+                    onMouseEnter={() => prefetchRoute("/products")}
+                    onTouchStart={() => prefetchRoute("/products")}
+                  >
+                    Products
+                  </Link>
                 </li>
                 <li>
-                  <Link href="/contact-us">Contact Us</Link>
+                  <Link
+                    href="/contact-us"
+                    onMouseEnter={() => prefetchRoute("/contact-us")}
+                    onTouchStart={() => prefetchRoute("/contact-us")}
+                  >
+                    Contact Us
+                  </Link>
                 </li>
                 <li>
-                  <a href="/login" className="lp-footer-login-link">
+                  <Link
+                    href="/privacy"
+                    onMouseEnter={() => prefetchRoute("/privacy")}
+                    onTouchStart={() => prefetchRoute("/privacy")}
+                  >
+                    Privacy Policy
+                  </Link>
+                </li>
+                <li>
+                  <a
+                    href="/login"
+                    className="lp-footer-login-link"
+                    onMouseEnter={() => prefetchRoute("/login")}
+                    onTouchStart={() => prefetchRoute("/login")}
+                  >
                     <LockKeyhole size={13} />
                     School Portal Login
                   </a>
@@ -540,19 +683,49 @@ export default function Landing() {
               <h4 className="lp-footer-col-title">Our Products</h4>
               <ul className="lp-footer-nav-list">
                 <li>
-                  <Link href="/products">Institutional &amp; School ID Cards</Link>
+                  <Link
+                    href="/products"
+                    onMouseEnter={() => prefetchRoute("/products")}
+                    onTouchStart={() => prefetchRoute("/products")}
+                  >
+                    Institutional &amp; School ID Cards
+                  </Link>
                 </li>
                 <li>
-                  <Link href="/products">Custom Printed &amp; Plain Lanyards</Link>
+                  <Link
+                    href="/products"
+                    onMouseEnter={() => prefetchRoute("/products")}
+                    onTouchStart={() => prefetchRoute("/products")}
+                  >
+                    Custom Printed &amp; Plain Lanyards
+                  </Link>
                 </li>
                 <li>
-                  <Link href="/products">Durable ID Card Holders</Link>
+                  <Link
+                    href="/products"
+                    onMouseEnter={() => prefetchRoute("/products")}
+                    onTouchStart={() => prefetchRoute("/products")}
+                  >
+                    Durable ID Card Holders
+                  </Link>
                 </li>
                 <li>
-                  <Link href="/products">Metal Hooks &amp; Retractable Yoyos</Link>
+                  <Link
+                    href="/products"
+                    onMouseEnter={() => prefetchRoute("/products")}
+                    onTouchStart={() => prefetchRoute("/products")}
+                  >
+                    Metal Hooks &amp; Retractable Yoyos
+                  </Link>
                 </li>
                 <li>
-                  <Link href="/contact-us">Customized Institutional Packages</Link>
+                  <Link
+                    href="/contact-us"
+                    onMouseEnter={() => prefetchRoute("/contact-us")}
+                    onTouchStart={() => prefetchRoute("/contact-us")}
+                  >
+                    Customized Institutional Packages
+                  </Link>
                 </li>
               </ul>
             </div>
@@ -586,10 +759,18 @@ export default function Landing() {
             <span className="lp-footer-copy">
               © {new Date().getFullYear()} Insight Education. All rights reserved.
             </span>
+            <div className="flex items-center gap-4 text-xs text-[#888]">
+              <Link
+                href="/privacy"
+                className="hover:underline"
+                onMouseEnter={() => prefetchRoute("/privacy")}
+              >
+                Privacy Policy
+              </Link>
+            </div>
           </div>
         </div>
       </footer>
     </div>
   );
 }
-
