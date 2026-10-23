@@ -24,7 +24,6 @@ import {
   Info,
   Loader2,
   Upload,
-  X,
 } from "lucide-react";
 
 interface ExcelUploadModalProps {

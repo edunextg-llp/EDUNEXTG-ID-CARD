@@ -1,6 +1,5 @@
 import { FormEvent, useEffect, useRef, useState } from "react";
 import {
-  Camera,
   Check,
   KeyRound,
   Loader2,
@@ -11,7 +10,6 @@ import {
   Trash2,
   Upload,
   User,
-  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,17 +17,13 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
 import { api, type ApiAuthUser } from "@/lib/api";
 import { toast } from "sonner";
 import {
-  isValidIndianMobileNumber,
-  INDIAN_MOBILE_ERROR_MESSAGE,
   INDIAN_MOBILE_PLACEHOLDER,
 } from "@shared/phoneValidation";
-import { compressImage } from "@/lib/imageCompress";
 
 interface SuperAdminProfileDialogProps {
   open: boolean;
@@ -53,8 +47,6 @@ export default function SuperAdminProfileDialog({
   const [savingDetails, setSavingDetails] = useState(false);
   const [savingPicture, setSavingPicture] = useState(false);
   const [changingPassword, setChangingPassword] = useState(false);
-  const [compressing, setCompressing] = useState(false);
-  const [compressionInfo, setCompressionInfo] = useState<string | null>(null);
 
   // Profile fields
   const [name, setName] = useState(currentUser.name ?? "");

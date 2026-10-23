@@ -25,7 +25,6 @@ import { toast } from "sonner";
 import {
   Building2,
   Camera,
-  CheckCircle2,
   FileSignature,
   Loader2,
   Lock,

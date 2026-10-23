@@ -7,11 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import {
   ShoppingCart,
   Layers,
-  Clock,
   CheckCircle2,
-  Truck,
   Package,
-  XCircle,
   PlusCircle,
   ArrowRight,
   Loader2,

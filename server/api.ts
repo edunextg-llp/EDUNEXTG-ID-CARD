@@ -19,18 +19,17 @@ import {
   removedCardsHistory,
   type User,
   type Order,
-  type RemovedCardHistory,
 } from "../drizzle/schema";
 import { getDb } from "./db";
 import { ENV } from "./_core/env";
 import { checkAccountLockout, recordAccountLoginFailure, resetAccountLoginFailure } from "./_core/rateLimit";
 import { authenticateApplicationRequest, clearApplicationSession, createPasswordReset, hashPassword, loginUser, resetPassword, setApplicationSession, signApplicationSession, verifyPassword } from "./appAuth";
 import { generateSingleCardPdf, generateBulkCardPdf, type CardPdfData, type PrintPdfOptions } from "./pdf";
-import { isValidIndianMobileNumber, INDIAN_MOBILE_ERROR_MESSAGE } from "../shared/types";
+import { isValidIndianMobileNumber, INDIAN_MOBILE_ERROR_MESSAGE } from "../shared/phoneValidation";
 import { generateExampleExcelBuffer, parseExcelBuffer } from "./excel";
 import { getAvailableDynamicFields } from "../shared/templateDesigner";
 import { DEFAULT_TEMPLATE_CARD_SIZE } from "../shared/printLayout";
-import { HOOK_TYPES, CARD_MATERIALS, ORDER_TYPES, PRINT_SIDES, ORDER_STATUSES, type OrderStatus } from "../shared/orders";
+import { HOOK_TYPES, CARD_MATERIALS, ORDER_TYPES, PRINT_SIDES, ORDER_STATUSES } from "../shared/orders";
 import { processBulkPhotoUpload, BulkPhotoError } from "./bulkPhotos";
 import { detectImageMimeType } from "./imageValidation";
 import { sanitizeForAudit } from "./auditSanitize";
@@ -42,7 +41,6 @@ const schoolManagerRoles = new Set(["SUPER_ADMIN", "SCHOOL_ADMIN"]);
 const schoolWriteRoles = new Set(["SUPER_ADMIN", "SCHOOL_ADMIN", "SCHOOL_OPERATOR"]);
 const partnerRoles = new Set(["PARTNER", "PARTNER_ADMIN", "MARKETING_ADMIN"]);
 const schoolCreateRoles = new Set(["SUPER_ADMIN", "PARTNER", "PARTNER_ADMIN", "MARKETING_ADMIN"]);
-const marketingRoles = partnerRoles;
 const orderRoles = new Set(["SUPER_ADMIN", "SCHOOL_ADMIN", "PARTNER", "PARTNER_ADMIN", "MARKETING_ADMIN"]);
 const profileRoles = new Set(["SUPER_ADMIN", "PARTNER", "PARTNER_ADMIN", "MARKETING_ADMIN"]);
 
@@ -483,7 +481,6 @@ router.post("/schools", requireRole(schoolCreateRoles), async (req, res) => {
     if (rawPhone && !isValidIndianMobileNumber(rawPhone, false)) {
       return res.status(400).json({ error: INDIAN_MOBILE_ERROR_MESSAGE });
     }
-    const phone = rawPhone ? rawPhone.replace(/\D/g, "").slice(-10) : null;
 
     let createdSchool: any;
     let credentials: any;
@@ -2932,24 +2929,6 @@ router.get("/audit-logs", async (req, res) => {
     if (!db) return res.status(503).json({ error: "Database not available" });
     const user = currentUser(res);
 
-    const baseSelect = {
-      id: auditLogs.id,
-      userId: auditLogs.userId,
-      userName: users.name,
-      userEmail: users.email,
-      userRole: users.role,
-      schoolId: auditLogs.schoolId,
-      schoolName: schools.name,
-      schoolCode: schools.shortCode,
-      action: auditLogs.action,
-      entityType: auditLogs.entityType,
-      entityId: auditLogs.entityId,
-      newValues: auditLogs.newValues,
-      oldValues: auditLogs.oldValues,
-      ipAddress: auditLogs.ipAddress,
-      createdAt: auditLogs.createdAt,
-    };
-
     let logEntries: any[] = [];
     if (adminRoles.has(user.role)) {
       if (req.query.schoolId) {
@@ -3864,14 +3843,6 @@ router.post("/orders", requireRole(orderRoles), async (req, res) => {
 
     if (!isValidIndianMobileNumber(contactPhone, false)) {
       return res.status(400).json({ error: INDIAN_MOBILE_ERROR_MESSAGE });
-    }
-
-    let parsedNeededByDate: Date | null = null;
-    if (neededByDate) {
-      const d = new Date(String(neededByDate));
-      if (!isNaN(d.getTime())) {
-        parsedNeededByDate = d;
-      }
     }
 
     let createdOrder: Order;

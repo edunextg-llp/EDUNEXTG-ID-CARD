@@ -2,7 +2,6 @@ import "dotenv/config";
 import express from "express";
 import { createServer } from "http";
 import net from "net";
-import { registerOAuthRoutes } from "./oauth";
 import { registerStorageProxy } from "./storageProxy";
 import { apiRouter } from "../api";
 import { serveStatic, setupVite } from "./vite";
@@ -72,7 +71,6 @@ async function startServer() {
   configureBodyParsers(app);
 
   registerStorageProxy(app);
-  registerOAuthRoutes(app);
   app.use("/api", apiRouter);
   // Handle demo template aliases / redirects
   app.get(["/demo-templates", "/demo-templates/"], (_req, res) => {

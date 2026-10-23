@@ -10,7 +10,7 @@ import PublicLayout from "@/components/PublicLayout";
 type LoginPortal = "admin" | "school" | "partner";
 
 export default function Login() {
-  const [location, navigate] = useLocation();
+  const [, navigate] = useLocation();
   const [selectedPortal, setSelectedPortal] = useState<LoginPortal>(() => {
     if (typeof window !== "undefined") {
       const path = window.location.pathname;

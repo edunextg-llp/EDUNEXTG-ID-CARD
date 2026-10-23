@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState } from "react";
 import { api, type ApiOrder, type ApiAuthUser, type ApiSchool } from "@/lib/api";
 import {
   ORDER_STATUSES,
@@ -6,7 +6,7 @@ import {
   getOrderStatusMeta,
   type OrderStatus,
 } from "@shared/orders";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -28,26 +28,16 @@ import {
 } from "@/components/ui/dialog";
 import {
   Search,
-  Filter,
   PlusCircle,
-  Calendar,
   Building2,
-  CheckCircle2,
-  XCircle,
-  Clock,
-  Package,
-  Truck,
   RotateCcw,
   Loader2,
   Eye,
   Ban,
-  ArrowUpDown,
   ChevronLeft,
   ChevronRight,
   User,
   Phone,
-  MapPin,
-  FileText,
 } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
@@ -66,7 +56,6 @@ export default function OrderListView({
   initialSelectedOrder,
 }: OrderListViewProps) {
   const isSuperAdmin = user.role === "SUPER_ADMIN";
-  const isMarketingAdmin = user.role === "PARTNER" || user.role === "PARTNER_ADMIN" || user.role === "MARKETING_ADMIN";
   const isSchoolAdmin = user.role === "SCHOOL_ADMIN";
 
   // Data states

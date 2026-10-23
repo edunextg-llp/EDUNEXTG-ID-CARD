@@ -238,7 +238,66 @@ async function renderCardSide(
 
         // Apply image shape clipping
         const shape = (c as any).imageShape ?? "square";
-        if (shape === "circle") {
+        const border = c.borderColor || null;
+        const borderWidth = c.borderWidth || 0;
+
+        const POLYGON_PDF_POINTS: Record<string, [number, number][]> = {
+          pentagon: [
+            [x + w * 0.5, y],
+            [x + w, y + h * 0.38],
+            [x + w * 0.82, y + h],
+            [x + w * 0.18, y + h],
+            [x, y + h * 0.38],
+          ],
+          hexagon: [
+            [x + w * 0.5, y],
+            [x + w, y + h * 0.25],
+            [x + w, y + h * 0.75],
+            [x + w * 0.5, y + h],
+            [x, y + h * 0.75],
+            [x, y + h * 0.25],
+          ],
+          octagon: [
+            [x + w * 0.3, y],
+            [x + w * 0.7, y],
+            [x + w, y + h * 0.3],
+            [x + w, y + h * 0.7],
+            [x + w * 0.7, y + h],
+            [x + w * 0.3, y + h],
+            [x, y + h * 0.7],
+            [x, y + h * 0.3],
+          ],
+          shield: [
+            [x, y],
+            [x + w, y],
+            [x + w, y + h * 0.65],
+            [x + w * 0.5, y + h],
+            [x, y + h * 0.65],
+          ],
+          diamond: [
+            [x + w * 0.5, y],
+            [x + w, y + h * 0.5],
+            [x + w * 0.5, y + h],
+            [x, y + h * 0.5],
+          ],
+          star: [
+            [x + w * 0.5, y],
+            [x + w * 0.61, y + h * 0.35],
+            [x + w * 0.98, y + h * 0.35],
+            [x + w * 0.68, y + h * 0.57],
+            [x + w * 0.79, y + h * 0.91],
+            [x + w * 0.5, y + h * 0.7],
+            [x + w * 0.21, y + h * 0.91],
+            [x + w * 0.32, y + h * 0.57],
+            [x + w * 0.02, y + h * 0.35],
+            [x + w * 0.39, y + h * 0.35],
+          ],
+        };
+
+        const polyPoints = POLYGON_PDF_POINTS[shape];
+        if (polyPoints) {
+          doc.polygon(...polyPoints).clip();
+        } else if (shape === "circle") {
           const radius = Math.min(w, h) / 2;
           doc.circle(x + w / 2, y + h / 2, radius).clip();
         } else if (shape === "rounded") {
@@ -271,6 +330,23 @@ async function renderCardSide(
             // Keep non-photo image placeholders neutral and free of labels.
             doc.rect(x, y, w, h).fill("#f3f4f6");
           }
+        }
+
+        if (border && borderWidth > 0) {
+          doc.save();
+          doc.lineWidth(borderWidth).strokeColor(border);
+          if (polyPoints) {
+            doc.polygon(...polyPoints).stroke();
+          } else if (shape === "circle") {
+            const radius = Math.min(w, h) / 2;
+            doc.circle(x + w / 2, y + h / 2, radius).stroke();
+          } else if (shape === "rounded") {
+            const r = Math.min(w, h) * 0.16;
+            doc.roundedRect(x, y, w, h, r).stroke();
+          } else if (shape === "ellipse") {
+            doc.ellipse(x + w / 2, y + h / 2, w / 2, h / 2).stroke();
+          }
+          doc.restore();
         }
         break;
       }

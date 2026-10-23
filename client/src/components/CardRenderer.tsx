@@ -139,7 +139,40 @@ function RenderElement({
       // Apply image shape clipping
       const shapeStyle: React.CSSProperties = {};
       const shape = c.imageShape ?? "square";
-      if (shape === "circle") {
+
+      const POLYGON_SHAPES: Record<string, { clipPath: string; svgPoints: string }> = {
+        pentagon: {
+          clipPath: "polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%)",
+          svgPoints: "50,0 100,38 82,100 18,100 0,38",
+        },
+        hexagon: {
+          clipPath: "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)",
+          svgPoints: "50,0 100,25 100,75 50,100 0,75 0,25",
+        },
+        octagon: {
+          clipPath: "polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%)",
+          svgPoints: "30,0 70,0 100,30 100,70 70,100 30,100 0,70 0,30",
+        },
+        shield: {
+          clipPath: "polygon(0% 0%, 100% 0%, 100% 65%, 50% 100%, 0% 65%)",
+          svgPoints: "0,0 100,0 100,65 50,100 0,65",
+        },
+        diamond: {
+          clipPath: "polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)",
+          svgPoints: "50,0 100,50 50,100 0,50",
+        },
+        star: {
+          clipPath: "polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)",
+          svgPoints: "50,0 61,35 98,35 68,57 79,91 50,70 21,91 32,57 2,35 39,35",
+        },
+      };
+
+      const polyDef = POLYGON_SHAPES[shape];
+      if (polyDef) {
+        shapeStyle.clipPath = polyDef.clipPath;
+        shapeStyle.borderRadius = 0;
+        shapeStyle.border = "none";
+      } else if (shape === "circle") {
         shapeStyle.borderRadius = "50%";
       } else if (shape === "rounded") {
         shapeStyle.borderRadius = "16%";
@@ -179,6 +212,26 @@ function RenderElement({
                     : "🖼 Image"}
             </div>
           )}
+          {polyDef && c.borderWidth && c.borderColor ? (
+            <svg
+              viewBox="0 0 100 100"
+              preserveAspectRatio="none"
+              style={{
+                position: "absolute",
+                inset: 0,
+                width: "100%",
+                height: "100%",
+                pointerEvents: "none",
+              }}
+            >
+              <polygon
+                points={polyDef.svgPoints}
+                fill="none"
+                stroke={c.borderColor}
+                strokeWidth={c.borderWidth * 2}
+              />
+            </svg>
+          ) : null}
         </div>
       );
     }

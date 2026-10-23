@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { useTheme, type ThemePreference } from "@/contexts/ThemeContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -15,9 +15,8 @@ interface SettingsSectionProps {
   portal?: "admin" | "school" | "partner" | "marketing";
 }
 
-export default function SettingsSection({ user, portal = "admin" }: SettingsSectionProps) {
+export default function SettingsSection({ portal = "admin" }: SettingsSectionProps) {
   const { preference, theme, setPreference } = useTheme();
-  const isAdmin = portal === "admin" || user?.role === "SUPER_ADMIN";
 
   const themeOptions: Array<{
     id: ThemePreference;

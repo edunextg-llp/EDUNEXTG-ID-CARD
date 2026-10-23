@@ -7,10 +7,9 @@ import DeleteSchoolDialog from "@/components/DeleteSchoolDialog";
 import ExcelUploadModal from "@/components/ExcelUploadModal";
 import BulkImageUploadModal from "@/components/BulkImageUploadModal";
 import ApprovalTimeline from "@/components/ApprovalTimeline";
-import { DYNAMIC_FIELDS, SAMPLE_CARD_DATA, SAMPLE_STAFF_CARD_DATA, type DesignerElement } from "@shared/templateDesigner";
+import { DYNAMIC_FIELDS, SAMPLE_CARD_DATA, SAMPLE_STAFF_CARD_DATA } from "@shared/templateDesigner";
 import {
   type LucideIcon,
-  AlertCircle,
   AlertTriangle,
   ArrowUpRight,
   BookOpenCheck,
@@ -27,15 +26,12 @@ import {
   FileEdit,
   FilePlus2,
   FileText,
-  Filter,
   Grid2X2,
   Info,
   KeyRound,
   LayoutDashboard,
-  Loader2,
   LogOut,
   Menu,
-  MoreHorizontal,
   MoreVertical,
   Palette,
   Printer,
@@ -44,7 +40,6 @@ import {
   Search,
   Send,
   Settings2,
-  ShieldCheck,
   SlidersHorizontal,
   Sparkles,
   Trash2,
@@ -54,8 +49,6 @@ import {
   X,
   XCircle,
   ShoppingCart,
-  Bell,
-  Package,
   Handshake,
 } from "lucide-react";
 import SuperAdminProfileDialog from "@/components/SuperAdminProfileDialog";
@@ -119,8 +112,6 @@ import {
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
 import {
-  isValidIndianMobileNumber,
-  INDIAN_MOBILE_ERROR_MESSAGE,
   INDIAN_MOBILE_PLACEHOLDER,
 } from "@shared/phoneValidation";
 
@@ -391,7 +382,6 @@ export default function Home({
             "Orders",
           ].includes(label),
         );
-  const [query, setQuery] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [filter, setFilter] = useState<"All" | "Pending" | "Changes required" | "Rejected">(
     "All",
@@ -598,11 +588,6 @@ export default function Home({
     return approvals.filter((item) => item.schoolId === activeSchoolId);
   }, [approvals, activeSchoolId]);
 
-  const schoolIdCards = useMemo(() => {
-    if (!activeSchoolId) return idCards;
-    return idCards.filter((card) => card.schoolId === activeSchoolId);
-  }, [idCards, activeSchoolId]);
-
   const pendingRequests = useMemo(
     () => schoolApprovals.filter((item) => item.status !== "APPROVED" && item.status !== "PRINTED"),
     [schoolApprovals],
@@ -628,12 +613,6 @@ export default function Home({
           }
           return true;
         })
-        .filter(
-          (item) =>
-            item.studentName.toLowerCase().includes(query.toLowerCase()) ||
-            item.schoolName.toLowerCase().includes(query.toLowerCase()) ||
-            (item.admissionCode && item.admissionCode.toLowerCase().includes(query.toLowerCase())),
-        )
         .map((item, index) => ({
           ...item,
           initials: initialsFor(item.studentName),
@@ -642,7 +621,7 @@ export default function Home({
             ? formatDistanceToNow(new Date(item.submittedAt), { addSuffix: true })
             : "Not submitted",
         })),
-    [pendingRequests, query, filter],
+    [pendingRequests, filter],
   );
 
   const approve = async (id: number, name: string) => {
@@ -3951,7 +3930,6 @@ function ModuleView({
     return approvedCards.slice(start, start + APPROVED_PAGE_SIZE);
   }, [approvedCards, approvedPage]);
 
-  const allApprovedCardIds = useMemo(() => approvedCards.map((c) => c.id), [approvedCards]);
   const allRequestCardIds = useMemo(() => requestCards.map((c) => c.id), [requestCards]);
 
   const filteredUsers = useMemo(() => {

@@ -30,15 +30,10 @@ import {
 import { toast } from "sonner";
 import {
   Building2,
-  Calendar,
   CreditCard,
-  Hash,
   Loader2,
   MapPin,
-  Phone,
   Send,
-  User,
-  CheckCircle2,
   ArrowLeft,
 } from "lucide-react";
 
