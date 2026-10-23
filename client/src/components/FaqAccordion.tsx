@@ -9,18 +9,6 @@ export interface FaqItem {
 
 export const DEFAULT_FAQ_ITEMS: FaqItem[] = [
   {
-    id: "turnaround-time",
-    question: "What is your turnaround time for ID card printing and dispatch?",
-    answer:
-      "Standard school ID card orders typically print and dispatch within 3–5 business days following final digital proof approval. For peak academic re-opening periods or urgent requirements, expedited scheduling is available [FILL IN: specific rush turnaround options and cutoff deadlines].",
-  },
-  {
-    id: "minimum-order-quantity",
-    question: "What is the minimum order quantity (MOQ) for institutional orders?",
-    answer:
-      "We cater to institutions of all sizes, with minimum batch orders starting at [FILL IN: minimum order quantity, e.g., 25 or 50 cards]. Supplemental admissions and mid-session re-orders can be processed in smaller counts.",
-  },
-  {
     id: "photo-requirements",
     question: "What photo specifications and formats do you require?",
     answer:
@@ -33,16 +21,10 @@ export const DEFAULT_FAQ_ITEMS: FaqItem[] = [
       "Yes. Our platform provides a standardized downloadable Excel (.xlsx) template. Administrators can paste student names, classes, roll numbers, blood groups, and guardian emergency contacts for instant bulk upload and automated preview generation.",
   },
   {
-    id: "reprints-and-corrections",
-    question: "How are mid-year reprints and data corrections managed?",
-    answer:
-      "Replacements for damaged or lost cards, updated photos, or transfer students can be submitted directly through the portal or via our support team. Batch reprints follow [FILL IN: reprint policy, replacement fee schedule, and turnaround].",
-  },
-  {
     id: "delivery-areas",
     question: "Which delivery areas and states across India do you serve?",
     answer:
-      "We provide pan-India delivery across all states and union territories via reputed logistics partners with real-time tracking [FILL IN: specific regional transit durations and delivery partners].",
+      "We provide pan-India delivery across all states and union territories via reputed logistics partners with real-time tracking.",
   },
 ];
 
@@ -63,7 +45,7 @@ export default function FaqAccordion({
 }: FaqAccordionProps) {
   const baseId = useId();
   // Store either a single open ID or a set of open IDs
-  const [openIds, setOpenIds] = useState<string[]>(["turnaround-time"]);
+  const [openIds, setOpenIds] = useState<string[]>(() => (items[0]?.id ? [items[0].id] : []));
 
   const toggleItem = (id: string) => {
     if (allowMultiple) {

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useSmoothScroll, getLenis } from "@/hooks/useSmoothScroll";
 import { Link, useLocation } from "wouter";
 import {
   ShieldCheck,
@@ -22,17 +23,30 @@ export const PUBLIC_NAV_LINKS = [
 interface PublicLayoutProps {
   children: React.ReactNode;
   activePath?: string;
+  /** Set false on portal pages (e.g. Login) that share this layout but must not get Lenis. */
+  enableSmoothScroll?: boolean;
 }
 
-export default function PublicLayout({ children, activePath }: PublicLayoutProps) {
+export default function PublicLayout({ children, activePath, enableSmoothScroll = true }: PublicLayoutProps) {
   const [location] = useLocation();
   const currentPath = activePath || location;
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
-  // 1. Scroll to top on route change
+  // Lenis smooth scrolling (only on true public pages, not login)
+  if (enableSmoothScroll) {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    useSmoothScroll();
+  }
+
+  // 1. Scroll to top on route change (Lenis-aware)
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: "instant" });
+    const lenis = getLenis();
+    if (lenis) {
+      lenis.scrollTo(0, { immediate: true });
+    } else {
+      window.scrollTo(0, 0);
+    }
   }, [currentPath]);
 
   // 2. Track window scroll for sticky header shrinkage and soft shadow
@@ -45,15 +59,17 @@ export default function PublicLayout({ children, activePath }: PublicLayoutProps
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // 3. Body scroll lock when mobile drawer is open
+  // 3. Body scroll lock when mobile drawer is open (+ Lenis stop/start)
   useEffect(() => {
     if (mobileMenuOpen) {
       const scrollY = window.scrollY;
       document.body.style.overflow = "hidden";
       document.body.style.touchAction = "none";
+      getLenis()?.stop();
       return () => {
         document.body.style.overflow = "";
         document.body.style.touchAction = "";
+        getLenis()?.start();
         window.scrollTo(0, scrollY);
       };
     }
@@ -150,6 +166,7 @@ export default function PublicLayout({ children, activePath }: PublicLayoutProps
         <nav
           className={`lp-mobile-nav ${mobileMenuOpen ? "open" : ""}`}
           aria-label="Mobile navigation"
+          data-lenis-prevent
         >
           {PUBLIC_NAV_LINKS.map((link) => (
             <Link

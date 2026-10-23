@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback, useRef } from "react";
+import { useSmoothScroll, getLenis } from "@/hooks/useSmoothScroll";
 import { Link } from "wouter";
 import {
   ShieldCheck,
@@ -91,10 +92,10 @@ const WHY_FEATURES = [
    Stats data (Real institutional figures from codebase)
    ─────────────────────────────────────────── */
 const STATS = [
-  { icon: School, target: 500, suffix: "+", label: "Schools Served" },
-  { icon: Users, target: 1000, suffix: "+", label: "Happy Clients" },
-  { icon: PackageCheck, target: 100, suffix: "+", label: "Orders Completed" },
-  { icon: Award, target: 10, suffix: "+", label: "Years in Business" },
+  { icon: School, target: 100, suffix: "+", label: "Schools Served" },
+  { icon: Users, target: 500, suffix: "+", label: "Happy Clients" },
+  { icon: PackageCheck, target: 1000, suffix: "+", label: "Orders Completed" },
+  { icon: Award, target: 5, suffix: "+", label: "Years in Business" },
 ] as const;
 
 /* ───────────────────────────────────────────
@@ -124,12 +125,14 @@ export default function Landing() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [scrolled, setScrolled] = useState(false);
 
+  // Lenis smooth scrolling for public pages
+  useSmoothScroll();
+
   // Reveal-on-scroll section hooks
   const clientsReveal = useRevealOnScroll<HTMLElement>();
   const productsReveal = useRevealOnScroll<HTMLElement>();
   const whyReveal = useRevealOnScroll<HTMLElement>();
   const statsReveal = useRevealOnScroll<HTMLElement>();
-  const bannerReveal = useRevealOnScroll<HTMLElement>();
 
   // Touch swipe support for Hero Carousel
   const touchStartXRef = useRef<number | null>(null);
@@ -177,25 +180,32 @@ export default function Landing() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  /* ── Set document title & scroll to top ── */
+  /* ── Set document title & scroll to top (Lenis-aware) ── */
   useEffect(() => {
     const prev = document.title;
     document.title = "Insight Education · ID Cards & Lanyard Solutions";
-    window.scrollTo({ top: 0, behavior: "instant" });
+    const lenis = getLenis();
+    if (lenis) {
+      lenis.scrollTo(0, { immediate: true });
+    } else {
+      window.scrollTo(0, 0);
+    }
     return () => {
       document.title = prev;
     };
   }, []);
 
-  /* ── Body scroll lock when mobile menu is open ── */
+  /* ── Body scroll lock when mobile menu is open (+ Lenis stop/start) ── */
   useEffect(() => {
     if (mobileMenuOpen) {
       const scrollY = window.scrollY;
       document.body.style.overflow = "hidden";
       document.body.style.touchAction = "none";
+      getLenis()?.stop();
       return () => {
         document.body.style.overflow = "";
         document.body.style.touchAction = "";
+        getLenis()?.start();
         window.scrollTo(0, scrollY);
       };
     }
@@ -210,7 +220,7 @@ export default function Landing() {
     return () => window.removeEventListener("resize", onResize);
   }, []);
 
-  /* ── Smooth-scroll click handler for anchors ── */
+  /* ── Smooth-scroll click handler for anchors (Lenis-aware) ── */
   const handleNavClick = useCallback(
     (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
       e.preventDefault();
@@ -218,7 +228,12 @@ export default function Landing() {
       const id = href.replace("#", "");
       const el = document.getElementById(id);
       if (el) {
-        el.scrollIntoView({ behavior: "smooth", block: "start" });
+        const lenis = getLenis();
+        if (lenis) {
+          lenis.scrollTo(el);
+        } else {
+          el.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
       }
       setActiveSection(id);
     },
@@ -311,6 +326,7 @@ export default function Landing() {
         <nav
           className={`lp-mobile-nav ${mobileMenuOpen ? "open" : ""}`}
           aria-label="Mobile navigation"
+          data-lenis-prevent
         >
           {NAV_LINKS.map((link) => (
             link.href === "/" ? (
@@ -541,46 +557,6 @@ export default function Landing() {
           </div>
         </section>
 
-        {/* ════════════ CUSTOM REQUIREMENT BANNER ════════════ */}
-        <section
-          className={`lp-banner-section lp-reveal-on-scroll ${bannerReveal.revealed ? "is-revealed" : ""}`}
-          ref={bannerReveal.ref}
-        >
-          <div className="lp-container">
-            <div className="lp-banner-row">
-              <div className="lp-custom-banner">
-                <div className="lp-custom-banner-text">
-                  <h3 className="font-heading">
-                    Designed According to
-                    <br />
-                    <span className="highlight-green">Your Requirement</span>
-                  </h3>
-                  <p>
-                    Choose your card design, holder, ribbon, colour, clamp and finishing according to your
-                    institution's requirements.
-                  </p>
-                  <Link
-                    href="/contact-us"
-                    className="lp-banner-cta"
-                    onMouseEnter={() => prefetchRoute("/contact-us")}
-                    onTouchStart={() => prefetchRoute("/contact-us")}
-                  >
-                    Get Customized Now <ArrowRight size={16} />
-                  </Link>
-                </div>
-                <div className="lp-banner-image">
-                  <img
-                    src="/home/banner-products.jpg"
-                    alt="Custom ID card products showcase"
-                    loading="lazy"
-                    width={500}
-                    height={280}
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
         {/* ════════════ FREQUENTLY ASKED QUESTIONS ════════════ */}
         <FaqAccordion />
       </main>

@@ -112,7 +112,7 @@ export default function Login() {
   }
 
   return (
-    <PublicLayout activePath="/login">
+    <PublicLayout activePath="/login" enableSmoothScroll={false}>
       <section className="lp-login-section">
         <div className="lp-login-container">
           {/* Institutional Brand Showcase (Desktop) */}
