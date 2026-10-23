@@ -10,6 +10,7 @@ import {
   timestamp,
   uniqueIndex,
   varchar,
+  type AnyMySqlColumn,
 } from "drizzle-orm/mysql-core";
 import { relations } from "drizzle-orm";
 
@@ -47,7 +48,7 @@ export const users = mysqlTable(
     passwordHash: varchar("passwordHash", { length: 255 }),
     loginMethod: varchar("loginMethod", { length: 64 }),
     role: mysqlEnum("role", userRoleValues).default("VIEWER").notNull(),
-    schoolId: int("schoolId").references(() => schools.id, { onDelete: "set null", onUpdate: "cascade" }),
+    schoolId: int("schoolId").references((): AnyMySqlColumn => schools.id, { onDelete: "set null", onUpdate: "cascade" }),
     phone: varchar("phone", { length: 32 }),
     avatarUrl: longtext("avatarUrl"),
     isActive: boolean("isActive").default(true).notNull(),
@@ -58,17 +59,22 @@ export const users = mysqlTable(
   (table) => [index("users_schoolId_idx").on(table.schoolId), index("users_role_idx").on(table.role)],
 );
 
-export const schools = mysqlTable("schools", {
-  id: int("id").autoincrement().primaryKey(),
-  name: varchar("name", { length: 191 }).notNull(),
-  shortCode: varchar("shortCode", { length: 16 }).notNull().unique(),
-  email: varchar("email", { length: 320 }),
-  phone: varchar("phone", { length: 32 }),
-  address: text("address"),
-  isActive: boolean("isActive").default(true).notNull(),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-});
+export const schools = mysqlTable(
+  "schools",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    name: varchar("name", { length: 191 }).notNull(),
+    shortCode: varchar("shortCode", { length: 16 }).notNull().unique(),
+    email: varchar("email", { length: 320 }),
+    phone: varchar("phone", { length: 32 }),
+    address: text("address"),
+    isActive: boolean("isActive").default(true).notNull(),
+    createdByUserId: int("createdByUserId").references((): AnyMySqlColumn => users.id, { onDelete: "set null", onUpdate: "cascade" }),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  },
+  (table) => [index("schools_createdByUserId_idx").on(table.createdByUserId)],
+);
 
 export const templateOrientationValues = ["portrait", "landscape"] as const;
 export const cardTypeValues = ["student", "staff"] as const;

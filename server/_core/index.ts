@@ -2,16 +2,14 @@ import "dotenv/config";
 import express from "express";
 import { createServer } from "http";
 import net from "net";
-import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { registerOAuthRoutes } from "./oauth";
 import { registerStorageProxy } from "./storageProxy";
-import { appRouter } from "../routers";
 import { apiRouter } from "../api";
-import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
 import { assertDatabaseReady, checkDatabaseConnection, closeDb } from "../db";
 import { ENV, validateRuntimeEnvironment } from "./env";
 import { createRateLimiter } from "./rateLimit";
+import { configureBodyParsers } from "./bodyParserConfig";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -50,6 +48,14 @@ async function startServer() {
     }
     res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
     res.setHeader("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
+
+    if (process.env.NODE_ENV === "production") {
+      res.setHeader("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
+    }
+    res.setHeader(
+      "Content-Security-Policy-Report-Only",
+      "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' ws: wss:; frame-ancestors 'self';"
+    );
     next();
   });
   app.get("/healthz", (_req, res) => res.json({ ok: true }));
@@ -57,21 +63,28 @@ async function startServer() {
     const database = await checkDatabaseConnection();
     res.status(database ? 200 : 503).json({ ok: database, database });
   });
-  app.use(express.json({ limit: "50mb" }));
-  app.use(express.urlencoded({ limit: "50mb", extended: true }));
+  // Rate limit auth endpoints before reading/parsing request bodies
   app.use("/api/auth/login", createRateLimiter({ windowMs: 15 * 60 * 1000, max: 50 }));
   app.use("/api/auth/forgot-password", createRateLimiter({ windowMs: 60 * 60 * 1000, max: 5 }));
   app.use("/api/auth/reset-password", createRateLimiter({ windowMs: 60 * 60 * 1000, max: 10 }));
+
+  // Request body size limits: 50mb on upload/file/photo/template routes, 100kb globally
+  configureBodyParsers(app);
+
   registerStorageProxy(app);
   registerOAuthRoutes(app);
   app.use("/api", apiRouter);
-  app.use("/api/trpc", createExpressMiddleware({ router: appRouter, createContext }));
   // Handle demo template aliases / redirects
   app.get(["/demo-templates", "/demo-templates/"], (_req, res) => {
     res.redirect(301, "/demo-templates/Update-Catalog-ID-Card-and-Ribbon.pdf");
   });
   app.get("/demo-templates/*", (req, res, next) => {
-    const rawPath = decodeURIComponent(req.path);
+    let rawPath: string;
+    try {
+      rawPath = decodeURIComponent(req.path);
+    } catch {
+      return res.status(400).json({ error: "Malformed URI encoding in request path" });
+    }
     if (rawPath.toLowerCase().includes("catalog") && req.path !== "/demo-templates/Update-Catalog-ID-Card-and-Ribbon.pdf") {
       return res.redirect(301, "/demo-templates/Update-Catalog-ID-Card-and-Ribbon.pdf");
     }

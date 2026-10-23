@@ -76,7 +76,9 @@ export default function FaqAccordion({
       {/* Schema.org FAQPage JSON-LD */}
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(faqSchema).replace(/</g, "\\u003c"),
+        }}
       />
 
       <div className="lp-container">

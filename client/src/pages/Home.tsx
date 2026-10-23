@@ -698,13 +698,17 @@ export default function Home({
   };
 
   const handleEditSchool = (school: ApiSchool) => {
-    if (
-      authenticatedUser.role !== "SUPER_ADMIN" &&
-      authenticatedUser.role !== "PARTNER" &&
-      (authenticatedUser.role as string) !== "PARTNER_ADMIN" &&
-      (authenticatedUser.role as string) !== "MARKETING_ADMIN"
-    ) {
+    const isSuperAdmin = authenticatedUser.role === "SUPER_ADMIN";
+    const isPartner =
+      authenticatedUser.role === "PARTNER" ||
+      (authenticatedUser.role as string) === "PARTNER_ADMIN" ||
+      (authenticatedUser.role as string) === "MARKETING_ADMIN";
+
+    if (!isSuperAdmin && !isPartner) {
       return toast.error("Only Administrators and Partners can edit schools");
+    }
+    if (isPartner && school.createdByUserId !== authenticatedUser.id) {
+      return toast.error("You can only edit schools created by your account");
     }
     setEditingSchool(school);
     setSchoolNameInput(school.name);
@@ -809,13 +813,17 @@ export default function Home({
     }
     try {
       if (editingSchool) {
-        const updated = await api.schools.update(editingSchool.id, {
+        const isSuperAdmin = authenticatedUser.role === "SUPER_ADMIN";
+        const updatePayload: Partial<ApiSchool> = {
           name: schoolNameInput.trim(),
           shortCode: schoolCodeInput.trim().toUpperCase(),
-          email: schoolEmailInput.trim() || null,
           phone: schoolPhoneInput.trim() || null,
           address: schoolAddressInput.trim() || null,
-        });
+        };
+        if (isSuperAdmin) {
+          updatePayload.email = schoolEmailInput.trim() || null;
+        }
+        const updated = await api.schools.update(editingSchool.id, updatePayload);
         setSchools((items) => items.map((s) => (s.id === updated.id ? updated : s)));
         setSchoolModalOpen(false);
         setEditingSchool(null);
@@ -2598,7 +2606,7 @@ export default function Home({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="text-xs font-bold text-foreground">
-                    Contact Email
+                    Contact Email{editingSchool && authenticatedUser.role !== "SUPER_ADMIN" ? " (Admin only)" : ""}
                   </label>
                   <Input
                     type="email"
@@ -2606,6 +2614,7 @@ export default function Home({
                     placeholder="admin@school.edu"
                     value={schoolEmailInput}
                     onChange={(e) => setSchoolEmailInput(e.target.value)}
+                    disabled={Boolean(editingSchool && authenticatedUser.role !== "SUPER_ADMIN")}
                   />
                 </div>
                 <div>

@@ -14,11 +14,10 @@ if (!databaseUrl) {
 const adminEmail = (process.env.SEED_ADMIN_EMAIL ?? "admin@edunextg.com")
   .trim()
   .toLowerCase();
-const adminPassword = process.env.SEED_ADMIN_PASSWORD ?? "Duronto321";
-
-if (process.env.NODE_ENV === "production" && !process.env.SEED_ADMIN_PASSWORD) {
+const adminPassword = process.env.SEED_ADMIN_PASSWORD;
+if (!adminPassword || adminPassword.length < 12) {
   throw new Error(
-    "SEED_ADMIN_PASSWORD must be explicitly set when setting up a production database",
+    "SEED_ADMIN_PASSWORD environment variable is required and must be at least 12 characters.",
   );
 }
 

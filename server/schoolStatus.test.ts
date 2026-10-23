@@ -119,11 +119,13 @@ describe("School Active/Inactive Status & Access Gating Verification", () => {
       body: JSON.stringify({ username: schoolAdminOpenId, password: schoolAdminPassword }),
     });
     expect(loginRes.status).toBe(200);
-    const loginData = await loginRes.json();
-    expect(loginData.token).toBeDefined();
+    const setCookie = loginRes.headers.get("set-cookie");
+    expect(setCookie).toBeTruthy();
+    const token = setCookie?.split(";")[0]?.split("=")[1];
+    expect(token).toBeDefined();
 
     const meRes = await fetch(`${baseUrl}/api/auth/me`, {
-      headers: { Authorization: `Bearer ${loginData.token}` },
+      headers: { Authorization: `Bearer ${token}` },
     });
     expect(meRes.status).toBe(200);
     const meData = await meRes.json();
@@ -221,11 +223,13 @@ describe("School Active/Inactive Status & Access Gating Verification", () => {
       body: JSON.stringify({ username: schoolAdminOpenId, password: schoolAdminPassword }),
     });
     expect(loginRes.status).toBe(200);
-    const loginData = await loginRes.json();
-    expect(loginData.token).toBeDefined();
+    const setCookie = loginRes.headers.get("set-cookie");
+    expect(setCookie).toBeTruthy();
+    const token = setCookie?.split(";")[0]?.split("=")[1];
+    expect(token).toBeDefined();
 
     const meRes = await fetch(`${baseUrl}/api/auth/me`, {
-      headers: { Authorization: `Bearer ${loginData.token}` },
+      headers: { Authorization: `Bearer ${token}` },
     });
     expect(meRes.status).toBe(200);
     const meData = await meRes.json();

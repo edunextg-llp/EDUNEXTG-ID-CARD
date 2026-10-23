@@ -112,8 +112,10 @@ describe("Complete 16-Step End-to-End Real Workflow QA", () => {
     expect(loginRes.status).toBe(200);
     const data = await loginRes.json();
     expect(data.user.role).toBe("SUPER_ADMIN");
-    expect(data.token).toBeDefined();
-    adminToken = data.token;
+    const setCookie = loginRes.headers.get("set-cookie");
+    expect(setCookie).toBeTruthy();
+    adminToken = setCookie ? setCookie.split(";")[0].split("=")[1] : "";
+    expect(adminToken).toBeTruthy();
   });
 
   // 2. Create school
@@ -309,8 +311,10 @@ describe("Complete 16-Step End-to-End Real Workflow QA", () => {
     expect(data.user.email).toBe(schoolUserEmail);
     expect(data.user.role).toBe("SCHOOL_ADMIN");
     expect(data.user.schoolId).toBe(schoolId);
-    expect(data.token).toBeDefined();
-    schoolToken = data.token;
+    const setCookie = res.headers.get("set-cookie");
+    expect(setCookie).toBeTruthy();
+    schoolToken = setCookie ? setCookie.split(";")[0].split("=")[1] : "";
+    expect(schoolToken).toBeTruthy();
   });
 
   // 6. Select and lock template

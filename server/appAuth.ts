@@ -36,10 +36,19 @@ export async function verifyPassword(password: string, stored?: string | null): 
     return expected.length === actual.length && timingSafeEqual(expected, actual);
   }
   if (stored.includes(":")) {
-    const [salt, key] = stored.split(":");
+    const parts = stored.split(":");
+    if (parts.length !== 2) return false;
+    const [salt, key] = parts;
     if (!salt || !key) return false;
-    const derived = (await scrypt(password, salt, 64)) as Buffer;
-    return timingSafeEqual(Buffer.from(key, "hex"), derived);
+    if (!/^[0-9a-fA-F]+$/.test(key) || key.length % 2 !== 0) return false;
+    try {
+      const expected = Buffer.from(key, "hex");
+      const derived = (await scrypt(password, salt, 64)) as Buffer;
+      if (expected.length !== derived.length) return false;
+      return timingSafeEqual(expected, derived);
+    } catch {
+      return false;
+    }
   }
   return false;
 }
@@ -133,6 +142,9 @@ export function clearApplicationSession(res: Response) {
 }
 
 
+const DUMMY_SCRYPT_HASH =
+  "scrypt$00000000000000000000000000000000$00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
+
 export async function loginUser(identifier: string, password: string) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
@@ -152,7 +164,15 @@ export async function loginUser(identifier: string, password: string) {
         )
       )
   )[0];
-  if (!user || !user.isActive || !(await verifyPassword(password, user.passwordHash))) return null;
+
+  if (!user) {
+    // Run dummy scrypt verification so timing does not reveal which accounts exist
+    await verifyPassword(password, DUMMY_SCRYPT_HASH);
+    return null;
+  }
+
+  const passwordValid = await verifyPassword(password, user.passwordHash);
+  if (!passwordValid || !user.isActive) return null;
   if (user.schoolId && user.role !== "SUPER_ADMIN") {
     const school = (await db.select({ isActive: schools.isActive }).from(schools).where(eq(schools.id, user.schoolId)))[0];
     if (school && !school.isActive) {

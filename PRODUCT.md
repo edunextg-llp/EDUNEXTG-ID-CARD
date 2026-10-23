@@ -30,8 +30,8 @@ Unlike generic card design software or fragmented spreadsheets, Insight Educatio
 
 ## Capabilities and Constraints
 
-- **Stack**: React 19, TypeScript, Vite 7, Tailwind CSS v4, Radix UI, TanStack Query v5, Wouter, Express, tRPC v11, Drizzle ORM, MySQL.
-- **Verification & Formats**: Code128 barcodes, cryptographic QR codes, PDFKit/jsPDF export for CR80 PVC standards.
+- **Stack**: React 19, TypeScript, Vite 7, Tailwind CSS v4, Radix UI, TanStack Query v5, Wouter, Express, Drizzle ORM, MySQL.
+- **Verification & Formats**: Code128 barcodes, cryptographic QR codes, PDFKit export for CR80 PVC standards.
 - **Data & Assets**: Magic-byte MIME type inspection, automated image compression (<100KB), Excel roster parsers, ZIP archive photo auto-matching.
 - **Theming**: Zero-flash Light, Dark, and System appearance modes with dynamic theme-color synchronization.
 
@@ -44,8 +44,8 @@ Unlike generic card design software or fragmented spreadsheets, Insight Educatio
 ## Evidence on Hand
 
 - Complete running application codebase in `client/` and `server/`.
-- Architectural and feature documentation in [README.md](file:///c:/Users/EdunextgSERVER/Documents/EDUNEXTG-ID-CARD/README.md).
-- Relational schema in [drizzle/schema.ts](file:///c:/Users/EdunextgSERVER/Documents/EDUNEXTG-ID-CARD/drizzle/schema.ts).
+- Architectural and feature documentation in [README.md](./README.md).
+- Relational schema in [drizzle/schema.ts](./drizzle/schema.ts).
 
 ## Product Principles
 

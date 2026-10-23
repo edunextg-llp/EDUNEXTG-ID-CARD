@@ -16,6 +16,7 @@ export type ApiSchool = {
   phone: string | null;
   address: string | null;
   isActive: boolean;
+  createdByUserId?: number | null;
   selectedTemplateId?: number | null;
   selectedTemplateName?: string | null;
   templateSelectionStatus?: "Selected" | "Not Selected";

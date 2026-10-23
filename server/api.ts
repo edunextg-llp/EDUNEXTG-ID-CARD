@@ -31,7 +31,10 @@ import { generateExampleExcelBuffer, parseExcelBuffer } from "./excel";
 import { getAvailableDynamicFields } from "../shared/templateDesigner";
 import { DEFAULT_TEMPLATE_CARD_SIZE } from "../shared/printLayout";
 import { HOOK_TYPES, CARD_MATERIALS, ORDER_TYPES, PRINT_SIDES, ORDER_STATUSES, type OrderStatus } from "../shared/orders";
-import { processBulkPhotoUpload } from "./bulkPhotos";
+import { processBulkPhotoUpload, BulkPhotoError } from "./bulkPhotos";
+import { detectImageMimeType } from "./imageValidation";
+import { sanitizeForAudit } from "./auditSanitize";
+export { sanitizeForAudit };
 
 const router = Router();
 const adminRoles = new Set(["SUPER_ADMIN"]);
@@ -43,51 +46,6 @@ const marketingRoles = partnerRoles;
 const orderRoles = new Set(["SUPER_ADMIN", "SCHOOL_ADMIN", "PARTNER", "PARTNER_ADMIN", "MARKETING_ADMIN"]);
 const profileRoles = new Set(["SUPER_ADMIN", "PARTNER", "PARTNER_ADMIN", "MARKETING_ADMIN"]);
 
-function detectImageMimeType(buffer: Buffer): "image/png" | "image/jpeg" | "image/webp" | "image/gif" | null {
-  if (buffer.length < 12) return null;
-  // PNG: 89 50 4E 47 0D 0A 1A 0A
-  if (
-    buffer[0] === 0x89 &&
-    buffer[1] === 0x50 &&
-    buffer[2] === 0x4e &&
-    buffer[3] === 0x47 &&
-    buffer[4] === 0x0d &&
-    buffer[5] === 0x0a &&
-    buffer[6] === 0x1a &&
-    buffer[7] === 0x0a
-  ) {
-    return "image/png";
-  }
-  // JPEG: FF D8 FF
-  if (buffer[0] === 0xff && buffer[1] === 0xd8 && buffer[2] === 0xff) {
-    return "image/jpeg";
-  }
-  // GIF: GIF87a or GIF89a
-  if (
-    buffer[0] === 0x47 &&
-    buffer[1] === 0x49 &&
-    buffer[2] === 0x46 &&
-    buffer[3] === 0x38 &&
-    (buffer[4] === 0x37 || buffer[4] === 0x39) &&
-    buffer[5] === 0x61
-  ) {
-    return "image/gif";
-  }
-  // WEBP: RIFF....WEBP
-  if (
-    buffer[0] === 0x52 &&
-    buffer[1] === 0x49 &&
-    buffer[2] === 0x46 &&
-    buffer[3] === 0x46 &&
-    buffer[8] === 0x57 &&
-    buffer[9] === 0x45 &&
-    buffer[10] === 0x42 &&
-    buffer[11] === 0x50
-  ) {
-    return "image/webp";
-  }
-  return null;
-}
 
 function currentUser(res: Response) {
   return res.locals.user as User;
@@ -127,7 +85,15 @@ function requestedSchoolId(user: User, value: unknown) {
   return adminRoles.has(user.role) || partnerRoles.has(user.role) ? id : user.schoolId === id ? id : null;
 }
 
-async function audit(user: User, action: string, entityType: string, entityId: number | null, schoolId: number | null, newValues?: unknown) {
+async function audit(
+  user: User,
+  action: string,
+  entityType: string,
+  entityId: number | null,
+  schoolId: number | null,
+  newValues?: unknown,
+  oldValues?: unknown,
+) {
   const db = await getDb();
   if (!db) return;
   try {
@@ -143,7 +109,8 @@ async function audit(user: User, action: string, entityType: string, entityId: n
       actorRole: user.role,
       entityType,
       entityId,
-      newValues: newValues as never,
+      oldValues: oldValues !== undefined ? (sanitizeForAudit(oldValues) as never) : undefined,
+      newValues: newValues !== undefined ? (sanitizeForAudit(newValues) as never) : undefined,
     });
   } catch (err) {
     console.warn("[Audit] Could not record audit log:", err);
@@ -216,7 +183,7 @@ router.post("/auth/login", async (req, res) => {
     const { passwordHash: _passwordHash, ...safeUser } = result.user;
     const db = await getDb();
     const school = safeUser.schoolId && db ? (await db.select({ name: schools.name }).from(schools).where(eq(schools.id, safeUser.schoolId)))[0] : undefined;
-    res.json({ user: { ...safeUser, schoolName: school?.name ?? null }, token: result.token });
+    res.json({ user: { ...safeUser, schoolName: school?.name ?? null } });
   } catch (e: any) {
     if (e?.isSchoolInactive) {
       return res.status(403).json({ error: e.message });
@@ -522,12 +489,14 @@ router.post("/schools", requireRole(schoolCreateRoles), async (req, res) => {
     let credentials: any;
 
     await db.transaction(async (tx) => {
+      const actor = currentUser(res);
       const result = await tx.insert(schools).values({
         name: String(req.body.name).trim(),
         shortCode,
         email: req.body.email ?? null,
         phone: rawPhone || null,
         address: req.body.address ?? null,
+        createdByUserId: actor.id > 0 ? actor.id : null,
       });
       const id = Number(result[0].insertId);
 
@@ -678,9 +647,25 @@ const handleUpdateSchool = async (req: Request, res: Response) => {
       return res.status(404).json({ error: "School not found. It may have been removed or deleted." });
     }
 
+    // Role-based authorization:
+    // SUPER_ADMIN can edit any school; partners can edit only schools they created.
+    if (user.role !== "SUPER_ADMIN") {
+      if (!existing.createdByUserId || existing.createdByUserId !== user.id) {
+        return res.status(403).json({ error: "Forbidden: You can only edit schools created by your account" });
+      }
+
+      // Only SUPER_ADMIN may change a school's email and trigger SCHOOL_ADMIN email sync.
+      // If a partner attempts to send/change email, return 403 Forbidden.
+      if (req.body.email !== undefined) {
+        return res.status(403).json({ error: "Forbidden: Only Super Admin can change school email" });
+      }
+    }
+
     const nextName = req.body.name && String(req.body.name).trim() ? String(req.body.name).trim() : existing.name;
     const nextCode = req.body.shortCode && String(req.body.shortCode).trim() ? String(req.body.shortCode).trim().toUpperCase() : existing.shortCode;
-    const nextEmail = req.body.email && String(req.body.email).trim() ? String(req.body.email).trim() : null;
+    const nextEmail = user.role === "SUPER_ADMIN"
+      ? (req.body.email !== undefined ? (req.body.email && String(req.body.email).trim() ? String(req.body.email).trim() : null) : existing.email)
+      : existing.email;
     const rawPhone = req.body.phone !== undefined ? (req.body.phone !== null ? String(req.body.phone).trim() : null) : undefined;
     if (rawPhone !== undefined && rawPhone !== null && rawPhone !== "" && !isValidIndianMobileNumber(rawPhone, false)) {
       return res.status(400).json({ error: INDIAN_MOBILE_ERROR_MESSAGE });
@@ -704,8 +689,8 @@ const handleUpdateSchool = async (req: Request, res: Response) => {
       updatedAt: new Date(),
     }).where(eq(schools.id, id));
 
-    // Keep school admin user email in sync if provided
-    if (req.body.email !== undefined) {
+    // Keep school admin user email in sync only if SUPER_ADMIN provided email
+    if (user.role === "SUPER_ADMIN" && req.body.email !== undefined) {
       await db.update(users).set({ email: nextEmail }).where(and(eq(users.schoolId, id), eq(users.role, "SCHOOL_ADMIN")));
     }
 
@@ -3500,7 +3485,7 @@ router.get("/id-card-requests/example-excel", async (req, res) => {
 
     // Dynamic field list driven by designer/template configuration
     const availableFields = getAvailableDynamicFields(elements, cardType);
-    const excelBuffer = generateExampleExcelBuffer(availableFields);
+    const excelBuffer = await generateExampleExcelBuffer(availableFields);
 
     const fileLabel = cardType === "staff" ? "staff" : "student";
     res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
@@ -3584,15 +3569,15 @@ router.post("/id-card-requests/upload-excel", requireRole(schoolWriteRoles), asy
       return res.status(400).json({ error: "Malformed file encoding" });
     }
 
-    // Max 10MB limit
-    if (fileBuffer.length > 10 * 1024 * 1024) {
-      return res.status(400).json({ error: "File exceeds 10MB limit" });
+    // Max 5MB limit
+    if (fileBuffer.length > 5 * 1024 * 1024) {
+      return res.status(400).json({ error: "File exceeds 5MB limit" });
     }
 
     // Parse Excel safely
-    let parseResult: ReturnType<typeof parseExcelBuffer>;
+    let parseResult: Awaited<ReturnType<typeof parseExcelBuffer>>;
     try {
-      parseResult = parseExcelBuffer(fileBuffer, availableFields);
+      parseResult = await parseExcelBuffer(fileBuffer, availableFields);
     } catch (parseErr: any) {
       return res.status(400).json({ error: parseErr.message || "Failed to read Excel spreadsheet" });
     }
@@ -3760,6 +3745,9 @@ router.post(
 
       res.json(result);
     } catch (e: any) {
+      if (e instanceof BulkPhotoError || e?.statusCode === 400 || e?.isClientError) {
+        return res.status(400).json({ error: e.message });
+      }
       fail(res, e);
     }
   },

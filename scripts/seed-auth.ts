@@ -12,8 +12,14 @@ if (process.env.NODE_ENV === "production") {
 
 const adminEmail = process.env.SEED_ADMIN_EMAIL ?? "admin@edunextg.com";
 const schoolEmail = process.env.SEED_SCHOOL_EMAIL ?? "school@example.test";
-const adminPassword = process.env.SEED_ADMIN_PASSWORD ?? "Duronto321";
-const schoolPassword = process.env.SEED_SCHOOL_PASSWORD ?? "School123!";
+const adminPassword = process.env.SEED_ADMIN_PASSWORD;
+if (!adminPassword || adminPassword.length < 12) {
+  throw new Error("SEED_ADMIN_PASSWORD environment variable is required and must be at least 12 characters.");
+}
+const schoolPassword = process.env.SEED_SCHOOL_PASSWORD;
+if (!schoolPassword || schoolPassword.length < 12) {
+  throw new Error("SEED_SCHOOL_PASSWORD environment variable is required and must be at least 12 characters.");
+}
 
 const dbInstance = await getDb();
 if (!dbInstance) throw new Error("Database is unavailable. Check DATABASE_URL and ensure MySQL is running.");
@@ -68,6 +74,6 @@ async function upsertAccount(input: { openId: string; email: string; name: strin
 
 const adminId = await upsertAccount({ openId: "seed_admin", email: adminEmail, name: "Development Admin", role: "SUPER_ADMIN", schoolId: null, password: adminPassword });
 const schoolAdminId = await upsertAccount({ openId: "seed_school_admin", email: schoolEmail, name: "Development School Admin", role: "SCHOOL_ADMIN", schoolId: school.id, password: schoolPassword });
-console.log(`Seeded admin #${adminId}: ${adminEmail} / ${adminPassword}`);
-console.log(`Seeded school admin #${schoolAdminId}: ${schoolEmail} / ${schoolPassword} (school #${school.id}: ${school.name})`);
+console.log(`Seeded admin #${adminId}: ${adminEmail}`);
+console.log(`Seeded school admin #${schoolAdminId}: ${schoolEmail} (school #${school.id}: ${school.name})`);
 process.exit(0);

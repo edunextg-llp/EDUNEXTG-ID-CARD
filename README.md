@@ -67,11 +67,11 @@
   - **UI Primitives**: Radix UI, Lucide React
   - **Routing**: Wouter
   - **State & Data**: TanStack Query v5, Sonner notifications
-  - **Rendering & Barcodes**: jsPDF, JsBarcode, QRCode
+  - **Rendering & Barcodes**: JsBarcode, QRCode
 
 - **Backend**:
   - **Runtime**: Node.js (v20+) & Express
-  - **API Layer**: RESTful endpoints and tRPC v11
+  - **API Layer**: RESTful Express endpoints
   - **Database & ORM**: MySQL (`mysql2`) with Drizzle ORM
   - **Auth & Tokens**: Jose (JWT) & Node Crypto (Scrypt)
   - **Document Generation**: PDFKit vector rendering engine
@@ -100,7 +100,6 @@
 │   ├── appAuth.ts          # Authentication, Scrypt hashing, and password management
 │   ├── db.ts               # Database connection and queries
 │   ├── pdf.ts              # Server-side PDF generation
-│   ├── routers.ts          # tRPC route definitions
 │   └── storage.ts          # Storage integration
 ├── scripts/                # Development, maintenance, and database scripts
 │   ├── clean-test-data.ts  # Wipes all development/test records and re-seeds pristine Super Admin

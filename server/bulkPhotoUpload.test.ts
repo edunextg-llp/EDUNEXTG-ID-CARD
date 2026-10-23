@@ -341,4 +341,27 @@ describe("Bulk Photo Upload (Admission Number & Employee ID) Suite", () => {
     expect(data.success).toBe(true);
     expect(data.matched).toBe(1);
   });
+
+  it("Scenario 6: Highly compressible ZIP bomb (ratio > 100:1) is rejected with 400", async () => {
+    // 500 KB of zeros compresses to ~500 bytes (ratio ~1000:1)
+    const bombZip = new AdmZip();
+    bombZip.addFile("ADM-101.jpg", Buffer.alloc(500 * 1024, 0));
+    const zipBase64 = bombZip.toBuffer().toString("base64");
+
+    const res = await fetch(`${baseUrl}/api/id-card-requests/bulk-upload-photos`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${schoolAToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        schoolId: schoolAId,
+        zipBase64,
+      }),
+    });
+
+    expect(res.status).toBe(400);
+    const err = await res.json();
+    expect(err.error).toMatch(/compression ratio/i);
+  });
 });

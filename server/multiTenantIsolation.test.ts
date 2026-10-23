@@ -20,7 +20,6 @@ import {
   schoolTemplates,
 } from "../drizzle/schema";
 import { and, eq } from "drizzle-orm";
-import { appRouter } from "./routers";
 import { generateSingleCardPdf, generateBulkCardPdf } from "./pdf";
 
 describe("Strict Multi-Tenant Isolation & Comprehensive RBAC Verification", () => {
@@ -620,54 +619,6 @@ describe("Strict Multi-Tenant Isolation & Comprehensive RBAC Verification", () =
       }),
     });
     expect(createUser.status).toBe(403);
-  });
-
-  it("22. Legacy tRPC procedures strictly enforce school scoping & cannot bypass RBAC", async () => {
-    const callerSchoolA = appRouter.createCaller({
-      req: {} as any,
-      res: {} as any,
-      user: {
-        id: schoolAUserId,
-        openId: schoolALoginId,
-        name: "School A Admin",
-        email: "alpha@school.edu",
-        role: "SCHOOL_ADMIN",
-        schoolId: schoolAId,
-        isActive: true,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        lastSignedIn: new Date(),
-      } as any,
-    });
-
-    // 1. schools.list as School A: only returns School A
-    const schoolsListA = await callerSchoolA.idCards.schools.list();
-    expect(schoolsListA.length).toBe(1);
-    expect(schoolsListA[0].id).toBe(schoolAId);
-
-    // 2. requests.list as School A: only returns School A requests
-    const requestsListA = await callerSchoolA.idCards.requests.list();
-    for (const r of requestsListA) {
-      expect(r.schoolId).toBe(schoolAId);
-    }
-
-    // 3. requests.approve as School A for School B's request throws FORBIDDEN
-    const db = await getDb();
-    // Create dummy request for School B
-    const [reqB] = await db!.insert(idCardRequests).values({
-      studentName: "Bob Beta",
-      admissionCode: "ADM-BETA-TRPC-001",
-      schoolId: schoolBId,
-      status: "SUBMITTED",
-    });
-    const reqBId = Number(reqB.insertId);
-
-    await expect(callerSchoolA.idCards.requests.approve({ id: reqBId })).rejects.toThrow(
-      "School access denied"
-    );
-
-    // Cleanup dummy request
-    await db!.delete(idCardRequests).where(eq(idCardRequests.id, reqBId));
   });
 
   afterAll(async () => {
