@@ -9,7 +9,6 @@ import {
   idCardFiles,
   idCardTemplates,
 } from "../drizzle/schema";
-import { ENV } from "./_core/env";
 
 import { detectImageMimeType } from "./imageValidation";
 
@@ -375,19 +374,7 @@ export async function processBulkPhotoUpload(
     const safeBase = rawId.replace(/[^a-zA-Z0-9._-]/g, "_");
     const saveName = `${safeBase}.jpg`;
 
-    let photoUrl: string;
-    if (ENV.forgeApiUrl && ENV.forgeApiKey) {
-      try {
-        const { storagePut } = await import("./storage");
-        const folder = `schools/${schoolId}/photos`;
-        const stored = await storagePut(`${folder}/${saveName}`, compressed, "image/jpeg");
-        photoUrl = stored.url;
-      } catch (uploadErr) {
-        photoUrl = `data:image/jpeg;base64,${compressed.toString("base64")}`;
-      }
-    } else {
-      photoUrl = `data:image/jpeg;base64,${compressed.toString("base64")}`;
-    }
+    const photoUrl = `data:image/jpeg;base64,${compressed.toString("base64")}`;
 
     // Update idCardData: photo, and student_photo / staff_photo
     await upsertCardDataField(db, match.card.id, "photo", photoUrl);

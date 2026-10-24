@@ -1250,16 +1250,6 @@ router.post("/upload", async (req, res) => {
     const baseName = path.basename(rawName).replace(/^\.+/, "") || `upload_${Date.now()}`;
     const finalName = baseName.toLowerCase().endsWith(safeExt) ? baseName : `${baseName}${safeExt}`;
 
-    if (ENV.forgeApiUrl && ENV.forgeApiKey) {
-      try {
-        const { storagePut } = await import("./storage");
-        const folder = targetSchoolId ? `schools/${targetSchoolId}` : "templates";
-        const stored = await storagePut(`${folder}/${finalName}`, buffer, detectedMime);
-        return res.json({ url: stored.url });
-      } catch (err) {
-        console.warn("[Upload] Storage failed, falling back to data URL", err);
-      }
-    }
     const dataUrl = `data:${detectedMime};base64,${cleanBase64}`;
     return res.json({ url: dataUrl });
   } catch (e) {

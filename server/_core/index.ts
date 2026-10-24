@@ -2,7 +2,6 @@ import "dotenv/config";
 import express from "express";
 import { createServer } from "http";
 import net from "net";
-import { registerStorageProxy } from "./storageProxy";
 import { apiRouter } from "../api";
 import { serveStatic, setupVite } from "./vite";
 import { assertDatabaseReady, checkDatabaseConnection, closeDb } from "../db";
@@ -70,7 +69,6 @@ async function startServer() {
   // Request body size limits: 50mb on upload/file/photo/template routes, 100kb globally
   configureBodyParsers(app);
 
-  registerStorageProxy(app);
   app.use("/api", apiRouter);
   // Handle demo template aliases / redirects
   app.get(["/demo-templates", "/demo-templates/"], (_req, res) => {

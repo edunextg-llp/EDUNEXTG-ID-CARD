@@ -99,13 +99,10 @@
 │   ├── api.ts              # REST API handlers (schools, cards, templates, approvals, orders)
 │   ├── appAuth.ts          # Authentication, Scrypt hashing, and password management
 │   ├── db.ts               # Database connection and queries
-│   ├── pdf.ts              # Server-side PDF generation
-│   └── storage.ts          # Storage integration
+│   └── pdf.ts              # Server-side PDF generation
 ├── scripts/                # Development, maintenance, and database scripts
-│   ├── clean-test-data.ts  # Wipes all development/test records and re-seeds pristine Super Admin
 │   ├── setup-database.ts   # Migrates schema and configures Super Admin
 │   ├── seed-auth.ts        # Seeds sample school and development accounts
-│   ├── recompress-existing-photos.ts # Re-compresses photos to optimized size
 │   └── migrate-database.mjs# Migration runner
 ├── package.json            # Dependencies and scripts
 └── tsconfig.json           # TypeScript configuration
@@ -145,6 +142,8 @@ Apply the database schema and initialize the Super Admin account:
 pnpm db:setup
 ```
 *(Or run `pnpm db:migrate` if applying incremental migrations)*
+
+To reset a development database, drop and recreate it, then run `pnpm db:migrate` and `pnpm db:setup`.
 
 ### 4. Optional Seeding (Development only)
 If you wish to seed sample schools and test accounts for local preview:
