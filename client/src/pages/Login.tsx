@@ -201,15 +201,9 @@ export default function Login() {
               <h2 className="text-2xl font-extrabold tracking-[-0.05em] text-foreground">
                 Sign In
               </h2>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Select your role and enter credentials to access your workspace.
-              </p>
 
               {/* Admin / School / Partner Portal Selector */}
               <div className="mt-5">
-                <label className="block text-xs font-bold text-foreground mb-1.5">
-                  Sign in as
-                </label>
                 <div className="grid grid-cols-3 gap-1.5 p-1 rounded-2xl bg-muted/70 border border-border">
                   <button
                     type="button"
