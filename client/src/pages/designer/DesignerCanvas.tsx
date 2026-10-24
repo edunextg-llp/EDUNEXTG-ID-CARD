@@ -1,6 +1,6 @@
 import { useRef, useState, useCallback, useEffect } from "react";
 import CardRenderer from "@/components/CardRenderer";
-import { SAMPLE_CARD_DATA } from "@shared/templateDesigner";
+import { getSampleCardData } from "@shared/templateDesigner";
 import type { DesignerElement } from "@shared/templateDesigner";
 import type { DesignerState, DesignerAction } from "./useDesignerState";
 
@@ -176,7 +176,7 @@ export default function DesignerCanvas({ state, dispatch, visibleElements }: Des
             cardHeight={template.cardHeight}
             elements={state.elements}
             side={state.activeSide}
-            cardData={SAMPLE_CARD_DATA}
+            cardData={getSampleCardData(template.cardType)}
             scale={zoom}
             showGrid={showGrid}
             gridSize={gridSize}

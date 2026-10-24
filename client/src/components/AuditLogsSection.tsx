@@ -3,7 +3,6 @@ import {
   Building2,
   ShieldCheck,
   Search,
-  Filter,
   CheckCircle2,
   XCircle,
   AlertTriangle,
@@ -12,16 +11,13 @@ import {
   Send,
   Printer,
   FileText,
-  User,
   Trash2,
   Download,
-  Calendar,
   RefreshCw,
-  Sparkles,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { formatDistanceToNow, format } from "date-fns";
+import { formatDistanceToNow } from "date-fns";
 import type { ApiActivity, ApiAuthUser, ApiSchool } from "@/lib/api";
 
 interface AuditLogsSectionProps {

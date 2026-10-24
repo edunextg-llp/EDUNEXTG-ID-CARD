@@ -5,8 +5,8 @@ import { useState, useEffect } from "react";
  * Automatically respects `prefers-reduced-motion` by revealing immediately.
  */
 export function useRevealOnScroll<T extends HTMLElement = HTMLDivElement>(
-  threshold: number = 0.15,
-  rootMargin: string = "0px 0px -40px 0px",
+  threshold: number = 0.05,
+  rootMargin: string = "50px 0px 0px 0px",
 ) {
   const [ref, setRef] = useState<T | null>(null);
   const [revealed, setRevealed] = useState(false);
@@ -21,6 +21,15 @@ export function useRevealOnScroll<T extends HTMLElement = HTMLDivElement>(
     ) {
       setRevealed(true);
       return;
+    }
+
+    // Immediately reveal elements already within or near the viewport on mount
+    if (typeof window !== "undefined") {
+      const rect = ref.getBoundingClientRect();
+      if (rect.top < window.innerHeight + 50 && rect.bottom > 0) {
+        setRevealed(true);
+        return;
+      }
     }
 
     const observer = new IntersectionObserver(

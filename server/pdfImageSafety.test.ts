@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { bufferFromDataUrl, isSupportedImageBuffer } from "./pdf";
+import { bufferFromDataUrl, isSupportedImageBuffer, generateSingleCardPdf } from "./pdf";
+import { IMAGE_SHAPES } from "../shared/templateDesigner";
 
 // 1x1 transparent PNG
 const PNG_BASE64 =
@@ -43,3 +44,43 @@ describe("PDF image loading never touches the filesystem", () => {
     expect(bufferFromDataUrl(`data:image/png;base64,${wrapped}`)).not.toBeNull();
   });
 });
+
+describe("PDF export supports all photo shapes (pentagon, hexagon, octagon, shield, etc.)", () => {
+  it.each(IMAGE_SHAPES)("renders photo element with shape '%s' into valid PDF", async ({ value: shape }) => {
+    const pdfBuf = await generateSingleCardPdf({
+      cardNumber: "CARD-TEST-1",
+      template: {
+        cardWidth: 200,
+        cardHeight: 300,
+        orientation: "portrait",
+        elements: [
+          {
+            elementKey: `photo_${shape}`,
+            elementType: "PHOTO",
+            label: "Photo",
+            sortOrder: 1,
+            config: {
+              x: 20,
+              y: 20,
+              width: 80,
+              height: 100,
+              side: "FRONT",
+              rotation: 0,
+              opacity: 1,
+              imageShape: shape,
+              borderWidth: 2,
+              borderColor: "#112233",
+              imageUrl: `data:image/png;base64,${PNG_BASE64}`,
+            },
+          },
+        ],
+      },
+      cardData: { student_name: "Test Student" },
+    });
+
+    expect(pdfBuf).toBeInstanceOf(Buffer);
+    expect(pdfBuf.length).toBeGreaterThan(500);
+    expect(pdfBuf.slice(0, 4).toString()).toBe("%PDF");
+  });
+});
+

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { api, type ApiRemovedCard, type ApiAuthUser, type ApiSchool } from "@/lib/api";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -18,8 +18,6 @@ import {
   Loader2,
   ChevronLeft,
   ChevronRight,
-  History,
-  Building2,
   Layers,
   GraduationCap,
   Briefcase,

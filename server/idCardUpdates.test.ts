@@ -2,7 +2,7 @@ import "dotenv/config";
 import { describe, expect, it, beforeAll, afterAll } from "vitest";
 import express from "express";
 import http from "http";
-import * as xlsx from "xlsx";
+import ExcelJS from "exceljs";
 import { apiRouter } from "./api";
 
 function getPdfPageCount(buffer: Buffer): number {
@@ -305,23 +305,26 @@ describe("EDUNEXTG ID Card Updates End-to-End Suite", () => {
       expect(res.headers.get("content-type")).toContain("spreadsheetml");
 
       const arrayBuffer = await res.arrayBuffer();
-      const workbook = xlsx.read(Buffer.from(arrayBuffer), { type: "buffer" });
-      const sheetName = workbook.SheetNames[0];
-      const sheet = workbook.Sheets[sheetName];
-      const rows = xlsx.utils.sheet_to_json<string[]>(sheet, { header: 1 });
+      const workbook = new ExcelJS.Workbook();
+      await workbook.xlsx.load(Buffer.from(arrayBuffer));
+      const sheet = workbook.worksheets[0];
+      const headerRow = sheet.getRow(1);
+      const rowValues: string[] = [];
+      for (let c = 1; c <= headerRow.cellCount; c++) {
+        rowValues.push(String(headerRow.getCell(c).value || "").trim());
+      }
 
-      const headerRow = rows[0];
-      expect(headerRow).toBeDefined();
+      expect(rowValues.length).toBeGreaterThan(0);
       // Should contain the template dynamic fields: Student Name, Father Name, Phone, Roll No, Address
-      const normalizedHeaders = headerRow.map((h: string) => String(h).trim().toLowerCase());
+      const normalizedHeaders = rowValues.map((h: string) => String(h).trim().toLowerCase());
       expect(normalizedHeaders).toContain("student name");
       expect(normalizedHeaders).toContain("father's name");
       expect(normalizedHeaders).toContain("phone");
       expect(normalizedHeaders).toContain("roll number");
       expect(normalizedHeaders).toContain("address");
 
-      // Verify no fake student data row exists
-      expect(rows.length).toBeLessThanOrEqual(2);
+      // Verify no fake student data row exists beyond guidance
+      expect(sheet.rowCount).toBeLessThanOrEqual(2);
     });
 
     it("falls back to all available dynamic fields if no templateId is provided", async () => {
@@ -330,11 +333,11 @@ describe("EDUNEXTG ID Card Updates End-to-End Suite", () => {
       });
       expect(res.status).toBe(200);
       const arrayBuffer = await res.arrayBuffer();
-      const workbook = xlsx.read(Buffer.from(arrayBuffer), { type: "buffer" });
-      const sheet = workbook.Sheets[workbook.SheetNames[0]];
-      const rows = xlsx.utils.sheet_to_json<string[]>(sheet, { header: 1 });
-      const headerRow = rows[0];
-      expect(headerRow.length).toBeGreaterThan(0);
+      const workbook = new ExcelJS.Workbook();
+      await workbook.xlsx.load(Buffer.from(arrayBuffer));
+      const sheet = workbook.worksheets[0];
+      const headerRow = sheet.getRow(1);
+      expect(headerRow.cellCount).toBeGreaterThan(0);
     });
   });
 
@@ -368,10 +371,11 @@ describe("EDUNEXTG ID Card Updates End-to-End Suite", () => {
         ["Student Name", "Father Name", "Address", "Phone", "Roll No"],
         ["Rahul Kumar", "Raj Kumar", "   ", "9876543210", 0],
       ];
-      const ws = xlsx.utils.aoa_to_sheet(testData);
-      const wb = xlsx.utils.book_new();
-      xlsx.utils.book_append_sheet(wb, ws, "Sheet1");
-      const buffer = xlsx.write(wb, { type: "buffer", bookType: "xlsx" });
+      const wb = new ExcelJS.Workbook();
+      const ws = wb.addWorksheet("Sheet1");
+      ws.addRow(testData[0]);
+      ws.addRow(testData[1]);
+      const buffer = Buffer.from(await wb.xlsx.writeBuffer());
       const fileBase64 = buffer.toString("base64");
 
       const res = await fetch(`${baseUrl}/api/id-card-requests/upload-excel`, {
@@ -429,10 +433,11 @@ describe("EDUNEXTG ID Card Updates End-to-End Suite", () => {
         ["Student Name", "Phone"],
         ["Sneha Patel", "9876543211"],
       ];
-      const ws = xlsx.utils.aoa_to_sheet(testData);
-      const wb = xlsx.utils.book_new();
-      xlsx.utils.book_append_sheet(wb, ws, "Sheet1");
-      const fileBase64 = xlsx.write(wb, { type: "buffer", bookType: "xlsx" }).toString("base64");
+      const wb = new ExcelJS.Workbook();
+      const ws = wb.addWorksheet("Sheet1");
+      ws.addRow(testData[0]);
+      ws.addRow(testData[1]);
+      const fileBase64 = Buffer.from(await wb.xlsx.writeBuffer()).toString("base64");
 
       const res = await fetch(`${baseUrl}/api/id-card-requests/upload-excel`, {
         method: "POST",
@@ -593,10 +598,14 @@ describe("EDUNEXTG ID Card Updates End-to-End Suite", () => {
       expect(disposition).toContain("student");
 
       const buf = Buffer.from(await res.arrayBuffer());
-      const wb = xlsx.read(buf, { type: "buffer" });
-      const ws = wb.Sheets[wb.SheetNames[0]];
-      const rows: any[][] = xlsx.utils.sheet_to_json(ws, { header: 1 });
-      const headers = rows[0] as string[];
+      const wb = new ExcelJS.Workbook();
+      await wb.xlsx.load(buf);
+      const ws = wb.worksheets[0];
+      const headerRow = ws.getRow(1);
+      const headers: string[] = [];
+      for (let c = 1; c <= headerRow.cellCount; c++) {
+        headers.push(String(headerRow.getCell(c).value || "").trim());
+      }
       expect(headers).toContain("Student Name");
       expect(headers).toContain("Admission Number");
     });
@@ -610,33 +619,66 @@ describe("EDUNEXTG ID Card Updates End-to-End Suite", () => {
       expect(disposition).toContain("staff");
 
       const buf = Buffer.from(await res.arrayBuffer());
-      const wb = xlsx.read(buf, { type: "buffer" });
-      const ws = wb.Sheets[wb.SheetNames[0]];
-      const rows: any[][] = xlsx.utils.sheet_to_json(ws, { header: 1 });
-      const headers = rows[0] as string[];
+      const wb = new ExcelJS.Workbook();
+      await wb.xlsx.load(buf);
+      const ws = wb.worksheets[0];
+      const headerRow = ws.getRow(1);
+      const headers: string[] = [];
+      for (let c = 1; c <= headerRow.cellCount; c++) {
+        headers.push(String(headerRow.getCell(c).value || "").trim());
+      }
       expect(headers).toContain("Staff Name");
       expect(headers).toContain("Department");
       expect(headers).toContain("Designation");
       expect(headers).toContain("Employee ID");
     });
 
-    it("successfully parses staff Excel data with Department and Designation", () => {
+    it("successfully parses staff Excel data with Department and Designation", async () => {
       const staffFields = getAvailableDynamicFields([], "staff");
-      const wb = xlsx.utils.book_new();
-      const ws = xlsx.utils.aoa_to_sheet([
-        ["Staff Name", "Employee ID", "Department", "Designation", "Phone"],
-        ["Dr. Priya Sharma", "EMP-1001", "Mathematics", "Senior Professor", "9876543210"],
-      ]);
-      xlsx.utils.book_append_sheet(wb, ws, "Staff");
-      const buf = xlsx.write(wb, { type: "buffer", bookType: "xlsx" });
+      const wb = new ExcelJS.Workbook();
+      const ws = wb.addWorksheet("Staff");
+      ws.addRow(["Staff Name", "Employee ID", "Department", "Designation", "Phone"]);
+      ws.addRow(["Dr. Priya Sharma", "EMP-1001", "Mathematics", "Senior Professor", "9876543210"]);
+      const buf = Buffer.from(await wb.xlsx.writeBuffer());
 
-      const parsed = parseExcelBuffer(buf, staffFields);
+      const parsed = await parseExcelBuffer(buf, staffFields);
       expect(parsed.errors).toHaveLength(0);
       expect(parsed.rows).toHaveLength(1);
       expect(parsed.rows[0].studentName).toBe("Dr. Priya Sharma");
       expect(parsed.rows[0].admissionCode).toBe("EMP-1001");
       expect(parsed.rows[0].data["department"]).toBe("Mathematics");
       expect(parsed.rows[0].data["designation"]).toBe("Senior Professor");
+    });
+
+    it("enforces parser limits: rejects buffer > 5 MB", async () => {
+      const fakeLargeBuffer = Buffer.alloc(5 * 1024 * 1024 + 10);
+      await expect(parseExcelBuffer(fakeLargeBuffer)).rejects.toThrow(/exceeds maximum allowed size of 5 MB/i);
+    });
+
+    it("enforces parser limits: rejects spreadsheets with > 60 columns", async () => {
+      const wb = new ExcelJS.Workbook();
+      const ws = wb.addWorksheet("TooManyCols");
+      const header = Array.from({ length: 65 }, (_, i) => `Col_${i + 1}`);
+      ws.addRow(header);
+      const buf = Buffer.from(await wb.xlsx.writeBuffer());
+
+      await expect(parseExcelBuffer(buf)).rejects.toThrow(/exceeds maximum limit of 60 columns/i);
+    });
+
+    it("ignores formulas and trims cell values", async () => {
+      const wb = new ExcelJS.Workbook();
+      const ws = wb.addWorksheet("Data");
+      ws.addRow(["Student Name", "Admission Number", "Phone"]);
+      const row2 = ws.addRow(["  Aarav Gupta  ", "  ADM-999  ", ""]);
+      // Cell with formula
+      row2.getCell(3).value = { formula: "CONCATENATE('98','76543210')", result: "9876543210" } as any;
+      const buf = Buffer.from(await wb.xlsx.writeBuffer());
+
+      const parsed = await parseExcelBuffer(buf);
+      expect(parsed.rows).toHaveLength(1);
+      expect(parsed.rows[0].studentName).toBe("Aarav Gupta");
+      expect(parsed.rows[0].admissionCode).toBe("ADM-999");
+      expect(parsed.rows[0].data["phone"]).toBe("9876543210");
     });
   });
 });

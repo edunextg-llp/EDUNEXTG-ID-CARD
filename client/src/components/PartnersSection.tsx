@@ -3,7 +3,6 @@ import {
   api,
   type ApiUser,
   type ApiAuthUser,
-  type ApiOrder,
 } from "@/lib/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -30,21 +29,16 @@ import {
   Search,
   MoreVertical,
   Mail,
-  Phone,
   ShoppingCart,
-  CheckCircle2,
-  XCircle,
   Eye,
   EyeOff,
   UserCheck,
   UserX,
   Trash2,
   Edit,
-  Shield,
   Loader2,
   Users,
 } from "lucide-react";
-import { formatDistanceToNow, format } from "date-fns";
 import { toast } from "sonner";
 import {
   isValidIndianMobileNumber,

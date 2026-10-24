@@ -1,10 +1,8 @@
-import * as XLSX from "xlsx";
+import ExcelJS from "exceljs";
 import {
   DYNAMIC_FIELDS,
-  getAvailableDynamicFields,
   matchDynamicField,
   cleanExcelCellValue,
-  type DynamicFieldKey,
 } from "../shared/templateDesigner";
 
 export interface ParsedExcelRow {
@@ -23,13 +21,51 @@ export interface ExcelParseResult {
   errors: Array<{ rowNumber: number; reason: string }>;
 }
 
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
+const MAX_ROWS = 5000;
+const MAX_COLUMNS = 60;
+
+/**
+ * Extracts a sanitized, trimmed string value from an ExcelJS cell value.
+ * Ignores formulas and extracts primitive results/text only.
+ */
+function extractCellValue(value: ExcelJS.CellValue): string {
+  if (value === null || value === undefined) return "";
+  if (typeof value === "string") return value.trim();
+  if (typeof value === "number" || typeof value === "boolean") return String(value).trim();
+  if (value instanceof Date) {
+    if (!isNaN(value.getTime())) {
+      return value.toISOString().split("T")[0];
+    }
+    return "";
+  }
+  if (typeof value === "object") {
+    // Rich text support: join text segments
+    if ("richText" in value && Array.isArray(value.richText)) {
+      return value.richText.map((t) => t.text || "").join("").trim();
+    }
+    // Formulas: ignore formula, use static primitive result if available
+    if ("formula" in value) {
+      if (value.result !== undefined && value.result !== null && typeof value.result !== "object") {
+        return String(value.result).trim();
+      }
+      return "";
+    }
+    if ("text" in value && typeof value.text === "string") {
+      return value.text.trim();
+    }
+  }
+  return String(value).trim();
+}
+
 /**
  * Generate a dynamic example Excel file buffer using the template's available dynamic fields.
  */
-export function generateExampleExcelBuffer(
+export async function generateExampleExcelBuffer(
   fields: Array<{ key: string; label: string; category?: string }> = [...DYNAMIC_FIELDS],
-): Buffer {
-  const headers = fields.map((f) => f.label);
+): Promise<Buffer> {
+  const workbook = new ExcelJS.Workbook();
+  const worksheet = workbook.addWorksheet("ID Card Requests");
 
   // Example row matching the header columns (for visual guidance only)
   const sampleRow: Record<string, string> = {
@@ -58,68 +94,79 @@ export function generateExampleExcelBuffer(
     "Joining Date": "2014-04-01",
   };
 
+  worksheet.columns = fields.map((f) => ({
+    header: f.label,
+    key: f.key,
+    width: Math.max(f.label.length + 4, 15),
+  }));
+
   const rowValues = fields.map((f) => sampleRow[f.label] || "");
+  worksheet.addRow(rowValues);
 
-  const ws = XLSX.utils.aoa_to_sheet([headers, rowValues]);
-
-  // Set nice column widths
-  ws["!cols"] = headers.map((h) => ({ wch: Math.max(h.length + 4, 15) }));
-
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "ID Card Requests");
-
-  return XLSX.write(wb, { type: "buffer", bookType: "xlsx" }) as Buffer;
+  const arrayBuffer = await workbook.xlsx.writeBuffer();
+  return Buffer.from(arrayBuffer);
 }
 
 /**
  * Parses an uploaded Excel buffer into validated ID card request rows.
- * Implements security checks, empty value pruning, formula sanitization, and graceful validation.
+ * Enforces:
+ * - max file size 5 MB
+ * - max 5000 rows
+ * - max 60 columns
+ * - cell values only (ignore formulas)
+ * - trimmed values
  */
-export function parseExcelBuffer(
+export async function parseExcelBuffer(
   buffer: Buffer,
   availableFields: Array<{ key: string; label: string }> = [...DYNAMIC_FIELDS],
-): ExcelParseResult {
-  // Read workbook safely
-  const wb = XLSX.read(buffer, {
-    type: "buffer",
-    cellFormula: false, // Disallow formula evaluation for security
-    cellHTML: false,
-    cellText: false,
-  });
-
-  const firstSheetName = wb.SheetNames[0];
-  if (!firstSheetName) {
-    throw new Error("Uploaded Excel workbook contains no sheets");
+): Promise<ExcelParseResult> {
+  if (buffer.length > MAX_FILE_SIZE) {
+    throw new Error(`Uploaded Excel file exceeds maximum allowed size of 5 MB (${(buffer.length / (1024 * 1024)).toFixed(2)} MB)`);
   }
 
-  const ws = wb.Sheets[firstSheetName];
-  // Parse as 2D array of rows
-  const rawRows: unknown[][] = XLSX.utils.sheet_to_json(ws, { header: 1, defval: null, blankrows: false });
-
-  if (rawRows.length === 0) {
-    throw new Error("The uploaded spreadsheet is completely empty");
+  const workbook = new ExcelJS.Workbook();
+  try {
+    await workbook.xlsx.load(buffer as any);
+  } catch (xlsxErr) {
+    // Fallback: try parsing as CSV if not a binary zip xlsx
+    try {
+      const { Readable } = await import("node:stream");
+      await workbook.csv.read(Readable.from(buffer));
+    } catch {
+      throw new Error(`Failed to parse Excel spreadsheet: ${(xlsxErr as Error)?.message || "Invalid file"}`);
+    }
   }
 
-  // Row 0 is headers
-  const headerRow = rawRows[0];
-  if (!Array.isArray(headerRow) || headerRow.length === 0) {
+  const worksheet = workbook.worksheets[0];
+  if (!worksheet || worksheet.rowCount === 0) {
+    throw new Error("Uploaded Excel workbook contains no sheets or is completely empty");
+  }
+
+  if (worksheet.rowCount > MAX_ROWS) {
+    throw new Error(`Spreadsheet exceeds maximum limit of ${MAX_ROWS} rows (found ${worksheet.rowCount})`);
+  }
+
+  const headerRow = worksheet.getRow(1);
+  if (!headerRow || headerRow.cellCount === 0) {
     throw new Error("No header columns found in spreadsheet");
   }
 
-  const headers = headerRow.map((h) => (h !== null && h !== undefined ? String(h).trim() : "")).filter(Boolean);
-  if (headers.length === 0) {
-    throw new Error("Header row contains no valid column names");
+  if (headerRow.cellCount > MAX_COLUMNS) {
+    throw new Error(`Spreadsheet exceeds maximum limit of ${MAX_COLUMNS} columns (found ${headerRow.cellCount})`);
   }
 
-  // Map headers to dynamic fields
+  // Row 1 is headers
+  const headers: string[] = [];
   const mappedFields: Array<{ originalHeader: string; matchedKey: string; matchedLabel: string; colIndex: number }> = [];
   const unmappedHeaders: string[] = [];
 
-  for (let c = 0; c < headerRow.length; c++) {
-    const rawH = headerRow[c];
-    if (rawH === null || rawH === undefined) continue;
-    const h = String(rawH).trim();
+  for (let c = 1; c <= headerRow.cellCount; c++) {
+    if (c > MAX_COLUMNS) break;
+    const cell = headerRow.getCell(c);
+    const h = extractCellValue(cell.value);
     if (!h) continue;
+
+    headers.push(h);
 
     const matched = matchDynamicField(h, availableFields);
     if (matched) {
@@ -134,6 +181,10 @@ export function parseExcelBuffer(
     }
   }
 
+  if (headers.length === 0) {
+    throw new Error("Header row contains no valid column names");
+  }
+
   if (mappedFields.length === 0) {
     throw new Error(
       `No recognized dynamic field columns found. Please ensure headers match the template fields (e.g. ${availableFields.slice(0, 5).map((f) => `"${f.label}"`).join(", ")}).`,
@@ -143,12 +194,19 @@ export function parseExcelBuffer(
   const rows: ParsedExcelRow[] = [];
   const errors: Array<{ rowNumber: number; reason: string }> = [];
 
-  for (let r = 1; r < rawRows.length; r++) {
-    const row = rawRows[r];
-    const rowNumber = r + 1; // 1-indexed for user display
+  for (let r = 2; r <= worksheet.rowCount; r++) {
+    const row = worksheet.getRow(r);
+    const rowNumber = r;
 
-    if (!Array.isArray(row) || row.every((c) => c === null || c === undefined || String(c).trim() === "")) {
-      // Entirely empty row — skip gracefully
+    // Check if entire row is empty
+    let hasAnyValue = false;
+    for (let c = 1; c <= Math.min(row.cellCount, MAX_COLUMNS); c++) {
+      if (extractCellValue(row.getCell(c).value) !== "") {
+        hasAnyValue = true;
+        break;
+      }
+    }
+    if (!hasAnyValue) {
       continue;
     }
 
@@ -156,16 +214,15 @@ export function parseExcelBuffer(
     const raw: Record<string, unknown> = {};
 
     for (const mf of mappedFields) {
-      const cellVal = row[mf.colIndex];
+      const cell = row.getCell(mf.colIndex);
+      const cellVal = extractCellValue(cell.value);
       raw[mf.originalHeader] = cellVal;
 
-      // CRITICAL RULE: Empty, null, undefined, or whitespace-only cells MUST NOT be added
       const cleaned = cleanExcelCellValue(cellVal);
-      if (cleaned !== undefined) {
+      if (cleaned !== undefined && cleaned !== "") {
+        let safeVal = cleaned.trim();
         // Strip potential dangerous CSV/formula prefix characters for defense-in-depth
-        let safeVal = cleaned;
         if (safeVal.startsWith("=") || safeVal.startsWith("+") || safeVal.startsWith("-") || safeVal.startsWith("@")) {
-          // If followed by text/formula, prepend single quote or strip
           if (safeVal.length > 1 && !/^-?\d+(\.\d+)?$/.test(safeVal)) {
             safeVal = safeVal.replace(/^[=+\-@]+/, "");
           }
@@ -174,12 +231,10 @@ export function parseExcelBuffer(
       }
     }
 
-    // Resolve student/staff name and admission/employee code
     const studentName = data["student_name"] || data["staff_name"] || data["name"] || undefined;
     const admissionCode = data["admission_number"] || data["employee_id"] || data["admission_code"] || data["roll_number"] || undefined;
 
     if (!studentName && !admissionCode && Object.keys(data).length === 0) {
-      // Blank or useless row
       continue;
     }
 

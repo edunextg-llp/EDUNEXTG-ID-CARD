@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { Link } from "wouter";
 import PublicLayout from "@/components/PublicLayout";
-import { ShieldCheck, Lock, FileText, CheckCircle2, ArrowRight } from "lucide-react";
+import { ShieldCheck, Lock, CheckCircle2, ArrowRight } from "lucide-react";
 
 export default function PrivacyPolicyPage() {
   useEffect(() => {

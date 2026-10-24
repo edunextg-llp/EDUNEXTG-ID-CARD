@@ -128,7 +128,6 @@ export async function compressImage(
   file: File,
   opts?: CompressImageOptions,
 ): Promise<CompressImageResult> {
-  const targetMinBytes = opts?.targetMinBytes ?? 75 * 1024;
   const targetMaxBytes = opts?.targetMaxBytes ?? 100 * 1024;
   const maxLongSide = opts?.maxLongSide ?? 640;
   const minLongSide = opts?.minLongSide ?? 320;
@@ -172,7 +171,6 @@ export async function compressImage(
   if (!ctx) throw new Error("Could not initialize canvas context for photo optimization.");
 
   let bestBlob: Blob | null = null;
-  let bestQuality = 0.85;
 
   const toBlobPromise = (c: HTMLCanvasElement, q: number, type: string): Promise<Blob> => {
     return new Promise((resolve, reject) => {
@@ -208,7 +206,6 @@ export async function compressImage(
       const highBlob = await toBlobPromise(canvas, high, outputType);
       if (highBlob.size <= targetMaxBytes) {
         bestBlob = highBlob;
-        bestQuality = high;
         break;
       }
     } catch {
@@ -224,7 +221,6 @@ export async function compressImage(
       const blob = await toBlobPromise(canvas, mid, outputType);
       if (blob.size <= targetMaxBytes) {
         foundBlob = blob;
-        bestQuality = mid;
         low = mid; // search for higher quality
       } else {
         high = mid; // reduce quality

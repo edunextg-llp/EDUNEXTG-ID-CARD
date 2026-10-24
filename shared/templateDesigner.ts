@@ -318,6 +318,33 @@ export function getSampleCardData(cardType: CardType = "student"): Record<string
   return cardType === "staff" ? SAMPLE_STAFF_CARD_DATA : SAMPLE_CARD_DATA;
 }
 
+// ─── Image Shapes ───────────────────────────────────────────────────────────
+
+export type ImageShapeType =
+  | "square"
+  | "circle"
+  | "rounded"
+  | "ellipse"
+  | "pentagon"
+  | "hexagon"
+  | "octagon"
+  | "shield"
+  | "diamond"
+  | "star";
+
+export const IMAGE_SHAPES: Array<{ value: ImageShapeType; label: string }> = [
+  { value: "square", label: "Square / Rectangle" },
+  { value: "rounded", label: "Rounded Rectangle" },
+  { value: "circle", label: "Circle" },
+  { value: "ellipse", label: "Ellipse / Oval" },
+  { value: "pentagon", label: "Pentagon (5-sided)" },
+  { value: "hexagon", label: "Hexagon (6-sided)" },
+  { value: "octagon", label: "Octagon (8-sided)" },
+  { value: "shield", label: "Shield / Badge" },
+  { value: "diamond", label: "Diamond" },
+  { value: "star", label: "Star" },
+];
+
 // ─── Element Configuration ──────────────────────────────────────────────────
 
 export interface ElementConfig {
@@ -350,7 +377,17 @@ export interface ElementConfig {
   // Image
   imageUrl?: string;
   objectFit?: "cover" | "contain" | "fill" | "none";
-  imageShape?: "square" | "circle" | "rounded" | "ellipse";
+  imageShape?:
+    | "square"
+    | "circle"
+    | "rounded"
+    | "ellipse"
+    | "pentagon"
+    | "hexagon"
+    | "octagon"
+    | "shield"
+    | "diamond"
+    | "star";
 
   // Dynamic field
   dynamicField?: DynamicFieldKey;

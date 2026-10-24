@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { Separator } from "@/components/ui/separator";
-import { DYNAMIC_FIELDS, getDynamicFieldsForCardType } from "@shared/templateDesigner";
+import { getDynamicFieldsForCardType, IMAGE_SHAPES } from "@shared/templateDesigner";
 import type { DesignerElement, ElementConfig } from "@shared/templateDesigner";
 import type { DesignerAction, TemplateMeta } from "./useDesignerState";
 
@@ -383,10 +383,11 @@ export default function PropertyPanel({ selectedElement, template, dispatch }: P
                 <Select value={c.imageShape ?? "square"} onValueChange={(v) => update({ imageShape: v as ElementConfig["imageShape"] })}>
                   <SelectTrigger className="h-7 text-xs"><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="square">Square / Rectangle</SelectItem>
-                    <SelectItem value="circle">Circle</SelectItem>
-                    <SelectItem value="rounded">Rounded Rectangle</SelectItem>
-                    <SelectItem value="ellipse">Ellipse</SelectItem>
+                    {IMAGE_SHAPES.map((s) => (
+                      <SelectItem key={s.value} value={s.value}>
+                        {s.label}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </PropRow>

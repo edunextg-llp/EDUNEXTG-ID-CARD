@@ -28,7 +28,6 @@ import {
 
 type PrintMode = "FRONT_ONLY" | "BACK_ONLY" | "DUPLEX";
 type CardSide = "FRONT" | "BACK";
-type OutputMode = PrintMode | "SEPARATE";
 
 interface PrintModalProps {
   open: boolean;

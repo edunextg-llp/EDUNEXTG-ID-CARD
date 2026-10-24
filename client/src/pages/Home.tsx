@@ -7,10 +7,9 @@ import DeleteSchoolDialog from "@/components/DeleteSchoolDialog";
 import ExcelUploadModal from "@/components/ExcelUploadModal";
 import BulkImageUploadModal from "@/components/BulkImageUploadModal";
 import ApprovalTimeline from "@/components/ApprovalTimeline";
-import { DYNAMIC_FIELDS, SAMPLE_CARD_DATA, SAMPLE_STAFF_CARD_DATA, type DesignerElement } from "@shared/templateDesigner";
+import { DYNAMIC_FIELDS, SAMPLE_CARD_DATA, SAMPLE_STAFF_CARD_DATA } from "@shared/templateDesigner";
 import {
   type LucideIcon,
-  AlertCircle,
   AlertTriangle,
   ArrowUpRight,
   BookOpenCheck,
@@ -27,15 +26,12 @@ import {
   FileEdit,
   FilePlus2,
   FileText,
-  Filter,
   Grid2X2,
   Info,
   KeyRound,
   LayoutDashboard,
-  Loader2,
   LogOut,
   Menu,
-  MoreHorizontal,
   MoreVertical,
   Palette,
   Printer,
@@ -44,7 +40,6 @@ import {
   Search,
   Send,
   Settings2,
-  ShieldCheck,
   SlidersHorizontal,
   Sparkles,
   Trash2,
@@ -54,8 +49,6 @@ import {
   X,
   XCircle,
   ShoppingCart,
-  Bell,
-  Package,
   Handshake,
 } from "lucide-react";
 import SuperAdminProfileDialog from "@/components/SuperAdminProfileDialog";
@@ -119,8 +112,6 @@ import {
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
 import {
-  isValidIndianMobileNumber,
-  INDIAN_MOBILE_ERROR_MESSAGE,
   INDIAN_MOBILE_PLACEHOLDER,
 } from "@shared/phoneValidation";
 
@@ -391,7 +382,6 @@ export default function Home({
             "Orders",
           ].includes(label),
         );
-  const [query, setQuery] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [filter, setFilter] = useState<"All" | "Pending" | "Changes required" | "Rejected">(
     "All",
@@ -598,11 +588,6 @@ export default function Home({
     return approvals.filter((item) => item.schoolId === activeSchoolId);
   }, [approvals, activeSchoolId]);
 
-  const schoolIdCards = useMemo(() => {
-    if (!activeSchoolId) return idCards;
-    return idCards.filter((card) => card.schoolId === activeSchoolId);
-  }, [idCards, activeSchoolId]);
-
   const pendingRequests = useMemo(
     () => schoolApprovals.filter((item) => item.status !== "APPROVED" && item.status !== "PRINTED"),
     [schoolApprovals],
@@ -628,12 +613,6 @@ export default function Home({
           }
           return true;
         })
-        .filter(
-          (item) =>
-            item.studentName.toLowerCase().includes(query.toLowerCase()) ||
-            item.schoolName.toLowerCase().includes(query.toLowerCase()) ||
-            (item.admissionCode && item.admissionCode.toLowerCase().includes(query.toLowerCase())),
-        )
         .map((item, index) => ({
           ...item,
           initials: initialsFor(item.studentName),
@@ -642,7 +621,7 @@ export default function Home({
             ? formatDistanceToNow(new Date(item.submittedAt), { addSuffix: true })
             : "Not submitted",
         })),
-    [pendingRequests, query, filter],
+    [pendingRequests, filter],
   );
 
   const approve = async (id: number, name: string) => {
@@ -698,13 +677,17 @@ export default function Home({
   };
 
   const handleEditSchool = (school: ApiSchool) => {
-    if (
-      authenticatedUser.role !== "SUPER_ADMIN" &&
-      authenticatedUser.role !== "PARTNER" &&
-      (authenticatedUser.role as string) !== "PARTNER_ADMIN" &&
-      (authenticatedUser.role as string) !== "MARKETING_ADMIN"
-    ) {
+    const isSuperAdmin = authenticatedUser.role === "SUPER_ADMIN";
+    const isPartner =
+      authenticatedUser.role === "PARTNER" ||
+      (authenticatedUser.role as string) === "PARTNER_ADMIN" ||
+      (authenticatedUser.role as string) === "MARKETING_ADMIN";
+
+    if (!isSuperAdmin && !isPartner) {
       return toast.error("Only Administrators and Partners can edit schools");
+    }
+    if (isPartner && school.createdByUserId !== authenticatedUser.id) {
+      return toast.error("You can only edit schools created by your account");
     }
     setEditingSchool(school);
     setSchoolNameInput(school.name);
@@ -809,13 +792,17 @@ export default function Home({
     }
     try {
       if (editingSchool) {
-        const updated = await api.schools.update(editingSchool.id, {
+        const isSuperAdmin = authenticatedUser.role === "SUPER_ADMIN";
+        const updatePayload: Partial<ApiSchool> = {
           name: schoolNameInput.trim(),
           shortCode: schoolCodeInput.trim().toUpperCase(),
-          email: schoolEmailInput.trim() || null,
           phone: schoolPhoneInput.trim() || null,
           address: schoolAddressInput.trim() || null,
-        });
+        };
+        if (isSuperAdmin) {
+          updatePayload.email = schoolEmailInput.trim() || null;
+        }
+        const updated = await api.schools.update(editingSchool.id, updatePayload);
         setSchools((items) => items.map((s) => (s.id === updated.id ? updated : s)));
         setSchoolModalOpen(false);
         setEditingSchool(null);
@@ -2598,7 +2585,7 @@ export default function Home({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="text-xs font-bold text-foreground">
-                    Contact Email
+                    Contact Email{editingSchool && authenticatedUser.role !== "SUPER_ADMIN" ? " (Admin only)" : ""}
                   </label>
                   <Input
                     type="email"
@@ -2606,6 +2593,7 @@ export default function Home({
                     placeholder="admin@school.edu"
                     value={schoolEmailInput}
                     onChange={(e) => setSchoolEmailInput(e.target.value)}
+                    disabled={Boolean(editingSchool && authenticatedUser.role !== "SUPER_ADMIN")}
                   />
                 </div>
                 <div>
@@ -3942,7 +3930,6 @@ function ModuleView({
     return approvedCards.slice(start, start + APPROVED_PAGE_SIZE);
   }, [approvedCards, approvedPage]);
 
-  const allApprovedCardIds = useMemo(() => approvedCards.map((c) => c.id), [approvedCards]);
   const allRequestCardIds = useMemo(() => requestCards.map((c) => c.id), [requestCards]);
 
   const filteredUsers = useMemo(() => {

@@ -10,7 +10,7 @@ import PublicLayout from "@/components/PublicLayout";
 type LoginPortal = "admin" | "school" | "partner";
 
 export default function Login() {
-  const [location, navigate] = useLocation();
+  const [, navigate] = useLocation();
   const [selectedPortal, setSelectedPortal] = useState<LoginPortal>(() => {
     if (typeof window !== "undefined") {
       const path = window.location.pathname;
@@ -112,7 +112,7 @@ export default function Login() {
   }
 
   return (
-    <PublicLayout activePath="/login">
+    <PublicLayout activePath="/login" enableSmoothScroll={false}>
       <section className="lp-login-section">
         <div className="lp-login-container">
           {/* Institutional Brand Showcase (Desktop) */}
@@ -201,15 +201,9 @@ export default function Login() {
               <h2 className="text-2xl font-extrabold tracking-[-0.05em] text-foreground">
                 Sign In
               </h2>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Select your role and enter credentials to access your workspace.
-              </p>
 
               {/* Admin / School / Partner Portal Selector */}
               <div className="mt-5">
-                <label className="block text-xs font-bold text-foreground mb-1.5">
-                  Sign in as
-                </label>
                 <div className="grid grid-cols-3 gap-1.5 p-1 rounded-2xl bg-muted/70 border border-border">
                   <button
                     type="button"

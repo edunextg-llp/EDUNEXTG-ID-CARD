@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { Link } from "wouter";
 import PublicLayout from "@/components/PublicLayout";
-import { ArrowLeft, Home, FileQuestion } from "lucide-react";
+import { Home, FileQuestion } from "lucide-react";
 
 export default function NotFoundPage() {
   useEffect(() => {

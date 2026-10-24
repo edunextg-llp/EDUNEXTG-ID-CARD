@@ -9,7 +9,24 @@ import {
   idCardFiles,
   idCardTemplates,
 } from "../drizzle/schema";
-import { ENV } from "./_core/env";
+
+import { detectImageMimeType } from "./imageValidation";
+
+export class BulkPhotoError extends Error {
+  statusCode: number;
+  isClientError: boolean;
+  constructor(message: string, statusCode = 400) {
+    super(message);
+    this.name = "BulkPhotoError";
+    this.statusCode = statusCode;
+    this.isClientError = true;
+  }
+}
+
+const MAX_IMAGE_ENTRIES = 2000;
+const MAX_ENTRY_UNCOMPRESSED_SIZE = 10 * 1024 * 1024; // 10 MB
+const MAX_TOTAL_UNCOMPRESSED_SIZE = 300 * 1024 * 1024; // 300 MB
+const MAX_COMPRESSION_RATIO = 100;
 
 export interface BulkPhotoMatchResult {
   filename: string;
@@ -116,20 +133,70 @@ export async function processBulkPhotoUpload(
       const zip = new AdmZip(zipBuffer);
       const entries = zip.getEntries();
 
+      // Check limits from header sizes BEFORE calling getData()
+      const qualifyingEntries: AdmZip.IZipEntry[] = [];
+      let totalUncompressedSize = 0;
+
       for (const entry of entries) {
         if (entry.isDirectory) continue;
         if (entry.entryName.includes("__MACOSX") || path.basename(entry.name).startsWith(".")) continue;
 
         const ext = path.extname(entry.name).toLowerCase();
         if (SUPPORTED_IMAGE_EXTS.has(ext)) {
-          items.push({
-            filename: path.basename(entry.name),
-            buffer: entry.getData(),
-          });
+          qualifyingEntries.push(entry);
         }
       }
+
+      if (qualifyingEntries.length > MAX_IMAGE_ENTRIES) {
+        throw new BulkPhotoError(
+          `ZIP archive contains ${qualifyingEntries.length} image entries, exceeding the limit of ${MAX_IMAGE_ENTRIES}.`
+        );
+      }
+
+      for (const entry of qualifyingEntries) {
+        const uncompressedSize = entry.header.size;
+        const compressedSize = entry.header.compressedSize;
+
+        if (uncompressedSize > MAX_ENTRY_UNCOMPRESSED_SIZE) {
+          throw new BulkPhotoError(
+            `ZIP entry "${entry.entryName}" exceeds maximum allowed uncompressed size of 10 MB (${(uncompressedSize / (1024 * 1024)).toFixed(2)} MB).`
+          );
+        }
+
+        totalUncompressedSize += uncompressedSize;
+        if (totalUncompressedSize > MAX_TOTAL_UNCOMPRESSED_SIZE) {
+          throw new BulkPhotoError(
+            `Total uncompressed size of image entries exceeds the 300 MB limit.`
+          );
+        }
+
+        if (compressedSize > 0) {
+          const ratio = uncompressedSize / compressedSize;
+          if (ratio > MAX_COMPRESSION_RATIO) {
+            throw new BulkPhotoError(
+              `ZIP entry "${entry.entryName}" exceeds maximum allowed compression ratio of 100:1 (ratio: ${ratio.toFixed(1)}:1).`
+            );
+          }
+        } else if (uncompressedSize > 0) {
+          throw new BulkPhotoError(
+            `ZIP entry "${entry.entryName}" has an invalid compression ratio.`
+          );
+        }
+      }
+
+      for (const entry of qualifyingEntries) {
+        const buf = entry.getData();
+        if (!detectImageMimeType(buf)) {
+          continue;
+        }
+        items.push({
+          filename: path.basename(entry.name),
+          buffer: buf,
+        });
+      }
     } catch (zipErr: any) {
-      throw new Error(`Failed to extract ZIP archive: ${zipErr?.message || "Invalid archive"}`);
+      if (zipErr instanceof BulkPhotoError) throw zipErr;
+      throw new BulkPhotoError(`Failed to extract ZIP archive: ${zipErr?.message || "Invalid archive"}`);
     }
   }
 
@@ -141,9 +208,11 @@ export async function processBulkPhotoUpload(
 
       try {
         const cleanB64 = img.dataBase64.includes(",") ? img.dataBase64.split(",")[1] : img.dataBase64;
+        const buf = Buffer.from(cleanB64, "base64");
+        if (!detectImageMimeType(buf)) continue;
         items.push({
           filename: path.basename(img.filename),
-          buffer: Buffer.from(cleanB64, "base64"),
+          buffer: buf,
         });
       } catch {
         // Skip malformed base64
@@ -152,7 +221,7 @@ export async function processBulkPhotoUpload(
   }
 
   if (items.length === 0) {
-    throw new Error("No valid image files found (supported formats: JPG, PNG, WEBP, GIF, or ZIP archive).");
+    throw new BulkPhotoError("No valid image files found (supported formats: JPG, PNG, WEBP, GIF, or ZIP archive).");
   }
 
   // 2. Fetch all cards and requests for this school
@@ -305,19 +374,7 @@ export async function processBulkPhotoUpload(
     const safeBase = rawId.replace(/[^a-zA-Z0-9._-]/g, "_");
     const saveName = `${safeBase}.jpg`;
 
-    let photoUrl: string;
-    if (ENV.forgeApiUrl && ENV.forgeApiKey) {
-      try {
-        const { storagePut } = await import("./storage");
-        const folder = `schools/${schoolId}/photos`;
-        const stored = await storagePut(`${folder}/${saveName}`, compressed, "image/jpeg");
-        photoUrl = stored.url;
-      } catch (uploadErr) {
-        photoUrl = `data:image/jpeg;base64,${compressed.toString("base64")}`;
-      }
-    } else {
-      photoUrl = `data:image/jpeg;base64,${compressed.toString("base64")}`;
-    }
+    const photoUrl = `data:image/jpeg;base64,${compressed.toString("base64")}`;
 
     // Update idCardData: photo, and student_photo / staff_photo
     await upsertCardDataField(db, match.card.id, "photo", photoUrl);
