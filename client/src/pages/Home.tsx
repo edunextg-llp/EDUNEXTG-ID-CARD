@@ -84,6 +84,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { MenuToggleIcon } from "@/components/ui/menu-toggle-icon";
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -383,6 +390,67 @@ export default function Home({
           ].includes(label),
         );
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        return localStorage.getItem("sidebar_collapsed") === "true";
+      } catch {
+        return false;
+      }
+    }
+    return false;
+  });
+
+  const [isDesktop, setIsDesktop] = useState<boolean>(() => {
+    if (typeof window !== "undefined") {
+      return window.innerWidth >= 1024;
+    }
+    return true;
+  });
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsDesktop(window.innerWidth >= 1024);
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const isCollapsed = isDesktop && sidebarCollapsed;
+
+  const toggleSidebarCollapsed = () => {
+    setSidebarCollapsed((prev) => {
+      const next = !prev;
+      if (typeof window !== "undefined") {
+        try {
+          localStorage.setItem("sidebar_collapsed", String(next));
+        } catch {
+          // ignore localStorage error
+        }
+      }
+      return next;
+    });
+  };
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "b") {
+        const target = e.target as HTMLElement;
+        if (
+          target &&
+          (target.tagName === "INPUT" ||
+            target.tagName === "TEXTAREA" ||
+            target.isContentEditable)
+        ) {
+          return;
+        }
+        e.preventDefault();
+        toggleSidebarCollapsed();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
   const [filter, setFilter] = useState<"All" | "Pending" | "Changes required" | "Rejected">(
     "All",
   );
@@ -1428,48 +1496,140 @@ export default function Home({
   return (
     <div className="min-h-screen app-shell bg-background text-foreground">
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex w-[244px] flex-col bg-[#102728] text-[#dfecea] transition-transform duration-200 lg:translate-x-0 overflow-y-auto overflow-x-hidden [scrollbar-width:thin] [scrollbar-color:#294344_transparent] ${sidebarOpen ? "translate-x-0" : "-translate-x-full"
-          }`}
+        className={`fixed inset-y-0 left-0 z-50 flex flex-col bg-[#102728] text-[#dfecea] transition-all duration-300 ease-in-out lg:translate-x-0 overflow-y-auto overflow-x-hidden [scrollbar-width:thin] [scrollbar-color:#294344_transparent] ${
+          sidebarOpen ? "translate-x-0" : "-translate-x-full"
+        } ${isCollapsed ? "w-[72px]" : "w-[244px]"}`}
       >
-        <div className="flex h-[76px] shrink-0 items-center justify-between px-6">
-          <div className="flex items-center gap-3">
-            <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-white p-1 shadow-sm">
+        <div
+          className={`flex h-[76px] shrink-0 items-center ${
+            isCollapsed ? "justify-center px-2" : "justify-between px-5"
+          } transition-all duration-300`}
+        >
+          <div className={`flex items-center gap-3 overflow-hidden ${isCollapsed ? "justify-center" : ""}`}>
+            <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white p-1 shadow-sm">
               <img
                 src="/insight-education-logo.png"
                 alt="Insight Education"
                 className="h-full w-full object-contain"
               />
             </div>
-            <div>
-              <div className="text-[15.5px] font-bold tracking-tight leading-tight select-none font-serif drop-shadow-sm">
-                <span className="bg-gradient-to-r from-[#007a3d] via-[#109648] to-[#22ab55] bg-clip-text text-transparent font-extrabold">
-                  Insight{" "}
-                </span>
-                <span className="bg-gradient-to-r from-[#ea580c] via-[#f97316] to-[#fb923c] bg-clip-text text-transparent font-extrabold">
-                  Education
-                </span>
+            {!isCollapsed && (
+              <div className="min-w-0 overflow-hidden transition-opacity duration-300">
+                <div className="text-[15.5px] font-bold tracking-tight leading-tight select-none font-serif drop-shadow-sm whitespace-nowrap">
+                  <span className="bg-gradient-to-r from-[#007a3d] via-[#109648] to-[#22ab55] bg-clip-text text-transparent font-extrabold">
+                    Insight{" "}
+                  </span>
+                  <span className="bg-gradient-to-r from-[#ea580c] via-[#f97316] to-[#fb923c] bg-clip-text text-transparent font-extrabold">
+                    Education
+                  </span>
+                </div>
+                <div className="font-mono text-[9px] uppercase tracking-[0.18em] text-[#7fa09c] mt-0.5 truncate">
+                  {portal === "admin"
+                    ? "admin console"
+                    : portal === "partner" || portal === "marketing"
+                      ? "partner portal"
+                      : "school portal"}
+                </div>
               </div>
-              <div className="font-mono text-[9px] uppercase tracking-[0.18em] text-[#7fa09c] mt-0.5">
-                {portal === "admin" ? "admin console" : (portal === "partner" || portal === "marketing") ? "partner portal" : "school portal"}
-              </div>
-            </div>
+            )}
           </div>
           <button
-            className="text-[#86a7a3] lg:hidden"
+            className="text-[#86a7a3] hover:text-white p-1 rounded-lg hover:bg-[#1b3a3a] lg:hidden transition-colors"
             onClick={() => setSidebarOpen(false)}
+            aria-label="Close sidebar"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
 
-        <div className="px-5 pt-2 shrink-0">
-          <div className="mb-3 px-2 font-mono text-[10px] uppercase tracking-[0.18em] text-[#6e928d]">
-            workspace
-          </div>
+        <div className={`pt-2 shrink-0 ${isCollapsed ? "px-2" : "px-5"} transition-all duration-300`}>
+          {!isCollapsed ? (
+            <div className="mb-3 px-2 font-mono text-[10px] uppercase tracking-[0.18em] text-[#6e928d]">
+              workspace
+            </div>
+          ) : (
+            <div className="my-2 border-t border-[#294344]/60 mx-1" />
+          )}
           <nav className="space-y-1">
             {visibleNavItems.map(({ label, icon: Icon }) => {
               if (label === "Orders") {
                 const isOrderActive = activeNav === "Create Order" || activeNav === "Order List";
+
+                if (isCollapsed) {
+                  return (
+                    <DropdownMenu key="Orders">
+                      <Tooltip delayDuration={100}>
+                        <TooltipTrigger asChild>
+                          <DropdownMenuTrigger asChild>
+                            <button
+                              type="button"
+                              className={`group flex w-full items-center justify-center rounded-xl p-3 text-center transition-colors ${
+                                isOrderActive
+                                  ? "bg-[#1b3a3a] text-white ring-1 ring-[#40c8bb]/40"
+                                  : "text-[#99b6b2] hover:bg-[#1b3a3a] hover:text-white"
+                              }`}
+                              aria-label="Orders"
+                            >
+                              <ShoppingCart
+                                className={`h-[18px] w-[18px] shrink-0 ${
+                                  isOrderActive ? "text-[#40c8bb]" : "text-[#779b96]"
+                                }`}
+                                strokeWidth={isOrderActive ? 2.3 : 1.8}
+                              />
+                            </button>
+                          </DropdownMenuTrigger>
+                        </TooltipTrigger>
+                        <TooltipContent
+                          side="right"
+                          sideOffset={14}
+                          className="bg-[#102728] text-white border border-[#294344] text-xs font-semibold py-1.5 px-3 shadow-xl"
+                        >
+                          Orders
+                        </TooltipContent>
+                      </Tooltip>
+                      <DropdownMenuContent
+                        side="right"
+                        sideOffset={14}
+                        className="bg-[#102728] text-[#dfecea] border border-[#294344] min-w-[160px] p-1.5 rounded-xl shadow-2xl z-50"
+                      >
+                        <div className="px-2.5 py-1 text-[10px] font-mono uppercase tracking-wider text-[#6e928d]">
+                          Orders
+                        </div>
+                        <DropdownMenuItem
+                          onClick={() => goTo("Create Order")}
+                          className={`flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold cursor-pointer ${
+                            activeNav === "Create Order"
+                              ? "bg-[#dff3ee] text-[#123b3b]"
+                              : "text-[#dfecea] hover:bg-[#1b3a3a]"
+                          }`}
+                        >
+                          <span
+                            className={`h-1.5 w-1.5 rounded-full ${
+                              activeNav === "Create Order" ? "bg-[#0f7f79]" : "bg-[#597874]"
+                            }`}
+                          />
+                          Create Order
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => goTo("Order List")}
+                          className={`flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold cursor-pointer ${
+                            activeNav === "Order List"
+                              ? "bg-[#dff3ee] text-[#123b3b]"
+                              : "text-[#dfecea] hover:bg-[#1b3a3a]"
+                          }`}
+                        >
+                          <span
+                            className={`h-1.5 w-1.5 rounded-full ${
+                              activeNav === "Order List" ? "bg-[#0f7f79]" : "bg-[#597874]"
+                            }`}
+                          />
+                          Order List
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  );
+                }
+
                 return (
                   <div key="Orders" className="space-y-1">
                     <button
@@ -1539,70 +1699,191 @@ export default function Home({
                       ? "My ID Cards"
                       : label
                   : label;
+
+              if (isCollapsed) {
+                return (
+                  <Tooltip key={label} delayDuration={100}>
+                    <TooltipTrigger asChild>
+                      <button
+                        onClick={() => goTo(label as NavLabel)}
+                        className={`group flex w-full items-center justify-center rounded-xl p-3 text-center transition-colors ${
+                          active
+                            ? "bg-[#dff3ee] text-[#123b3b] shadow-sm"
+                            : "text-[#99b6b2] hover:bg-[#1b3a3a] hover:text-white"
+                        }`}
+                        aria-label={displayLabel}
+                      >
+                        <Icon
+                          className={`h-[18px] w-[18px] shrink-0 ${
+                            active ? "text-[#0f7f79]" : "text-[#779b96]"
+                          }`}
+                          strokeWidth={active ? 2.3 : 1.8}
+                        />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent
+                      side="right"
+                      sideOffset={14}
+                      className="bg-[#102728] text-white border border-[#294344] text-xs font-semibold py-1.5 px-3 shadow-xl"
+                    >
+                      {displayLabel}
+                    </TooltipContent>
+                  </Tooltip>
+                );
+              }
+
               return (
                 <button
                   key={label}
                   onClick={() => goTo(label as NavLabel)}
-                  className={`group flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-[12px] font-semibold transition-colors ${active
-                    ? "bg-[#dff3ee] text-[#123b3b]"
-                    : "text-[#99b6b2] hover:bg-[#1b3a3a] hover:text-white"
-                    }`}
+                  className={`group flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-[12px] font-semibold transition-colors ${
+                    active
+                      ? "bg-[#dff3ee] text-[#123b3b]"
+                      : "text-[#99b6b2] hover:bg-[#1b3a3a] hover:text-white"
+                  }`}
                 >
                   <Icon
-                    className={`h-[17px] w-[17px] ${active ? "text-[#0f7f79]" : "text-[#779b96]"
-                      }`}
+                    className={`h-[17px] w-[17px] shrink-0 ${
+                      active ? "text-[#0f7f79]" : "text-[#779b96]"
+                    }`}
                     strokeWidth={active ? 2.3 : 1.8}
                   />
-                  <span className="flex-1">{displayLabel}</span>
+                  <span className="flex-1 truncate">{displayLabel}</span>
                 </button>
               );
             })}
           </nav>
         </div>
 
-        <div className="mt-auto shrink-0 px-5 pt-6">
-          <div className="mb-4 border-t border-[#294344]" />
-          <nav className="space-y-1 pb-5">
+        <div className={`mt-auto shrink-0 ${isCollapsed ? "px-2" : "px-5"} pt-4 transition-all duration-300`}>
+          <div className="mb-3 border-t border-[#294344]" />
+          <nav className="space-y-1 pb-3">
             {/* About Us directly above Settings */}
-            <button
-              onClick={() => goTo("About Us")}
-              className={`flex w-full items-center gap-3 rounded-xl px-3 py-3 text-[12px] font-semibold transition-colors ${activeNav === "About Us"
-                ? "bg-[#dff3ee] text-[#123b3b]"
-                : "text-[#99b6b2] hover:bg-[#1b3a3a] hover:text-white"
+            {isCollapsed ? (
+              <Tooltip delayDuration={100}>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={() => goTo("About Us")}
+                    className={`group flex w-full items-center justify-center rounded-xl p-3 text-center transition-colors ${
+                      activeNav === "About Us"
+                        ? "bg-[#dff3ee] text-[#123b3b]"
+                        : "text-[#99b6b2] hover:bg-[#1b3a3a] hover:text-white"
+                    }`}
+                    aria-label="About Us"
+                  >
+                    <Info
+                      className={`h-[18px] w-[18px] shrink-0 ${
+                        activeNav === "About Us" ? "text-[#0f7f79]" : "text-[#779b96]"
+                      }`}
+                      strokeWidth={activeNav === "About Us" ? 2.3 : 1.8}
+                    />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent
+                  side="right"
+                  sideOffset={14}
+                  className="bg-[#102728] text-white border border-[#294344] text-xs font-semibold py-1.5 px-3 shadow-xl"
+                >
+                  About Us
+                </TooltipContent>
+              </Tooltip>
+            ) : (
+              <button
+                onClick={() => goTo("About Us")}
+                className={`flex w-full items-center gap-3 rounded-xl px-3 py-3 text-[12px] font-semibold transition-colors ${
+                  activeNav === "About Us"
+                    ? "bg-[#dff3ee] text-[#123b3b]"
+                    : "text-[#99b6b2] hover:bg-[#1b3a3a] hover:text-white"
                 }`}
-            >
-              <Info
-                className={`h-[17px] w-[17px] ${activeNav === "About Us" ? "text-[#0f7f79]" : "text-[#779b96]"
+              >
+                <Info
+                  className={`h-[17px] w-[17px] ${
+                    activeNav === "About Us" ? "text-[#0f7f79]" : "text-[#779b96]"
                   }`}
-                strokeWidth={activeNav === "About Us" ? 2.3 : 1.8}
-              />
-              <span className="flex-1 text-left">About Us</span>
-            </button>
+                  strokeWidth={activeNav === "About Us" ? 2.3 : 1.8}
+                />
+                <span className="flex-1 text-left">About Us</span>
+              </button>
+            )}
 
-            <button
-              onClick={() => goTo("Settings")}
-              className={`flex w-full items-center gap-3 rounded-xl px-3 py-3 text-[12px] font-semibold transition-colors ${activeNav === "Settings"
-                ? "bg-[#dff3ee] text-[#123b3b]"
-                : "text-[#99b6b2] hover:bg-[#1b3a3a] hover:text-white"
+            {isCollapsed ? (
+              <Tooltip delayDuration={100}>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={() => goTo("Settings")}
+                    className={`group flex w-full items-center justify-center rounded-xl p-3 text-center transition-colors ${
+                      activeNav === "Settings"
+                        ? "bg-[#dff3ee] text-[#123b3b]"
+                        : "text-[#99b6b2] hover:bg-[#1b3a3a] hover:text-white"
+                    }`}
+                    aria-label="Settings"
+                  >
+                    <Settings2
+                      className={`h-[18px] w-[18px] shrink-0 ${
+                        activeNav === "Settings" ? "text-[#0f7f79]" : "text-[#779b96]"
+                      }`}
+                      strokeWidth={activeNav === "Settings" ? 2.3 : 1.8}
+                    />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent
+                  side="right"
+                  sideOffset={14}
+                  className="bg-[#102728] text-white border border-[#294344] text-xs font-semibold py-1.5 px-3 shadow-xl"
+                >
+                  Settings
+                </TooltipContent>
+              </Tooltip>
+            ) : (
+              <button
+                onClick={() => goTo("Settings")}
+                className={`flex w-full items-center gap-3 rounded-xl px-3 py-3 text-[12px] font-semibold transition-colors ${
+                  activeNav === "Settings"
+                    ? "bg-[#dff3ee] text-[#123b3b]"
+                    : "text-[#99b6b2] hover:bg-[#1b3a3a] hover:text-white"
                 }`}
-            >
-              <Settings2
-                className={`h-[17px] w-[17px] ${activeNav === "Settings" ? "text-[#0f7f79]" : "text-[#779b96]"
+              >
+                <Settings2
+                  className={`h-[17px] w-[17px] ${
+                    activeNav === "Settings" ? "text-[#0f7f79]" : "text-[#779b96]"
                   }`}
-                strokeWidth={activeNav === "Settings" ? 2.3 : 1.8}
-              />
-              <span className="flex-1 text-left">Settings</span>
-            </button>
+                  strokeWidth={activeNav === "Settings" ? 2.3 : 1.8}
+                />
+                <span className="flex-1 text-left">Settings</span>
+              </button>
+            )}
           </nav>
-          <div className="flex items-center justify-between border-t border-[#294344] py-4">
-            <span className="font-mono text-[9px] uppercase tracking-[0.15em] text-[#6e928d]">
-              Insight Education v2.0
-            </span>
-            <span className="flex items-center gap-1.5 text-[10px] font-semibold text-[#71c4a8]">
-              <span className="h-1.5 w-1.5 rounded-full bg-[#71c4a8]" />
-              Live
-            </span>
-          </div>
+          {isCollapsed ? (
+            <div className="flex flex-col items-center justify-center border-t border-[#294344] py-3">
+              <Tooltip delayDuration={100}>
+                <TooltipTrigger asChild>
+                  <div className="flex items-center justify-center p-1 cursor-default">
+                    <span className="relative flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#40c8bb] opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-[#71c4a8]"></span>
+                    </span>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent
+                  side="right"
+                  sideOffset={14}
+                  className="bg-[#102728] text-white border border-[#294344] text-[10px]"
+                >
+                  Insight Education v2.0 • Live
+                </TooltipContent>
+              </Tooltip>
+            </div>
+          ) : (
+            <div className="flex items-center justify-between border-t border-[#294344] py-4">
+              <span className="font-mono text-[9px] uppercase tracking-[0.15em] text-[#6e928d]">
+                Insight Education v2.0
+              </span>
+              <span className="flex items-center gap-1.5 text-[10px] font-semibold text-[#71c4a8]">
+                <span className="h-1.5 w-1.5 rounded-full bg-[#71c4a8]" />
+                Live
+              </span>
+            </div>
+          )}
         </div>
       </aside>
 
@@ -1614,15 +1895,30 @@ export default function Home({
         />
       )}
 
-      <main className="min-h-screen lg:pl-[244px]">
+      <main
+        className={`min-h-screen transition-all duration-300 ease-in-out ${
+          isCollapsed ? "lg:pl-[72px]" : "lg:pl-[244px]"
+        }`}
+      >
         <header className="sticky top-0 z-30 flex h-[76px] items-center justify-between border-b border-border bg-background/90 px-3 sm:px-8 lg:px-11 backdrop-blur-xl">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             <button
-              onClick={() => setSidebarOpen(true)}
-              className="rounded-lg p-2 text-muted-foreground hover:bg-card lg:hidden shrink-0"
-              aria-label="Open sidebar"
+              onClick={() => {
+                if (window.innerWidth >= 1024) {
+                  toggleSidebarCollapsed();
+                } else {
+                  setSidebarOpen((prev) => !prev);
+                }
+              }}
+              className="rounded-lg p-1.5 text-muted-foreground hover:bg-card hover:text-foreground transition-colors shrink-0 flex items-center justify-center cursor-pointer"
+              aria-label={isCollapsed ? "Expand sidebar (Ctrl+B)" : "Collapse sidebar (Ctrl+B)"}
+              title={isCollapsed ? "Expand sidebar (Ctrl+B)" : "Collapse sidebar (Ctrl+B)"}
             >
-              <Menu className="h-5 w-5" />
+              <MenuToggleIcon
+                open={isDesktop ? !sidebarCollapsed : sidebarOpen}
+                className="h-6 w-6"
+                duration={300}
+              />
             </button>
             <div className="min-w-0">
               {activeNav === "Overview" && (
