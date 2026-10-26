@@ -26,6 +26,7 @@ import { useRevealOnScroll } from "@/hooks/useRevealOnScroll";
 import LogoMarquee from "@/components/LogoMarquee";
 import StatItem from "@/components/StatItem";
 import FaqAccordion from "@/components/FaqAccordion";
+import { InteractiveHoverButton } from "@/components/ui/interactive-hover-button";
 
 /* ───────────────────────────────────────────
    Nav links
@@ -407,13 +408,13 @@ export default function Landing() {
               Quality ID Cards, Lanyards, Holders &amp; Accessories for Schools, Colleges, Institutions &amp;
               Organizations.
             </p>
-            <a
-              href="#products"
-              className="lp-hero-cta"
-              onClick={(e) => handleNavClick(e, "#products")}
-            >
-              Explore Our Products <ArrowRight size={18} />
-            </a>
+            <div className="mt-4">
+              <InteractiveHoverButton
+                text="Explore Our Products"
+                className="h-12 min-w-56 text-base bg-white/95 text-slate-900 border-white/50 shadow-xl backdrop-blur-xs hover:text-white"
+                onClick={(e) => handleNavClick(e as unknown as React.MouseEvent<HTMLAnchorElement>, "#products")}
+              />
+            </div>
           </div>
 
           {/* Carousel Controls */}

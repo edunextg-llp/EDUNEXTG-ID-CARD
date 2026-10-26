@@ -62,30 +62,16 @@ export default function Login() {
       const isPartner = userRole === "PARTNER" || userRole === "PARTNER_ADMIN" || userRole === "MARKETING_ADMIN";
       const isSchool = userRole === "SCHOOL_ADMIN" || userRole === "SCHOOL_OPERATOR" || userRole === "VIEWER";
 
-      if (selectedPortal === "admin" && !isSuperAdmin) {
-        await api.auth.logout().catch(() => undefined);
-        const actualRoleName = isPartner ? "Partner" : "School";
-        const msg = `This account is a ${actualRoleName} account. Please select the "${actualRoleName}" tab above.`;
-        setValidationError(msg);
-        toast.error("Account role mismatch", { description: msg });
-        return;
-      }
+      const isMismatch =
+        (selectedPortal === "admin" && !isSuperAdmin) ||
+        (selectedPortal === "school" && !isSchool) ||
+        (selectedPortal === "partner" && !isPartner);
 
-      if (selectedPortal === "school" && !isSchool) {
+      if (isMismatch) {
         await api.auth.logout().catch(() => undefined);
-        const actualRoleName = isSuperAdmin ? "Admin" : "Partner";
-        const msg = `This account is an ${actualRoleName} account. Please select the "${actualRoleName}" tab above.`;
+        const msg = "Invalid credentials or unauthorized portal access";
         setValidationError(msg);
-        toast.error("Account role mismatch", { description: msg });
-        return;
-      }
-
-      if (selectedPortal === "partner" && !isPartner) {
-        await api.auth.logout().catch(() => undefined);
-        const actualRoleName = isSuperAdmin ? "Admin" : "School";
-        const msg = `This account is a ${actualRoleName} account. Please select the "${actualRoleName}" tab above.`;
-        setValidationError(msg);
-        toast.error("Account role mismatch", { description: msg });
+        toast.error("Unable to sign in", { description: msg });
         return;
       }
 
