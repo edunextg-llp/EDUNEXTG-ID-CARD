@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { api } from "@/lib/api";
 import PublicLayout from "@/components/PublicLayout";
+import { SlideTabs } from "@/components/ui/slide-tabs";
 
 type LoginPortal = "admin" | "school" | "partner";
 
@@ -188,46 +189,36 @@ export default function Login() {
                 Sign In
               </h2>
 
-              {/* Admin / School / Partner Portal Selector */}
+              {/* Admin / School / Partner Portal Selector using SlideTabs */}
               <div className="mt-5">
-                <div className="grid grid-cols-3 gap-1.5 p-1 rounded-2xl bg-muted/70 border border-border">
-                  <button
-                    type="button"
-                    onClick={() => setSelectedPortal("admin")}
-                    className={`flex items-center justify-center gap-1.5 py-2 px-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                      selectedPortal === "admin"
-                        ? "bg-primary text-primary-foreground shadow-sm"
-                        : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
-                    }`}
-                  >
-                    <ShieldCheck className="h-3.5 w-3.5" />
-                    <span>Admin</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setSelectedPortal("school")}
-                    className={`flex items-center justify-center gap-1.5 py-2 px-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                      selectedPortal === "school"
-                        ? "bg-primary text-primary-foreground shadow-sm"
-                        : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
-                    }`}
-                  >
-                    <GraduationCap className="h-3.5 w-3.5" />
-                    <span>School</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setSelectedPortal("partner")}
-                    className={`flex items-center justify-center gap-1.5 py-2 px-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                      selectedPortal === "partner"
-                        ? "bg-primary text-primary-foreground shadow-sm"
-                        : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
-                    }`}
-                  >
-                    <Handshake className="h-3.5 w-3.5" />
-                    <span>Partner</span>
-                  </button>
-                </div>
+                <SlideTabs
+                  activeTab={selectedPortal}
+                  onChange={(_idx, val) => {
+                    if (val === "admin" || val === "school" || val === "partner") {
+                      setSelectedPortal(val);
+                    }
+                  }}
+                  tabs={[
+                    {
+                      id: "admin",
+                      value: "admin",
+                      label: "Admin",
+                      icon: <ShieldCheck className="h-3.5 w-3.5" />,
+                    },
+                    {
+                      id: "school",
+                      value: "school",
+                      label: "School",
+                      icon: <GraduationCap className="h-3.5 w-3.5" />,
+                    },
+                    {
+                      id: "partner",
+                      value: "partner",
+                      label: "Partner",
+                      icon: <Handshake className="h-3.5 w-3.5" />,
+                    },
+                  ]}
+                />
               </div>
 
               <div className="mt-6 space-y-4">

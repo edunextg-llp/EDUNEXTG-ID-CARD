@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useSmoothScroll, getLenis } from "@/hooks/useSmoothScroll";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import {
   ShieldCheck,
   PenSquare,
@@ -121,6 +121,7 @@ const HERO_IMAGES = [
    Landing Component
    ═══════════════════════════════════════════ */
 export default function Landing() {
+  const [, navigate] = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("home");
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -293,16 +294,17 @@ export default function Landing() {
           </nav>
 
           <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-            {/* Login button */}
-            <a
-              href="/login"
-              className="lp-portal-btn"
+            {/* Login button with interactive hover effect */}
+            <div
               onMouseEnter={() => prefetchRoute("/login")}
               onTouchStart={() => prefetchRoute("/login")}
             >
-              <LockKeyhole size={16} />
-              Login
-            </a>
+              <InteractiveHoverButton
+                text="Login"
+                onClick={() => navigate("/login")}
+                className="h-10 min-w-28 px-4 text-xs font-bold border-primary/30 bg-primary/10 text-primary hover:text-primary-foreground shadow-xs"
+              />
+            </div>
 
             {/* Hamburger (mobile) */}
             <button
@@ -351,16 +353,19 @@ export default function Landing() {
               </Link>
             )
           ))}
-          <a
-            href="/login"
-            className="lp-portal-btn"
+          <div
             style={{ alignSelf: "flex-start", marginTop: 8 }}
-            onClick={() => setMobileMenuOpen(false)}
             onTouchStart={() => prefetchRoute("/login")}
           >
-            <LockKeyhole size={16} />
-            Login
-          </a>
+            <InteractiveHoverButton
+              text="Login"
+              onClick={() => {
+                setMobileMenuOpen(false);
+                navigate("/login");
+              }}
+              className="h-10 min-w-28 px-4 text-xs font-bold border-primary/30 bg-primary/10 text-primary hover:text-primary-foreground shadow-xs"
+            />
+          </div>
         </nav>
       </header>
 
