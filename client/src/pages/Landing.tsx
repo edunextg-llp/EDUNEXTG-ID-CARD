@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useSmoothScroll, getLenis } from "@/hooks/useSmoothScroll";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import {
   ShieldCheck,
   PenSquare,
@@ -26,6 +26,7 @@ import { useRevealOnScroll } from "@/hooks/useRevealOnScroll";
 import LogoMarquee from "@/components/LogoMarquee";
 import StatItem from "@/components/StatItem";
 import FaqAccordion from "@/components/FaqAccordion";
+import { InteractiveHoverButton } from "@/components/ui/interactive-hover-button";
 
 /* ───────────────────────────────────────────
    Nav links
@@ -120,6 +121,7 @@ const HERO_IMAGES = [
    Landing Component
    ═══════════════════════════════════════════ */
 export default function Landing() {
+  const [, navigate] = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("home");
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -292,16 +294,17 @@ export default function Landing() {
           </nav>
 
           <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-            {/* Login button */}
-            <a
-              href="/login"
-              className="lp-portal-btn"
+            {/* Login button with interactive hover effect */}
+            <div
               onMouseEnter={() => prefetchRoute("/login")}
               onTouchStart={() => prefetchRoute("/login")}
             >
-              <LockKeyhole size={16} />
-              Login
-            </a>
+              <InteractiveHoverButton
+                text="Login"
+                onClick={() => navigate("/login")}
+                className="h-10 min-w-28 px-4 text-xs font-bold border-primary/30 bg-primary/10 text-primary hover:text-primary-foreground shadow-xs"
+              />
+            </div>
 
             {/* Hamburger (mobile) */}
             <button
@@ -350,16 +353,19 @@ export default function Landing() {
               </Link>
             )
           ))}
-          <a
-            href="/login"
-            className="lp-portal-btn"
+          <div
             style={{ alignSelf: "flex-start", marginTop: 8 }}
-            onClick={() => setMobileMenuOpen(false)}
             onTouchStart={() => prefetchRoute("/login")}
           >
-            <LockKeyhole size={16} />
-            Login
-          </a>
+            <InteractiveHoverButton
+              text="Login"
+              onClick={() => {
+                setMobileMenuOpen(false);
+                navigate("/login");
+              }}
+              className="h-10 min-w-28 px-4 text-xs font-bold border-primary/30 bg-primary/10 text-primary hover:text-primary-foreground shadow-xs"
+            />
+          </div>
         </nav>
       </header>
 
@@ -407,13 +413,13 @@ export default function Landing() {
               Quality ID Cards, Lanyards, Holders &amp; Accessories for Schools, Colleges, Institutions &amp;
               Organizations.
             </p>
-            <a
-              href="#products"
-              className="lp-hero-cta"
-              onClick={(e) => handleNavClick(e, "#products")}
-            >
-              Explore Our Products <ArrowRight size={18} />
-            </a>
+            <div className="mt-4">
+              <InteractiveHoverButton
+                text="Explore Our Products"
+                className="h-12 min-w-56 text-base bg-white/95 text-slate-900 border-white/50 shadow-xl backdrop-blur-xs hover:text-white"
+                onClick={(e) => handleNavClick(e as unknown as React.MouseEvent<HTMLAnchorElement>, "#products")}
+              />
+            </div>
           </div>
 
           {/* Carousel Controls */}

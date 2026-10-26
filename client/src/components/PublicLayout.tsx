@@ -132,16 +132,18 @@ export default function PublicLayout({ children, activePath, enableSmoothScroll 
           </nav>
 
           <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-            {/* Login button */}
-            <a
-              href="/login"
-              className="lp-portal-btn"
-              onMouseEnter={() => prefetchRoute("/login")}
-              onTouchStart={() => prefetchRoute("/login")}
-            >
-              <LockKeyhole size={16} />
-              Login
-            </a>
+            {/* Login button (hidden on login page itself) */}
+            {currentPath !== "/login" && (
+              <a
+                href="/login"
+                className="lp-portal-btn"
+                onMouseEnter={() => prefetchRoute("/login")}
+                onTouchStart={() => prefetchRoute("/login")}
+              >
+                <LockKeyhole size={16} />
+                Login
+              </a>
+            )}
 
             {/* Hamburger (mobile) */}
             <button
@@ -184,16 +186,18 @@ export default function PublicLayout({ children, activePath, enableSmoothScroll 
               {link.label}
             </Link>
           ))}
-          <a
-            href="/login"
-            className="lp-portal-btn"
-            style={{ alignSelf: "flex-start", marginTop: 8 }}
-            onClick={() => setMobileMenuOpen(false)}
-            onTouchStart={() => prefetchRoute("/login")}
-          >
-            <LockKeyhole size={16} />
-            Login
-          </a>
+          {currentPath !== "/login" && (
+            <a
+              href="/login"
+              className="lp-portal-btn"
+              style={{ alignSelf: "flex-start", marginTop: 8 }}
+              onClick={() => setMobileMenuOpen(false)}
+              onTouchStart={() => prefetchRoute("/login")}
+            >
+              <LockKeyhole size={16} />
+              Login
+            </a>
+          )}
         </nav>
       </header>
 

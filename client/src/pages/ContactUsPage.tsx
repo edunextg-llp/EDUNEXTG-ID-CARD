@@ -12,6 +12,7 @@ import {
 import { prefetchRoute } from "@/lib/prefetchRoute";
 import { useRevealOnScroll } from "@/hooks/useRevealOnScroll";
 import FaqAccordion from "@/components/FaqAccordion";
+import { InteractiveHoverButton } from "@/components/ui/interactive-hover-button";
 
 export default function ContactUsPage() {
   const contactReveal = useRevealOnScroll<HTMLElement>();
@@ -130,11 +131,14 @@ export default function ContactUsPage() {
               </div>
               <Link
                 href="/login"
-                className="lp-contact-portal-btn"
                 onMouseEnter={() => prefetchRoute("/login")}
                 onTouchStart={() => prefetchRoute("/login")}
+                className="inline-flex shrink-0 items-center"
               >
-                <LockKeyhole size={16} /> School Portal Login <ArrowRight size={16} />
+                <InteractiveHoverButton
+                  text="School Portal Login"
+                  className="min-w-52 h-12 text-sm bg-white text-slate-900 border-white/60 shadow-lg hover:text-white"
+                />
               </Link>
             </div>
           </div>

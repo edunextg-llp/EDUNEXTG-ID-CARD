@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/dialog";
 import { api, type ApiAuthUser } from "@/lib/api";
 import { toast } from "sonner";
+import { SlideTabs } from "@/components/ui/slide-tabs";
 import {
   INDIAN_MOBILE_PLACEHOLDER,
 } from "@shared/phoneValidation";
@@ -258,32 +259,30 @@ export default function SuperAdminProfileDialog({
             </span>
           </div>
 
-          {/* Navigation Tabs */}
-          <div className="mt-5 flex gap-2 border-t border-border pt-3">
-            <button
-              type="button"
-              onClick={() => setActiveTab("details")}
-              className={`flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-bold transition-all ${
-                activeTab === "details"
-                  ? "bg-primary text-primary-foreground shadow-sm"
-                  : "text-muted-foreground hover:bg-muted/80 hover:text-foreground"
-              }`}
-            >
-              <User className="h-3.5 w-3.5" />
-              General Details & Photo
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveTab("security")}
-              className={`flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-bold transition-all ${
-                activeTab === "security"
-                  ? "bg-primary text-primary-foreground shadow-sm"
-                  : "text-muted-foreground hover:bg-muted/80 hover:text-foreground"
-              }`}
-            >
-              <KeyRound className="h-3.5 w-3.5" />
-              Security & Password
-            </button>
+          {/* Navigation Tabs using SlideTabs */}
+          <div className="mt-5 border-t border-border pt-4">
+            <SlideTabs
+              activeTab={activeTab}
+              onChange={(_idx, val) => {
+                if (val === "details" || val === "security") {
+                  setActiveTab(val);
+                }
+              }}
+              tabs={[
+                {
+                  id: "details",
+                  value: "details",
+                  label: "General Details & Photo",
+                  icon: <User className="h-3.5 w-3.5" />,
+                },
+                {
+                  id: "security",
+                  value: "security",
+                  label: "Security & Password",
+                  icon: <KeyRound className="h-3.5 w-3.5" />,
+                },
+              ]}
+            />
           </div>
         </div>
 
