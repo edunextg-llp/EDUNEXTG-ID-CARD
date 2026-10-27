@@ -21,6 +21,7 @@ export default function LogoMarquee({ logos }: LogoMarqueeProps) {
       className="lp-clients-marquee-container"
       role="region"
       aria-label="Our Clients"
+      style={{ contentVisibility: "auto", containIntrinsicSize: "0 180px" }}
     >
       {/* Row 1: Moves Left */}
       <div className="lp-marquee-viewport" tabIndex={-1}>

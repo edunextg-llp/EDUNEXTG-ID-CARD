@@ -1,5 +1,6 @@
 import "dotenv/config";
 import express from "express";
+import compression from "compression";
 import { createServer } from "http";
 import net from "net";
 import { apiRouter } from "../api";
@@ -47,6 +48,7 @@ async function startServer() {
     app.set("trust proxy", 1);
   }
   app.disable("x-powered-by");
+  app.use(compression());
   app.use((req, res, next) => {
     res.setHeader("X-Content-Type-Options", "nosniff");
     if (req.path.endsWith(".pdf")) {

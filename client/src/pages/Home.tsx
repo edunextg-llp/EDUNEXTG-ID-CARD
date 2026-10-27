@@ -1,11 +1,7 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, lazy, Suspense } from "react";
 import { useLocation } from "wouter";
 import CardRenderer from "@/components/CardRenderer";
 import IdCardFormModal from "./IdCardFormModal";
-import PrintModal from "@/components/PrintModal";
-import DeleteSchoolDialog from "@/components/DeleteSchoolDialog";
-import ExcelUploadModal from "@/components/ExcelUploadModal";
-import BulkImageUploadModal from "@/components/BulkImageUploadModal";
 import ApprovalTimeline from "@/components/ApprovalTimeline";
 import { DYNAMIC_FIELDS, SAMPLE_CARD_DATA, SAMPLE_STAFF_CARD_DATA } from "@shared/templateDesigner";
 import {
@@ -51,16 +47,6 @@ import {
   ShoppingCart,
   Handshake,
 } from "lucide-react";
-import SuperAdminProfileDialog from "@/components/SuperAdminProfileDialog";
-import AboutUsSection from "@/components/AboutUsSection";
-import SettingsSection from "@/components/SettingsSection";
-import AuditLogsSection from "@/components/AuditLogsSection";
-import MarketingOverview from "@/components/MarketingOverview";
-import PartnersSection from "@/components/PartnersSection";
-import CreateOrderView from "@/components/CreateOrderView";
-import OrderListView from "@/components/OrderListView";
-import RemovedCardsHistorySection from "@/components/RemovedCardsHistorySection";
-import NotificationsView from "@/components/NotificationsView";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -121,6 +107,21 @@ import { toast } from "sonner";
 import {
   INDIAN_MOBILE_PLACEHOLDER,
 } from "@shared/phoneValidation";
+
+const PrintModal = lazy(() => import("@/components/PrintModal"));
+const DeleteSchoolDialog = lazy(() => import("@/components/DeleteSchoolDialog"));
+const ExcelUploadModal = lazy(() => import("@/components/ExcelUploadModal"));
+const BulkImageUploadModal = lazy(() => import("@/components/BulkImageUploadModal"));
+const SuperAdminProfileDialog = lazy(() => import("@/components/SuperAdminProfileDialog"));
+const AboutUsSection = lazy(() => import("@/components/AboutUsSection"));
+const SettingsSection = lazy(() => import("@/components/SettingsSection"));
+const AuditLogsSection = lazy(() => import("@/components/AuditLogsSection"));
+const MarketingOverview = lazy(() => import("@/components/MarketingOverview"));
+const PartnersSection = lazy(() => import("@/components/PartnersSection"));
+const CreateOrderView = lazy(() => import("@/components/CreateOrderView"));
+const OrderListView = lazy(() => import("@/components/OrderListView"));
+const RemovedCardsHistorySection = lazy(() => import("@/components/RemovedCardsHistorySection"));
+const NotificationsView = lazy(() => import("@/components/NotificationsView"));
 
 const navItems = [
   { label: "Overview", icon: LayoutDashboard },
@@ -2050,11 +2051,13 @@ export default function Home({
         <div className="mx-auto max-w-[1440px] px-4 pb-12 pt-6 sm:px-6 lg:px-9">
           {activeNav === "Overview" ? (
             portal === "marketing" || portal === "partner" ? (
-              <MarketingOverview
-                user={authenticatedUser}
-                onNavigate={(tab) => goTo(tab)}
-                onViewOrder={() => goTo("Order List")}
-              />
+              <Suspense fallback={<div className="flex min-h-[300px] items-center justify-center text-sm text-muted-foreground">Loading overview...</div>}>
+                <MarketingOverview
+                  user={authenticatedUser}
+                  onNavigate={(tab) => goTo(tab)}
+                  onViewOrder={() => goTo("Order List")}
+                />
+              </Suspense>
             ) : (
             <>
               <section className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
@@ -2738,32 +2741,37 @@ export default function Home({
               </section>
             </>
             )
-          ) : activeNav === "About Us" ? (
-            <AboutUsSection />
-          ) : activeNav === "Settings" ? (
-            <SettingsSection user={authenticatedUser} portal={portal} />
-          ) : activeNav === "Partners" ? (
-            <PartnersSection
-              currentUser={authenticatedUser}
-              onNavigateToOrders={() => goTo("Order List")}
-            />
-          ) : activeNav === "Create Order" ? (
-            <CreateOrderView
-              user={authenticatedUser}
-              schools={schools}
-              activeSchool={currentActiveSchool}
-              onSuccess={() => goTo("Order List")}
-              onCancel={() => goTo(portal === "marketing" || portal === "partner" ? "Overview" : "Order List")}
-            />
-          ) : activeNav === "Order List" ? (
-            <OrderListView
-              user={authenticatedUser}
-              schools={schools}
-              onCreateNew={() => goTo("Create Order")}
-            />
-          ) : activeNav === "Notifications" ? (
-            <NotificationsView />
-          ) : (
+          ) : [
+    "About Us", "Settings", "Partners", "Create Order", "Order List", "Notifications"
+  ].includes(activeNav) ? (
+    <Suspense fallback={<div className="flex min-h-[400px] items-center justify-center text-sm text-muted-foreground">Loading view...</div>}>
+      {activeNav === "About Us" && <AboutUsSection />}
+      {activeNav === "Settings" && <SettingsSection user={authenticatedUser} portal={portal} />}
+      {activeNav === "Partners" && (
+        <PartnersSection
+          currentUser={authenticatedUser}
+          onNavigateToOrders={() => goTo("Order List")}
+        />
+      )}
+      {activeNav === "Create Order" && (
+        <CreateOrderView
+          user={authenticatedUser}
+          schools={schools}
+          activeSchool={currentActiveSchool}
+          onSuccess={() => goTo("Order List")}
+          onCancel={() => goTo(portal === "marketing" || portal === "partner" ? "Overview" : "Order List")}
+        />
+      )}
+      {activeNav === "Order List" && (
+        <OrderListView
+          user={authenticatedUser}
+          schools={schools}
+          onCreateNew={() => goTo("Create Order")}
+        />
+      )}
+      {activeNav === "Notifications" && <NotificationsView />}
+    </Suspense>
+  ) : (
             <ModuleView
               label={activeNav}
               onBack={() => setActiveNav("Overview")}
@@ -2828,12 +2836,14 @@ export default function Home({
 
       {/* Super Admin & Partner Admin Profile Management Dialog */}
       {(authenticatedUser.role === "SUPER_ADMIN" || authenticatedUser.role === "PARTNER" || (authenticatedUser.role as string) === "PARTNER_ADMIN" || (authenticatedUser.role as string) === "MARKETING_ADMIN") && (
-        <SuperAdminProfileDialog
-          open={profileModalOpen}
-          onOpenChange={setProfileModalOpen}
-          currentUser={authenticatedUser}
-          onProfileUpdated={(updated) => setAuthenticatedUser(updated)}
-        />
+        <Suspense fallback={null}>
+          <SuperAdminProfileDialog
+            open={profileModalOpen}
+            onOpenChange={setProfileModalOpen}
+            currentUser={authenticatedUser}
+            onProfileUpdated={(updated) => setAuthenticatedUser(updated)}
+          />
+        </Suspense>
       )}
 
       {/* Dialog for Creating / Editing School */}
@@ -3361,47 +3371,49 @@ export default function Home({
         }}
       />
 
-      {/* Delete School confirmation */}
-      <DeleteSchoolDialog
-        school={schoolPendingDelete}
-        onClose={() => setSchoolPendingDelete(null)}
-        onConfirm={confirmDeleteSchool}
-      />
+      <Suspense fallback={null}>
+        {/* Delete School confirmation */}
+        <DeleteSchoolDialog
+          school={schoolPendingDelete}
+          onClose={() => setSchoolPendingDelete(null)}
+          onConfirm={confirmDeleteSchool}
+        />
 
-      {/* Print & Bulk Print Modal */}
-      <PrintModal
-        open={printModalOpen}
-        onOpenChange={setPrintModalOpen}
-        cards={cardsToPrint}
-        onPrinted={() => {
-          reloadWorkspace();
-        }}
-      />
+        {/* Print & Bulk Print Modal */}
+        <PrintModal
+          open={printModalOpen}
+          onOpenChange={setPrintModalOpen}
+          cards={cardsToPrint}
+          onPrinted={() => {
+            reloadWorkspace();
+          }}
+        />
 
-      {/* Excel Upload Modal */}
-      <ExcelUploadModal
-        open={excelUploadOpen}
-        onOpenChange={setExcelUploadOpen}
-        schools={schools}
-        activeSchoolId={currentActiveSchool?.id ?? (authenticatedUser.schoolId ?? undefined)}
-        templates={templates}
-        userRole={authenticatedUser.role}
-        onUploadSuccess={() => {
-          reloadWorkspace();
-        }}
-      />
+        {/* Excel Upload Modal */}
+        <ExcelUploadModal
+          open={excelUploadOpen}
+          onOpenChange={setExcelUploadOpen}
+          schools={schools}
+          activeSchoolId={currentActiveSchool?.id ?? (authenticatedUser.schoolId ?? undefined)}
+          templates={templates}
+          userRole={authenticatedUser.role}
+          onUploadSuccess={() => {
+            reloadWorkspace();
+          }}
+        />
 
-      {/* Bulk Image Upload Modal */}
-      <BulkImageUploadModal
-        open={bulkPhotoUploadOpen}
-        onOpenChange={setBulkPhotoUploadOpen}
-        schools={schools}
-        activeSchoolId={currentActiveSchool?.id ?? (authenticatedUser.schoolId ?? undefined)}
-        userRole={authenticatedUser.role}
-        onUploadSuccess={() => {
-          reloadWorkspace();
-        }}
-      />
+        {/* Bulk Image Upload Modal */}
+        <BulkImageUploadModal
+          open={bulkPhotoUploadOpen}
+          onOpenChange={setBulkPhotoUploadOpen}
+          schools={schools}
+          activeSchoolId={currentActiveSchool?.id ?? (authenticatedUser.schoolId ?? undefined)}
+          userRole={authenticatedUser.role}
+          onUploadSuccess={() => {
+            reloadWorkspace();
+          }}
+        />
+      </Suspense>
 
       {/* Admin Card Review & Detail Modal */}
       <Dialog open={reviewModalOpen} onOpenChange={setReviewModalOpen}>
@@ -4993,13 +5005,15 @@ function ModuleView({
 
       {/* 5. Audit Logs Tab */}
       {isAudit && (
-        <AuditLogsSection
-          activity={activity}
-          authenticatedUser={authenticatedUser}
-          portal={authenticatedUser.role === "SUPER_ADMIN" ? "admin" : "school"}
-          schools={schools}
-          onClearAuditLogs={onClearAuditLogs}
-        />
+        <Suspense fallback={<div className="flex min-h-[200px] items-center justify-center text-sm text-muted-foreground">Loading audit logs...</div>}>
+          <AuditLogsSection
+            activity={activity}
+            authenticatedUser={authenticatedUser}
+            portal={authenticatedUser.role === "SUPER_ADMIN" ? "admin" : "school"}
+            schools={schools}
+            onClearAuditLogs={onClearAuditLogs}
+          />
+        </Suspense>
       )}
 
       {/* 6. Schools Table View */}
@@ -5312,11 +5326,13 @@ function ModuleView({
             </button>
           </div>
 
-          {reportsTab === "student_removed" ? (
-            <RemovedCardsHistorySection user={authenticatedUser} schools={schools} cardType="student" />
-          ) : (
-            <RemovedCardsHistorySection user={authenticatedUser} schools={schools} cardType="staff" />
-          )}
+          <Suspense fallback={<div className="flex min-h-[200px] items-center justify-center text-sm text-muted-foreground">Loading removed cards history...</div>}>
+            {reportsTab === "student_removed" ? (
+              <RemovedCardsHistorySection user={authenticatedUser} schools={schools} cardType="student" />
+            ) : (
+              <RemovedCardsHistorySection user={authenticatedUser} schools={schools} cardType="staff" />
+            )}
+          </Suspense>
         </div>
       )}
 

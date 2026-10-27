@@ -1474,7 +1474,54 @@ router.get("/id-cards", async (req, res) => {
     const db = await getDb();
     if (!db) return res.status(503).json({ error: "Database not available" });
 
-    let query = db
+    const whereConditions: any[] = [isNull(idCards.removedAt)];
+
+    if (adminRoles.has(user.role)) {
+      if (req.query.schoolId) {
+        whereConditions.push(eq(idCards.schoolId, Number(req.query.schoolId)));
+      }
+    } else {
+      if (!user.schoolId) return res.json([]);
+      whereConditions.push(eq(idCards.schoolId, user.schoolId));
+    }
+
+    if (req.query.status && req.query.status !== "All") {
+      whereConditions.push(eq(idCards.status, String(req.query.status) as any));
+    }
+
+    const qStr = req.query.q ? String(req.query.q).trim() : "";
+    if (qStr) {
+      const qPattern = '%' + qStr + '%';
+      const matchingNameCards = await db
+        .select({ idCardId: idCardData.idCardId })
+        .from(idCardData)
+        .where(
+          and(
+            or(eq(idCardData.fieldKey, "student_name"), eq(idCardData.fieldKey, "studentName")),
+            like(idCardData.fieldValue, qPattern),
+          ),
+        );
+      const nameCardIds = matchingNameCards.map((r) => r.idCardId);
+
+      const searchOr = [
+        like(idCards.cardNumber, qPattern),
+        like(schools.name, qPattern),
+      ];
+      if (nameCardIds.length > 0) {
+        searchOr.push(inArray(idCards.id, nameCardIds));
+      }
+      whereConditions.push(or(...searchOr)!);
+    }
+
+    const page = Math.max(1, Number(req.query.page) || 1);
+    const limit = req.query.all === "true" || req.query.limit === "all"
+      ? 1000
+      : Math.min(100, Number(req.query.limit) || 50);
+    const offset = (page - 1) * limit;
+
+    const whereClause = whereConditions.length > 1 ? and(...whereConditions) : whereConditions[0];
+
+    const cardsList = await db
       .select({
         id: idCards.id,
         schoolId: idCards.schoolId,
@@ -1492,20 +1539,11 @@ router.get("/id-cards", async (req, res) => {
       })
       .from(idCards)
       .leftJoin(schools, eq(idCards.schoolId, schools.id))
-      .leftJoin(idCardTemplates, eq(idCards.templateId, idCardTemplates.id));
-
-    let cardsList: any[];
-    const notRemoved = isNull(idCards.removedAt);
-    if (adminRoles.has(user.role)) {
-      if (req.query.schoolId) {
-        cardsList = await query.where(and(notRemoved, eq(idCards.schoolId, Number(req.query.schoolId)))).orderBy(desc(idCards.createdAt));
-      } else {
-        cardsList = await query.where(notRemoved).orderBy(desc(idCards.createdAt));
-      }
-    } else {
-      if (!user.schoolId) return res.json([]);
-      cardsList = await query.where(and(notRemoved, eq(idCards.schoolId, user.schoolId))).orderBy(desc(idCards.createdAt));
-    }
+      .leftJoin(idCardTemplates, eq(idCards.templateId, idCardTemplates.id))
+      .where(whereClause)
+      .orderBy(desc(idCards.createdAt))
+      .limit(limit)
+      .offset(offset);
 
     // Attach studentName from id_card_data if available
     const cardIds = cardsList.map((c) => c.id);
@@ -1538,7 +1576,7 @@ router.get("/id-cards", async (req, res) => {
       dataByCardId.set(d.idCardId, map);
     }
 
-    let results = cardsList.map((c) => {
+    const results = cardsList.map((c) => {
       const dataMap = dataByCardId.get(c.id) ?? {};
       const studentName = dataMap["student_name"] || dataMap["studentName"] || "Student";
       return {
@@ -1547,20 +1585,6 @@ router.get("/id-cards", async (req, res) => {
         dataMap,
       };
     });
-
-    if (req.query.status) {
-      results = results.filter((c) => c.status === req.query.status);
-    }
-
-    if (req.query.q) {
-      const q = String(req.query.q).toLowerCase();
-      results = results.filter(
-        (c) =>
-          c.cardNumber.toLowerCase().includes(q) ||
-          c.studentName.toLowerCase().includes(q) ||
-          (c.schoolName && c.schoolName.toLowerCase().includes(q)),
-      );
-    }
 
     res.json(results);
   } catch (e) {
@@ -2406,40 +2430,103 @@ async function handleBulkApprovalTransition(
     const cardIds: number[] = Array.isArray(req.body.cardIds) ? req.body.cardIds.map(Number) : [];
     if (cardIds.length === 0) return res.status(400).json({ error: "cardIds array is required" });
 
+    const validCardIds = cardIds.filter((id) => id && !isNaN(id));
+    if (validCardIds.length === 0) return res.status(400).json({ error: "No valid card IDs provided" });
+
     const isSuperAdmin = adminRoles.has(user.role);
     let successCount = 0;
     const errors: string[] = [];
 
-    for (const cardId of cardIds) {
-      if (!cardId || isNaN(cardId)) continue;
-      const isApprovalsRoute = req.baseUrl?.includes("approvals") || req.originalUrl?.includes("/api/approvals");
-      let request: any = null;
-      let card: any = null;
+    // Pre-fetch super admins once outside loop (eliminates N+1 query)
+    const adminUsers = await db.select({ id: users.id }).from(users).where(eq(users.role, "SUPER_ADMIN"));
+    const notifyAdminIds = adminUsers.map((a) => a.id).filter((id) => id !== user.id);
 
-      if (isApprovalsRoute) {
-        request = (await db.select().from(idCardRequests).where(eq(idCardRequests.id, cardId)))[0];
-        if (request) {
-          card = (await db.select().from(idCards).where(
+    const isApprovalsRoute = req.baseUrl?.includes("approvals") || req.originalUrl?.includes("/api/approvals");
+
+    let initialRequests: any[] = [];
+    let initialCards: any[] = [];
+
+    if (isApprovalsRoute) {
+      initialRequests = await db.select().from(idCardRequests).where(inArray(idCardRequests.id, validCardIds));
+      const foundReqIds = initialRequests.map((r) => r.id);
+      const admissionCodes = initialRequests.map((r) => r.admissionCode).filter(Boolean);
+      if (foundReqIds.length > 0) {
+        initialCards = await db.select().from(idCards).where(
+          and(
+            isNull(idCards.removedAt),
             or(
-              eq(idCards.requestId, request.id),
-              and(eq(idCards.schoolId, request.schoolId), eq(idCards.cardNumber, request.admissionCode)),
+              inArray(idCards.requestId, foundReqIds),
+              admissionCodes.length > 0 ? inArray(idCards.cardNumber, admissionCodes) : sql`1=0`,
             ),
-          ))[0];
-        }
-      } else {
-        card = (await db.select().from(idCards).where(eq(idCards.id, cardId)))[0];
-        if (card && card.requestId) {
-          request = (await db.select().from(idCardRequests).where(eq(idCardRequests.id, card.requestId)))[0];
-        }
+          ),
+        );
+      }
+    } else {
+      initialCards = await db.select().from(idCards).where(
+        and(isNull(idCards.removedAt), inArray(idCards.id, validCardIds)),
+      );
+      const foundReqIds = initialCards.map((c) => c.requestId).filter(Boolean);
+      if (foundReqIds.length > 0) {
+        initialRequests = await db.select().from(idCardRequests).where(inArray(idCardRequests.id, foundReqIds));
+      }
+    }
+
+    // For any IDs not found yet, check the alternative table
+    const foundCardIds = new Set(initialCards.map((c) => c.id));
+    const foundReqIds = new Set(initialRequests.map((r) => r.id));
+    const missingIds = validCardIds.filter((id) => !foundCardIds.has(id) && !foundReqIds.has(id));
+
+    if (missingIds.length > 0) {
+      const extraRequests = await db.select().from(idCardRequests).where(inArray(idCardRequests.id, missingIds));
+      const extraCards = await db.select().from(idCards).where(
+        and(isNull(idCards.removedAt), inArray(idCards.id, missingIds)),
+      );
+      initialRequests.push(...extraRequests);
+      initialCards.push(...extraCards);
+    }
+
+    const requestById = new Map<number, any>();
+    for (const r of initialRequests) requestById.set(r.id, r);
+
+    const cardById = new Map<number, any>();
+    const cardByRequestId = new Map<number, any>();
+    const cardBySchoolAndAdmission = new Map<string, any>();
+    for (const c of initialCards) {
+      cardById.set(c.id, c);
+      if (c.requestId) cardByRequestId.set(c.requestId, c);
+      if (c.schoolId && c.cardNumber) {
+        cardBySchoolAndAdmission.set(c.schoolId + ':' + c.cardNumber, c);
+      }
+    }
+
+    interface ValidBulkItem {
+      cardId: number;
+      card: any;
+      request: any;
+      schoolId: number;
+      currentStatus: string;
+    }
+
+    const validToProcess: ValidBulkItem[] = [];
+
+    for (const cardId of validCardIds) {
+      let request = isApprovalsRoute ? requestById.get(cardId) : undefined;
+      let card = !isApprovalsRoute ? cardById.get(cardId) : undefined;
+
+      if (!card && request) {
+        card = cardByRequestId.get(request.id) || cardBySchoolAndAdmission.get(request.schoolId + ':' + request.admissionCode);
+      }
+      if (!request && card && card.requestId) {
+        request = requestById.get(card.requestId);
       }
 
       if (!request && !card) {
-        request = (await db.select().from(idCardRequests).where(eq(idCardRequests.id, cardId)))[0];
-        card = (await db.select().from(idCards).where(eq(idCards.id, cardId)))[0];
-        if (request && !card) {
-          card = (await db.select().from(idCards).where(eq(idCards.requestId, request.id)))[0];
+        request = requestById.get(cardId);
+        card = cardById.get(cardId);
+        if (!card && request) {
+          card = cardByRequestId.get(request.id);
         } else if (card && !request && card.requestId) {
-          request = (await db.select().from(idCardRequests).where(eq(idCardRequests.id, card.requestId)))[0];
+          request = requestById.get(card.requestId);
         }
       }
 
@@ -2456,13 +2543,11 @@ async function handleBulkApprovalTransition(
       }
 
       const currentStatus = card?.status ?? request?.status ?? "DRAFT";
-      // Allow approving/rejecting cards that are pending review/action
       if (
         currentStatus !== "UNDER_REVIEW" &&
         currentStatus !== "SUBMITTED" &&
         currentStatus !== "RESUBMITTED"
       ) {
-        // If already in target status, count as handled
         if (currentStatus === targetStatus) {
           successCount++;
           continue;
@@ -2471,74 +2556,89 @@ async function handleBulkApprovalTransition(
         continue;
       }
 
+      validToProcess.push({
+        cardId,
+        card,
+        request,
+        schoolId,
+        currentStatus,
+      });
+    }
+
+    if (validToProcess.length > 0) {
       await db.transaction(async (tx) => {
-        if (request) {
+        const reqIdsToUpdate = validToProcess.map((v) => v.request?.id).filter(Boolean) as number[];
+        if (reqIdsToUpdate.length > 0) {
           await tx
             .update(idCardRequests)
             .set({
               status: targetStatus,
-              reviewNote: comment ?? (targetStatus === "APPROVED" ? null : request.reviewNote),
+              reviewNote: comment ?? (targetStatus === "APPROVED" ? null : undefined),
               reviewedByUserId: user.id,
               reviewedAt: new Date(),
             })
-            .where(eq(idCardRequests.id, request.id));
+            .where(inArray(idCardRequests.id, reqIdsToUpdate));
         }
 
-        if (card) {
+        const cardsToUpdate = validToProcess.filter((v) => v.card);
+        const cardIdsToUpdate = cardsToUpdate.map((v) => v.card.id);
+        if (cardIdsToUpdate.length > 0) {
           await tx
             .update(idCards)
             .set({
               status: targetStatus,
-              approvedByUserId: targetStatus === "APPROVED" ? user.id : card.approvedByUserId,
+              approvedByUserId: targetStatus === "APPROVED" ? user.id : undefined,
             })
-            .where(eq(idCards.id, card.id));
+            .where(inArray(idCards.id, cardIdsToUpdate));
 
-          await tx.insert(approvalHistory).values({
-            idCardId: card.id,
-            fromStatus: currentStatus,
+          const historyEntries = cardsToUpdate.map((v) => ({
+            idCardId: v.card.id,
+            fromStatus: v.currentStatus as any,
             toStatus: targetStatus,
             action,
             comments: comment ?? (targetStatus === "APPROVED" ? "Bulk approved" : "Bulk rejected"),
             actedByUserId: user.id,
-          });
+          }));
+          await tx.insert(approvalHistory).values(historyEntries);
 
-          await tx.insert(auditLogs).values({
+          const auditEntries = cardsToUpdate.map((v) => ({
             userId: user.id > 0 ? user.id : null,
-            schoolId: card.schoolId,
+            schoolId: v.card.schoolId,
             action,
             entityType: "id_card",
-            entityId: card.id,
+            entityId: v.card.id,
             newValues: {
-              requestId: request?.id,
-              cardNumber: card.cardNumber,
-              studentName: request?.studentName || "Student",
-              fromStatus: currentStatus,
+              requestId: v.request?.id,
+              cardNumber: v.card.cardNumber,
+              studentName: v.request?.studentName || "Student",
+              fromStatus: v.currentStatus,
               toStatus: targetStatus,
               comment,
               reason: comment,
               isBulk: true,
             } as never,
-          });
+          }));
+          await tx.insert(auditLogs).values(auditEntries);
         }
       });
 
-      // Notification
-      const adminUsers = await db.select({ id: users.id }).from(users).where(eq(users.role, "SUPER_ADMIN"));
-      for (const a of adminUsers) {
-        if (a.id !== user.id) {
-          await notify(
-            a.id,
-            schoolId,
+      for (const v of validToProcess) {
+        const ident = v.card?.cardNumber ?? v.request?.admissionCode;
+        const targetEntityId = v.card?.id ?? v.request?.id;
+        for (const adminId of notifyAdminIds) {
+          void notify(
+            adminId,
+            v.schoolId,
             action,
-            `ID card ${targetStatus === "APPROVED" ? "approved" : "rejected"}: #${card?.cardNumber ?? request?.admissionCode}`,
-            comment ?? `ID card #${card?.cardNumber ?? request?.admissionCode} was ${targetStatus.toLowerCase()}d`,
+            `ID card ${targetStatus === "APPROVED" ? "approved" : "rejected"}: #${ident}`,
+            comment ?? `ID card #${ident} was ${targetStatus.toLowerCase()}d`,
             "id_card",
-            card?.id ?? request?.id,
+            targetEntityId,
           );
         }
       }
 
-      successCount++;
+      successCount += validToProcess.length;
     }
 
     res.json({
@@ -3443,29 +3543,40 @@ router.get("/approvals", async (req, res) => {
     const statusParam = req.query.status ? String(req.query.status).trim() : undefined;
     const isFiltered = statusParam && statusParam !== "All";
 
+    const whereConditions: any[] = [];
     if (adminRoles.has(user.role)) {
-      let rows;
-      if (isFiltered) {
-        rows = await baseQuery
-          .where(eq(idCardRequests.status, statusParam as any))
-          .orderBy(desc(idCardRequests.createdAt));
-      } else {
-        rows = await baseQuery.orderBy(desc(idCardRequests.createdAt));
+      if (req.query.schoolId) {
+        whereConditions.push(eq(idCardRequests.schoolId, Number(req.query.schoolId)));
       }
-      return res.json(rows);
+    } else {
+      if (!user.schoolId) return res.json([]);
+      whereConditions.push(eq(idCardRequests.schoolId, user.schoolId));
     }
 
-    if (!user.schoolId) return res.json([]);
-    let rows;
     if (isFiltered) {
-      rows = await baseQuery
-        .where(and(eq(idCardRequests.schoolId, user.schoolId), eq(idCardRequests.status, statusParam as any)))
-        .orderBy(desc(idCardRequests.createdAt));
-    } else {
-      rows = await baseQuery
-        .where(eq(idCardRequests.schoolId, user.schoolId))
-        .orderBy(desc(idCardRequests.createdAt));
+      whereConditions.push(eq(idCardRequests.status, statusParam as any));
     }
+
+    const page = Math.max(1, Number(req.query.page) || 1);
+    const limit = req.query.all === "true" || req.query.limit === "all"
+      ? 1000
+      : Math.min(100, Number(req.query.limit) || 50);
+    const offset = (page - 1) * limit;
+
+    const whereClause = whereConditions.length > 1
+      ? and(...whereConditions)
+      : whereConditions[0];
+
+    let query = baseQuery;
+    if (whereClause) {
+      query = query.where(whereClause) as any;
+    }
+
+    const rows = await query
+      .orderBy(desc(idCardRequests.createdAt))
+      .limit(limit)
+      .offset(offset);
+
     res.json(rows);
   } catch (e) {
     fail(res, e);

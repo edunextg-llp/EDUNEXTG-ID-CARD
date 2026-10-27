@@ -148,10 +148,10 @@ export default function Login() {
 
             <div className="lp-login-trust-card">
               <div className="lp-login-trust-avatar-group">
-                <img src="/home/client-01.jpg" alt="Partner school" className="lp-login-trust-avatar" />
-                <img src="/home/client-02.jpg" alt="Partner school" className="lp-login-trust-avatar" />
-                <img src="/home/client-03.jpg" alt="Partner school" className="lp-login-trust-avatar" />
-                <img src="/home/client-04.jpg" alt="Partner school" className="lp-login-trust-avatar" />
+                <img src="/home/client-01.webp" alt="Partner school" className="lp-login-trust-avatar" />
+                <img src="/home/client-02.webp" alt="Partner school" className="lp-login-trust-avatar" />
+                <img src="/home/client-03.webp" alt="Partner school" className="lp-login-trust-avatar" />
+                <img src="/home/client-04.webp" alt="Partner school" className="lp-login-trust-avatar" />
               </div>
               <div className="lp-login-trust-text">
                 Trusted by 500+ Educational Institutions Across India

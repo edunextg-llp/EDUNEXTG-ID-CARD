@@ -43,7 +43,7 @@ const NAV_LINKS = [
    ─────────────────────────────────────────── */
 const ORIGINAL_CLIENT_LOGOS = Array.from({ length: 11 }, (_, i) => {
   const n = String(i + 1).padStart(2, "0");
-  return { src: `/home/client-${n}.jpg`, alt: `Client school logo ${i + 1}`, featured: i === 5 };
+  return { src: `/home/client-${n}.webp`, alt: `Client school logo ${i + 1}`, featured: i === 5 };
 });
 
 const EXTRA_CLIENT_LOGOS = Array.from({ length: 22 }, (_, i) => {
@@ -60,22 +60,22 @@ const PRODUCT_CARDS = [
   {
     title: "ID CARDS",
     subtitle: "School, College & Institutional ID Cards",
-    image: "/home/product-idcards.jpg",
+    image: "/home/product-idcards.webp",
   },
   {
     title: "LANYARDS / RIBBONS",
     subtitle: "Custom Printed & Plain Lanyards",
-    image: "/home/product-lanyards.jpg",
+    image: "/home/product-lanyards.webp",
   },
   {
     title: "ID CARD HOLDERS",
     subtitle: "Durable Holders in Multiple Sizes",
-    image: "/home/product-holders.jpg",
+    image: "/home/product-holders.webp",
   },
   {
     title: "CLAMPS & HOOKS",
     subtitle: "Clips, Hooks & Yoyos for Daily Use",
-    image: "/home/product-clips.jpg",
+    image: "/home/product-clips.webp",
   },
 ] as const;
 
@@ -104,15 +104,15 @@ const STATS = [
    ─────────────────────────────────────────── */
 const HERO_IMAGES = [
   {
-    image: "/home/carousel-slide-1.jpg",
+    image: "/home/carousel-slide-1.webp",
     alt: "ID cards, holders, lanyards, clips and clamps displayed together",
   },
   {
-    image: "/home/carousel-slide-2.jpg",
+    image: "/home/carousel-slide-2.webp",
     alt: "Custom school ID cards, printed lanyards and holders",
   },
   {
-    image: "/home/carousel-slide-3.jpg",
+    image: "/home/carousel-slide-3.webp",
     alt: "Institutional custom printed ribbons and identity cards",
   },
 ] as const;
@@ -374,6 +374,7 @@ export default function Landing() {
         <section
           id="home"
           className="lp-hero lp-hero-full-bg"
+          style={{ touchAction: "pan-y" }}
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
         >
@@ -387,15 +388,18 @@ export default function Landing() {
                   className={`lp-hero-full-slide ${isActive ? "active" : ""}`}
                   aria-hidden={!isActive}
                 >
-                  <img
-                    src={item.image}
-                    alt={item.alt}
-                    width={1920}
-                    height={500}
-                    loading={idx === 0 ? "eager" : "lazy"}
-                    fetchPriority={idx === 0 ? "high" : "auto"}
-                    className="lp-hero-full-img"
-                  />
+                  <picture>
+                    <source type="image/webp" srcSet={item.image} />
+                    <img
+                      src={item.image}
+                      alt={item.alt}
+                      width={1920}
+                      height={500}
+                      loading={idx === 0 ? "eager" : "lazy"}
+                      fetchPriority={idx === 0 ? "high" : "auto"}
+                      className="lp-hero-full-img"
+                    />
+                  </picture>
                 </div>
               );
             })}

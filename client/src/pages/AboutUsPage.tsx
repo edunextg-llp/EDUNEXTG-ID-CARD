@@ -34,7 +34,7 @@ const STATS = [
 
 const CLIENT_LOGOS = Array.from({ length: 11 }, (_, i) => {
   const n = String(i + 1).padStart(2, "0");
-  return { src: `/home/client-${n}.jpg`, alt: `Partner school logo ${i + 1}`, featured: i === 5 };
+  return { src: `/home/client-${n}.webp`, alt: `Partner school logo ${i + 1}`, featured: i === 5 };
 });
 
 export default function AboutUsPage() {
@@ -104,7 +104,7 @@ export default function AboutUsPage() {
             <div className="lp-about-story-image">
               <div className="lp-about-img-frame">
                 <img
-                  src="/home/hero-products.jpg"
+                  src="/home/hero-products.webp"
                   alt="Insight Education identity showcase"
                   className="rounded-2xl shadow-xl w-full object-cover"
                   loading="lazy"
@@ -112,7 +112,7 @@ export default function AboutUsPage() {
                   height={450}
                 />
                 <div className="lp-about-experience-pill">
-                  <span className="text-2xl font-black text-[#00894d]">10+</span>
+                  <span className="text-2xl font-black text-[#00894d]">5+</span>
                   <span className="text-xs font-semibold leading-tight text-[#333]">Years of Institutional Trust</span>
                 </div>
               </div>

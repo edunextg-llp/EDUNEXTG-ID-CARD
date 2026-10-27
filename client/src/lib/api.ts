@@ -252,11 +252,14 @@ export const api = {
     unlock: (schoolId: number, templateId: number) => request<void>(`/api/schools/${schoolId}/templates/unlock`, json({ templateId })),
   },
   idCards: {
-    list: (params?: { status?: string; schoolId?: number; q?: string }) => {
+    list: (params?: { status?: string; schoolId?: number; q?: string; page?: number; limit?: number; all?: boolean }) => {
       const searchParams = new URLSearchParams();
       if (params?.status) searchParams.set("status", params.status);
       if (params?.schoolId) searchParams.set("schoolId", String(params.schoolId));
       if (params?.q) searchParams.set("q", params.q);
+      if (params?.page) searchParams.set("page", String(params.page));
+      if (params?.limit) searchParams.set("limit", String(params.limit));
+      if (params?.all) searchParams.set("all", "true");
       const queryStr = searchParams.toString();
       return request<ApiIdCard[]>(`/api/id-cards${queryStr ? `?${queryStr}` : ""}`);
     },
@@ -342,9 +345,15 @@ export const api = {
       }>("/api/id-card-requests/bulk-upload-photos", json(body)),
   },
   approvals: {
-    list: (params?: { status?: string }) => {
-      const queryStr = params?.status && params.status !== "All" ? `?status=${params.status}` : "";
-      return request<ApiApproval[]>(`/api/approvals${queryStr}`);
+    list: (params?: { status?: string; schoolId?: number; page?: number; limit?: number; all?: boolean }) => {
+      const searchParams = new URLSearchParams();
+      if (params?.status && params.status !== "All") searchParams.set("status", params.status);
+      if (params?.schoolId) searchParams.set("schoolId", String(params.schoolId));
+      if (params?.page) searchParams.set("page", String(params.page));
+      if (params?.limit) searchParams.set("limit", String(params.limit));
+      if (params?.all) searchParams.set("all", "true");
+      const queryStr = searchParams.toString();
+      return request<ApiApproval[]>('/api/approvals' + (queryStr ? '?' + queryStr : ''));
     },
     review: (id: number) => request<{ success: true; status: string }>(`/api/approvals/${id}/review`, json({})),
     requestChanges: (id: number, comment: string) => request<{ success: true; status: string }>(`/api/approvals/${id}/request-changes`, json({ comment })),

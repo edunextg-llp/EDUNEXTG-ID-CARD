@@ -18,7 +18,7 @@ const PRODUCTS_DATA: ProductItem[] = [
     title: "ID CARDS",
     displayTitle: "Student & Staff PVC ID Cards",
     subtitle: "High Definition, durable laminated PVC cards with photo clarity",
-    image: "/home/product-idcards.jpg",
+    image: "/home/product-idcards.webp",
   },
   {
     id: "lanyards",
@@ -26,7 +26,7 @@ const PRODUCTS_DATA: ProductItem[] = [
     title: "LANYARDS / RIBBONS",
     displayTitle: "Custom Printed Sublimation Lanyards",
     subtitle: "Silky satin finished personalized ribbons with your institution logo",
-    image: "/home/product-lanyards.jpg",
+    image: "/home/product-lanyards.webp",
   },
   {
     id: "holders",
@@ -34,7 +34,7 @@ const PRODUCTS_DATA: ProductItem[] = [
     title: "ID CARD HOLDERS",
     displayTitle: "Durable Rigid & Soft Card Holders",
     subtitle: "Engineered protection against bending, moisture, and daily wear",
-    image: "/home/product-holders.jpg",
+    image: "/home/product-holders.webp",
   },
   {
     id: "clips",
@@ -42,7 +42,7 @@ const PRODUCTS_DATA: ProductItem[] = [
     title: "CLAMPS & HOOKS",
     displayTitle: "Metal Hooks, Plastic Clamps & Retractable Yoyos",
     subtitle: "Heavy duty connectors and badge reels for seamless wear",
-    image: "/home/product-clips.jpg",
+    image: "/home/product-clips.webp",
   },
 ];
 
@@ -80,14 +80,17 @@ export default function ProductsPage() {
             {PRODUCTS_DATA.map((product) => (
               <div key={product.id} className="lp-product-showcase-card">
                 <div className="lp-product-showcase-image-wrapper">
-                  <img
-                    src={product.image}
-                    alt={product.displayTitle}
-                    className="lp-product-showcase-image"
-                    loading="lazy"
-                    width={400}
-                    height={280}
-                  />
+                  <picture>
+                    <source type="image/webp" srcSet={product.image} />
+                    <img
+                      src={product.image}
+                      alt={product.displayTitle}
+                      className="lp-product-showcase-image"
+                      loading="lazy"
+                      width={400}
+                      height={280}
+                    />
+                  </picture>
                   <span className="lp-product-category-tag">{product.title}</span>
                 </div>
 

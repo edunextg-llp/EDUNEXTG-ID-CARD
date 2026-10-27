@@ -64,6 +64,9 @@ export function serveStatic(app: Express) {
         res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
       } else if (path.basename(filePath) === "index.html") {
         res.setHeader("Cache-Control", "no-cache");
+      } else {
+        // Static public assets (images, icons, fonts, etc.)
+        res.setHeader("Cache-Control", "public, max-age=86400, stale-while-revalidate=604800");
       }
     },
   }));
