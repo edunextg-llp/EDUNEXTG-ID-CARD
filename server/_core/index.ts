@@ -71,10 +71,10 @@ async function startServer() {
     const database = await checkDatabaseConnection();
     res.status(database ? 200 : 503).json({ ok: database, database });
   });
-  // Rate limit auth endpoints before reading/parsing request bodies
-  app.use("/api/auth/login", createRateLimiter({ windowMs: 15 * 60 * 1000, max: 50 }));
-  app.use("/api/auth/forgot-password", createRateLimiter({ windowMs: 60 * 60 * 1000, max: 5 }));
-  app.use("/api/auth/reset-password", createRateLimiter({ windowMs: 60 * 60 * 1000, max: 10 }));
+  // Rate limit mutating auth endpoints before reading/parsing request bodies
+  app.post("/api/auth/login", createRateLimiter({ windowMs: 15 * 60 * 1000, max: 50 }));
+  app.post("/api/auth/forgot-password", createRateLimiter({ windowMs: 60 * 60 * 1000, max: 5 }));
+  app.post("/api/auth/reset-password", createRateLimiter({ windowMs: 60 * 60 * 1000, max: 10 }));
 
   // Request body size limits: 50mb on upload/file/photo/template routes, 100kb globally
   configureBodyParsers(app);

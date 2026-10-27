@@ -12,13 +12,8 @@ export const LARGE_BODY_ROUTES = [
   { method: "POST", path: "/api/profile/picture" },
   { method: "POST", path: "/api/id-cards" },
   { method: "PUT", path: "/api/id-cards/:id" },
-  { method: "PATCH", path: "/api/id-cards/:id" },
-  { method: "POST", path: "/api/id-card-requests" },
-  { method: "PUT", path: "/api/id-card-requests/:id" },
-  { method: "PATCH", path: "/api/id-card-requests/:id" },
   { method: "POST", path: "/api/templates" },
   { method: "PUT", path: "/api/templates/:id" },
-  { method: "PATCH", path: "/api/templates/:id" },
 ] as const;
 
 /**

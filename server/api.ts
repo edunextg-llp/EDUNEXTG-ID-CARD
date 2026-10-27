@@ -26,6 +26,7 @@ import {
   checkAccountLockout,
   recordAccountLoginFailure,
   resetAccountLoginFailure,
+  resolveClientIp,
   heavyOperationsLimiter,
   uploadLimiter,
   authenticatedApiLimiter,
@@ -172,21 +173,24 @@ router.post("/auth/login", async (req, res) => {
     const password = String(req.body.password ?? "");
     if (!identifier || password.length < 8) return res.status(400).json({ error: "Valid username/email and password are required" });
 
-    const lockout = checkAccountLockout(identifier);
+    const clientIp = resolveClientIp(req);
+    const lockout = checkAccountLockout(identifier, clientIp);
     if (lockout.locked) {
-      res.setHeader("Retry-After", lockout.retryAfterSeconds);
-      res.setHeader("RateLimit-Limit", 10);
-      res.setHeader("RateLimit-Remaining", 0);
-      res.setHeader("RateLimit-Reset", lockout.retryAfterSeconds);
+      if (!res.headersSent) {
+        res.setHeader("Retry-After", lockout.retryAfterSeconds);
+        res.setHeader("RateLimit-Limit", 10);
+        res.setHeader("RateLimit-Remaining", 0);
+        res.setHeader("RateLimit-Reset", lockout.retryAfterSeconds);
+      }
       return res.status(429).json({ error: "Too many requests. Please try again later." });
     }
 
     const result = await loginUser(identifier, password);
     if (!result) {
-      recordAccountLoginFailure(identifier);
+      recordAccountLoginFailure(identifier, clientIp);
       return res.status(401).json({ error: "Invalid username or password" });
     }
-    resetAccountLoginFailure(identifier);
+    resetAccountLoginFailure(identifier, clientIp);
     setApplicationSession(res, result.token);
     const { passwordHash: _passwordHash, ...safeUser } = result.user;
     const db = await getDb();

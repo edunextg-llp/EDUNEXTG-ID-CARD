@@ -36,10 +36,17 @@ export class MemoryRateLimitStore implements RateLimitStore {
         ? { count: 0, resetAt: now + windowMs }
         : current;
     entry.count += 1;
+    // Move updated entry to the end to maintain LRU/FIFO ordering
+    this.entries.delete(key);
     this.entries.set(key, entry);
 
     if (this.entries.size > this.maxEntries) {
       this.cleanup(now);
+      while (this.entries.size > this.maxEntries) {
+        const oldestKey = this.entries.keys().next().value;
+        if (!oldestKey) break;
+        this.entries.delete(oldestKey);
+      }
     }
 
     return entry;
@@ -80,6 +87,19 @@ export function isRateLimitDisabled(): boolean {
 }
 
 /**
+ * Resolves the client IP address.
+ * Prioritizes trusted CDN headers (e.g. cf-connecting-ip when deployed behind Cloudflare)
+ * and falls back to Express req.ip or socket remote address.
+ */
+export function resolveClientIp(req: Request): string {
+  const cfConnectingIp = req.headers["cf-connecting-ip"];
+  if (typeof cfConnectingIp === "string" && cfConnectingIp.trim()) {
+    return cfConnectingIp.trim();
+  }
+  return req.ip || req.socket.remoteAddress || "unknown";
+}
+
+/**
  * Resolves a reliable client key for rate limiting.
  * Prioritizes authenticated user ID when available to prevent shared NAT/proxy collisions
  * and protect against X-Forwarded-For IP spoofing on authenticated endpoints.
@@ -89,7 +109,7 @@ export function resolveClientKey(req: Request, res?: Response): string {
   if (user?.id) {
     return `user:${user.id}`;
   }
-  return req.ip || req.socket.remoteAddress || "unknown";
+  return resolveClientIp(req);
 }
 
 export interface RateLimiterOptions {
@@ -104,6 +124,9 @@ export function createRateLimiter(options: RateLimiterOptions) {
   const store = options.store || new MemoryRateLimitStore();
 
   return async (req: Request, res: Response, next: NextFunction) => {
+    // Ignore CORS preflight OPTIONS requests so they do not consume rate limit quotas
+    if (req.method === "OPTIONS") return next();
+
     if (isRateLimitDisabled()) return next();
 
     const now = Date.now();
@@ -115,14 +138,18 @@ export function createRateLimiter(options: RateLimiterOptions) {
     const retryAfterSeconds = Math.max(1, Math.ceil((entry.resetAt - now) / 1000));
     const remaining = Math.max(0, options.max - entry.count);
 
-    // Standard IETF RateLimit & RFC 6585 response headers
-    res.setHeader("RateLimit-Limit", options.max);
-    res.setHeader("RateLimit-Remaining", remaining);
-    res.setHeader("RateLimit-Reset", retryAfterSeconds);
-    res.setHeader("RateLimit-Policy", `${options.max};w=${Math.round(options.windowMs / 1000)}`);
+    // Standard IETF RateLimit & RFC 6585 response headers (guarded against early sent headers)
+    if (!res.headersSent) {
+      res.setHeader("RateLimit-Limit", options.max);
+      res.setHeader("RateLimit-Remaining", remaining);
+      res.setHeader("RateLimit-Reset", retryAfterSeconds);
+      res.setHeader("RateLimit-Policy", `${options.max};w=${Math.round(options.windowMs / 1000)}`);
+    }
 
     if (entry.count > options.max) {
-      res.setHeader("Retry-After", retryAfterSeconds);
+      if (!res.headersSent) {
+        res.setHeader("Retry-After", retryAfterSeconds);
+      }
       return res.status(429).json({
         error: options.message || "Too many requests. Please try again later.",
       });
@@ -141,14 +168,27 @@ function normalizeAccountKey(identifier: string): string {
   return identifier.trim().toLowerCase();
 }
 
-export function checkAccountLockout(identifier: string): { locked: boolean; retryAfterSeconds: number } {
+/**
+ * Composite key helper binding client IP and normalized account identifier.
+ * Prevents third-party unauthenticated attackers from causing Denial of Service
+ * against legitimate users and administrators by spraying failed logins.
+ */
+function buildAccountFailureKey(identifier: string, ip = "unknown"): string {
+  return `${ip}:${normalizeAccountKey(identifier)}`;
+}
+
+export function checkAccountLockout(
+  identifier: string,
+  ip = "unknown"
+): { locked: boolean; retryAfterSeconds: number } {
   if (isRateLimitDisabled()) {
     return { locked: false, retryAfterSeconds: 0 };
   }
 
-  const key = normalizeAccountKey(identifier);
-  if (!key) return { locked: false, retryAfterSeconds: 0 };
+  const normalized = normalizeAccountKey(identifier);
+  if (!normalized) return { locked: false, retryAfterSeconds: 0 };
 
+  const key = buildAccountFailureKey(normalized, ip);
   const entry = accountFailureStore.get(key);
   if (!entry) return { locked: false, retryAfterSeconds: 0 };
 
@@ -160,18 +200,21 @@ export function checkAccountLockout(identifier: string): { locked: boolean; retr
   return { locked: false, retryAfterSeconds: 0 };
 }
 
-export function recordAccountLoginFailure(identifier: string): void {
+export function recordAccountLoginFailure(identifier: string, ip = "unknown"): void {
   if (isRateLimitDisabled()) return;
 
-  const key = normalizeAccountKey(identifier);
-  if (!key) return;
+  const normalized = normalizeAccountKey(identifier);
+  if (!normalized) return;
 
+  const key = buildAccountFailureKey(normalized, ip);
   accountFailureStore.increment(key, ACCOUNT_FAILURE_WINDOW_MS);
 }
 
-export function resetAccountLoginFailure(identifier: string): void {
-  const key = normalizeAccountKey(identifier);
-  if (!key) return;
+export function resetAccountLoginFailure(identifier: string, ip = "unknown"): void {
+  const normalized = normalizeAccountKey(identifier);
+  if (!normalized) return;
+
+  const key = buildAccountFailureKey(normalized, ip);
   accountFailureStore.reset(key);
 }
 

@@ -165,7 +165,7 @@ describe("Login & Auth Rate Limiting Suite", () => {
     }
   });
 
-  it("10 failed logins for one identifier lock that identifier (429) even when requests come from different IPs", async () => {
+  it("10 failed logins for one identifier from an IP lock only that IP, preventing third-party DoS on other IPs", async () => {
     // To simulate different IPs, we set trust proxy so req.ip is taken from X-Forwarded-For
     const multiIpApp = express();
     multiIpApp.set("trust proxy", true);
@@ -179,15 +179,17 @@ describe("Login & Auth Rate Limiting Suite", () => {
     const multiIpBaseUrl = `http://127.0.0.1:${multiIpAddr.port}`;
 
     const targetAccount = `locked_target_${Date.now()}@test.local`;
+    const attackerIp = "192.168.1.100";
+    const legitimateUserIp = "10.0.0.99";
 
     try {
-      // 10 failed logins from 10 distinct simulated IPs
+      // 10 failed logins from attacker IP for targetAccount
       for (let i = 1; i <= 10; i++) {
         const res = await fetch(`${multiIpBaseUrl}/api/auth/login`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "X-Forwarded-For": `192.168.1.${i}`,
+            "X-Forwarded-For": attackerIp,
           },
           body: JSON.stringify({
             email: targetAccount,
@@ -197,12 +199,12 @@ describe("Login & Auth Rate Limiting Suite", () => {
         expect(res.status).toBe(401);
       }
 
-      // 11th attempt from yet another distinct IP (e.g., 10.0.0.99)
+      // 11th attempt from attacker IP for that account is locked (429)
       const lockedRes = await fetch(`${multiIpBaseUrl}/api/auth/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-Forwarded-For": "10.0.0.99",
+          "X-Forwarded-For": attackerIp,
         },
         body: JSON.stringify({
           email: targetAccount,
@@ -214,6 +216,21 @@ describe("Login & Auth Rate Limiting Suite", () => {
       expect(lockedRes.headers.get("retry-after")).toBeDefined();
       const body = await lockedRes.json();
       expect(body).toEqual({ error: "Too many requests. Please try again later." });
+
+      // Legitimate user from a different IP is NOT locked out (no DoS!)
+      const legitimateRes = await fetch(`${multiIpBaseUrl}/api/auth/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Forwarded-For": legitimateUserIp,
+        },
+        body: JSON.stringify({
+          email: targetAccount,
+          password: "WrongPassword123!",
+        }),
+      });
+      // Returns 401 (invalid credentials) rather than 429 lockout!
+      expect(legitimateRes.status).toBe(401);
     } finally {
       await new Promise<void>((resolve) => multiIpServer.close(() => resolve()));
     }
@@ -424,6 +441,43 @@ describe("Login & Auth Rate Limiting Suite", () => {
       expect(data).toEqual({ error: "Too many heavy operations." });
     } finally {
       await new Promise<void>((resolve) => heavyServer.close(() => resolve()));
+    }
+  });
+
+  it("Browser preflight OPTIONS requests do not consume rate limit quotas", async () => {
+    const optApp = express();
+    optApp.use(
+      "/api/auth/forgot-password",
+      createRateLimiter({ windowMs: 60 * 1000, max: 2 })
+    );
+    optApp.options("/api/auth/forgot-password", (_req, res) => res.sendStatus(204));
+    optApp.post("/api/auth/forgot-password", (_req, res) => res.json({ sent: true }));
+
+    const optServer = http.createServer(optApp);
+    await new Promise<void>((resolve) => optServer.listen(0, "127.0.0.1", () => resolve()));
+    const addr = optServer.address() as any;
+    const optUrl = `http://127.0.0.1:${addr.port}`;
+
+    try {
+      // Send 5 OPTIONS preflight requests (limit is 2)
+      for (let i = 0; i < 5; i++) {
+        const preflightRes = await fetch(`${optUrl}/api/auth/forgot-password`, {
+          method: "OPTIONS",
+        });
+        expect(preflightRes.status).toBe(204);
+      }
+
+      // Quota is intact: 2 POST requests succeed
+      const post1 = await fetch(`${optUrl}/api/auth/forgot-password`, { method: "POST" });
+      expect(post1.status).toBe(200);
+      const post2 = await fetch(`${optUrl}/api/auth/forgot-password`, { method: "POST" });
+      expect(post2.status).toBe(200);
+
+      // 3rd POST request is rate limited
+      const post3 = await fetch(`${optUrl}/api/auth/forgot-password`, { method: "POST" });
+      expect(post3.status).toBe(429);
+    } finally {
+      await new Promise<void>((resolve) => optServer.close(() => resolve()));
     }
   });
 });
