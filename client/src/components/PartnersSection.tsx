@@ -847,7 +847,6 @@ export default function PartnersSection({
                 </label>
                 <Input
                   className="mt-1 h-10 rounded-xl"
-                  placeholder="e.g., Rajesh Kumar"
                   value={addName}
                   onChange={(e) => handleNameChange(e.target.value)}
                   autoComplete="off"
@@ -866,7 +865,6 @@ export default function PartnersSection({
                 <Input
                   type="email"
                   className="mt-1 h-10 rounded-xl"
-                  placeholder="e.g., rajesh@partneragency.com"
                   value={addEmail}
                   onChange={(e) => {
                     setAddEmail(e.target.value);
@@ -886,7 +884,6 @@ export default function PartnersSection({
                 </label>
                 <Input
                   className="mt-1 h-10 rounded-xl"
-                  placeholder={INDIAN_MOBILE_PLACEHOLDER}
                   value={addPhone}
                   onChange={(e) => {
                     setAddPhone(e.target.value);
@@ -906,7 +903,6 @@ export default function PartnersSection({
                 </label>
                 <Input
                   className="mt-1 h-10 rounded-xl"
-                  placeholder="e.g., Maharashtra, Delhi, Karnataka"
                   value={addState}
                   onChange={(e) => setAddState(e.target.value)}
                   autoComplete="off"
@@ -920,7 +916,6 @@ export default function PartnersSection({
                 </label>
                 <Input
                   className="mt-1 h-10 rounded-xl"
-                  placeholder="e.g., Pune, Mumbai Suburban, Bengaluru"
                   value={addDistrict}
                   onChange={(e) => setAddDistrict(e.target.value)}
                   autoComplete="off"
@@ -934,7 +929,6 @@ export default function PartnersSection({
                 </label>
                 <Input
                   className="mt-1 h-10 rounded-xl font-mono text-xs"
-                  placeholder="e.g., partner_rajesh"
                   value={addOpenId}
                   onChange={(e) => {
                     setAddOpenId(e.target.value);
@@ -956,7 +950,6 @@ export default function PartnersSection({
                   <Input
                     type={showAddPassword ? "text" : "password"}
                     className="h-10 rounded-xl pr-10"
-                    placeholder="Min 8 characters"
                     value={addPassword}
                     onChange={(e) => {
                       setAddPassword(e.target.value);
@@ -1054,7 +1047,6 @@ export default function PartnersSection({
                 </label>
                 <Input
                   className="mt-1 h-10 rounded-xl"
-                  placeholder={INDIAN_MOBILE_PLACEHOLDER}
                   value={editPhone}
                   onChange={(e) => {
                     setEditPhone(e.target.value);
@@ -1073,7 +1065,6 @@ export default function PartnersSection({
                 </label>
                 <Input
                   className="mt-1 h-10 rounded-xl"
-                  placeholder="e.g., Maharashtra, Delhi"
                   value={editState}
                   onChange={(e) => setEditState(e.target.value)}
                   autoComplete="off"
@@ -1086,7 +1077,6 @@ export default function PartnersSection({
                 </label>
                 <Input
                   className="mt-1 h-10 rounded-xl"
-                  placeholder="e.g., Pune, Mumbai"
                   value={editDistrict}
                   onChange={(e) => setEditDistrict(e.target.value)}
                   autoComplete="off"

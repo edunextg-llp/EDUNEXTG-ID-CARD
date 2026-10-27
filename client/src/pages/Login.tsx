@@ -222,7 +222,6 @@ export default function Login() {
                     type="text"
                     value={username}
                     onChange={(event) => setUsername(event.target.value)}
-                    placeholder="Enter your username, Login ID or email"
                     className="mt-2 h-11 rounded-xl"
                     autoComplete="username"
                     required
@@ -237,7 +236,6 @@ export default function Login() {
                       type={showPassword ? "text" : "password"}
                       value={password}
                       onChange={(event) => setPassword(event.target.value)}
-                      placeholder="••••••••"
                       className="h-11 rounded-xl pr-10"
                       autoComplete="current-password"
                       required

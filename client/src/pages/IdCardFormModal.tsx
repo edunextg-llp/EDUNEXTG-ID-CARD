@@ -649,7 +649,6 @@ export default function IdCardFormModal({
                     <Input
                       disabled={!!initialCard}
                       className="mt-1 font-mono text-xs bg-muted/40"
-                      placeholder="Auto-generated (e.g. IDC-2026-000001)"
                       value={cardNumber}
                       onChange={(e) => setCardNumber(e.target.value)}
                     />
@@ -664,7 +663,6 @@ export default function IdCardFormModal({
                     </Label>
                     <Input
                       className="mt-1 text-xs"
-                      placeholder="e.g. ADM-2026-001"
                       value={formData.admission_number ?? ""}
                       onChange={(e) => handleFieldChange("admission_number", e.target.value)}
                     />
@@ -683,7 +681,6 @@ export default function IdCardFormModal({
                       </Label>
                       <Input
                         className="mt-1 text-xs"
-                        placeholder="e.g. Rahul Kumar"
                         value={formData.student_name ?? ""}
                         onChange={(e) => handleFieldChange("student_name", e.target.value)}
                       />
@@ -696,7 +693,6 @@ export default function IdCardFormModal({
                         </Label>
                         <Input
                           className="mt-1 text-xs"
-                          placeholder="e.g. 10"
                           value={formData.class ?? ""}
                           onChange={(e) => handleFieldChange("class", e.target.value)}
                         />
@@ -708,7 +704,6 @@ export default function IdCardFormModal({
                         </Label>
                         <Input
                           className="mt-1 text-xs"
-                          placeholder="e.g. A"
                           value={formData.section ?? ""}
                           onChange={(e) => handleFieldChange("section", e.target.value)}
                         />
@@ -720,7 +715,6 @@ export default function IdCardFormModal({
                         </Label>
                         <Input
                           className="mt-1 text-xs"
-                          placeholder="e.g. 15"
                           value={formData.roll_number ?? ""}
                           onChange={(e) => handleFieldChange("roll_number", e.target.value)}
                         />
@@ -732,7 +726,6 @@ export default function IdCardFormModal({
                         <Label className="text-xs font-bold text-foreground">Date of Birth</Label>
                         <Input
                           className="mt-1 text-xs"
-                          placeholder="DD/MM/YYYY"
                           value={formData.dob ?? ""}
                           onChange={(e) => handleFieldChange("dob", e.target.value)}
                         />
@@ -787,7 +780,6 @@ export default function IdCardFormModal({
                       <Label className="text-xs font-bold text-foreground">Father's Name</Label>
                       <Input
                         className="mt-1 text-xs"
-                        placeholder="e.g. Suresh Kumar"
                         value={formData.father_name ?? ""}
                         onChange={(e) => handleFieldChange("father_name", e.target.value)}
                       />
@@ -797,7 +789,6 @@ export default function IdCardFormModal({
                       <Label className="text-xs font-bold text-foreground">Mother's Name</Label>
                       <Input
                         className="mt-1 text-xs"
-                        placeholder="e.g. Anita Devi"
                         value={formData.mother_name ?? ""}
                         onChange={(e) => handleFieldChange("mother_name", e.target.value)}
                       />
@@ -807,7 +798,6 @@ export default function IdCardFormModal({
                       <Label className="text-xs font-bold text-foreground">Guardian Name</Label>
                       <Input
                         className="mt-1 text-xs"
-                        placeholder="Guardian name"
                         value={formData.guardian_name ?? ""}
                         onChange={(e) => handleFieldChange("guardian_name", e.target.value)}
                       />
@@ -829,7 +819,6 @@ export default function IdCardFormModal({
                                 ? "border-red-500 bg-red-50/15 text-red-900 dark:text-red-200 focus-visible:ring-red-400 focus-visible:border-red-500"
                                 : ""
                             }`}
-                            placeholder="9876543210"
                             value={formData.phone ?? ""}
                             onChange={(e) => {
                               const digits = e.target.value.replace(/\D/g, "").slice(0, 10);
@@ -850,7 +839,6 @@ export default function IdCardFormModal({
                       <Textarea
                         rows={2}
                         className="mt-1 text-xs"
-                        placeholder="Full home address"
                         value={formData.address ?? ""}
                         onChange={(e) => handleFieldChange("address", e.target.value)}
                       />
@@ -920,7 +908,6 @@ export default function IdCardFormModal({
                                         type="tel"
                                         inputMode="numeric"
                                         maxLength={10}
-                                        placeholder="9876543210"
                                         className={`text-xs transition-colors ${
                                           currentVal.length > 0 && currentVal.length < 10
                                             ? "border-red-500 bg-red-50/15 text-red-900 dark:text-red-200 focus-visible:ring-red-400 focus-visible:border-red-500"

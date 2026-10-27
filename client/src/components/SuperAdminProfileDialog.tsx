@@ -391,7 +391,6 @@ export default function SuperAdminProfileDialog({
                       type="text"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      placeholder="e.g. Master Administrator"
                       className="h-10 rounded-xl pl-9 text-xs"
                       required
                     />
@@ -408,7 +407,6 @@ export default function SuperAdminProfileDialog({
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      placeholder="admin@edunextg.com"
                       className="h-10 rounded-xl pl-9 text-xs"
                       required
                     />
@@ -434,7 +432,6 @@ export default function SuperAdminProfileDialog({
                           const digits = e.target.value.replace(/\D/g, "").slice(0, 10);
                           setPhone(digits);
                         }}
-                        placeholder={INDIAN_MOBILE_PLACEHOLDER}
                         className={`h-10 rounded-xl pl-9 text-xs transition-colors ${
                           phone.length > 0 && phone.length < 10
                             ? "border-destructive bg-destructive/10 text-destructive focus-visible:ring-destructive"

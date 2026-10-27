@@ -2905,7 +2905,6 @@ export default function Home({
                   </label>
                   <Input
                     className="mt-1 h-10 rounded-xl text-xs"
-                    placeholder="e.g., Pinecrest International Academy"
                     value={schoolNameInput}
                     onChange={(e) => setSchoolNameInput(e.target.value)}
                     autoFocus
@@ -2918,7 +2917,6 @@ export default function Home({
                   </label>
                   <Input
                     className="mt-1 uppercase h-10 rounded-xl font-mono text-xs"
-                    placeholder="e.g., PIA"
                     maxLength={10}
                     value={schoolCodeInput}
                     onChange={(e) => setSchoolCodeInput(e.target.value)}
@@ -2957,7 +2955,6 @@ export default function Home({
                     type="number"
                     min="0"
                     className="mt-1 h-10 rounded-xl text-xs"
-                    placeholder="e.g., 500"
                     value={schoolTotalStrengthInput}
                     onChange={(e) => {
                       const val = e.target.value.replace(/\D/g, "");
@@ -2976,7 +2973,6 @@ export default function Home({
                   <Input
                     type="email"
                     className="mt-1 h-10 rounded-xl text-xs"
-                    placeholder="admin@school.edu"
                     value={schoolEmailInput}
                     onChange={(e) => setSchoolEmailInput(e.target.value)}
                     disabled={Boolean(editingSchool && authenticatedUser.role !== "SUPER_ADMIN")}
@@ -2995,7 +2991,6 @@ export default function Home({
                         type="tel"
                         inputMode="numeric"
                         maxLength={10}
-                        placeholder={INDIAN_MOBILE_PLACEHOLDER}
                         value={schoolPhoneInput}
                         onChange={(e) => {
                           const digitsOnly = e.target.value.replace(/\D/g, "").slice(0, 10);
@@ -3024,7 +3019,6 @@ export default function Home({
                   </label>
                   <Input
                     className="mt-1 h-10 rounded-xl text-xs"
-                    placeholder="e.g., West Bengal"
                     value={schoolStateInput}
                     onChange={(e) => setSchoolStateInput(e.target.value)}
                   />
@@ -3035,7 +3029,6 @@ export default function Home({
                   </label>
                   <Input
                     className="mt-1 h-10 rounded-xl text-xs"
-                    placeholder="e.g., Kolkata"
                     value={schoolDistrictInput}
                     onChange={(e) => setSchoolDistrictInput(e.target.value)}
                   />
@@ -3049,7 +3042,6 @@ export default function Home({
                 </label>
                 <Input
                   className="mt-1 h-10 rounded-xl text-xs"
-                  placeholder="100 Education Lane, City, State"
                   value={schoolAddressInput}
                   onChange={(e) => setSchoolAddressInput(e.target.value)}
                 />
@@ -3091,7 +3083,6 @@ export default function Home({
                 </label>
                 <Input
                   className="mt-1"
-                  placeholder="e.g., Standard Student Pass 2026"
                   value={templateNameInput}
                   onChange={(e) => setTemplateNameInput(e.target.value)}
                   autoFocus
@@ -3132,7 +3123,6 @@ export default function Home({
                 </label>
                 <Input
                   className="mt-1 aria-invalid:border-red-500 aria-invalid:ring-red-200"
-                  placeholder="e.g., Sarah Connor"
                   value={userNameInput}
                   onChange={(e) => {
                     setUserNameInput(e.target.value);
@@ -3156,7 +3146,6 @@ export default function Home({
                 <Input
                   type="email"
                   className="mt-1 aria-invalid:border-red-500 aria-invalid:ring-red-200"
-                  placeholder="e.g., sarah@school.edu"
                   value={userEmailInput}
                   onChange={(e) => {
                     setUserEmailInput(e.target.value);
@@ -3809,7 +3798,6 @@ export default function Home({
             </label>
             <Textarea
               className="mt-1.5"
-              placeholder="e.g., Student photo is blurry. Please upload a clear passport-style photo."
               rows={4}
               value={requestChangesComment}
               onChange={(e) => setRequestChangesComment(e.target.value)}
@@ -3851,7 +3839,6 @@ export default function Home({
             </label>
             <Textarea
               className="mt-1.5"
-              placeholder="e.g., Duplicate record detected or student no longer enrolled."
               rows={4}
               value={rejectReason}
               onChange={(e) => setRejectReason(e.target.value)}
@@ -3893,7 +3880,6 @@ export default function Home({
             </label>
             <Textarea
               className="mt-1.5"
-              placeholder="e.g., Incomplete student information or photos do not meet criteria."
               rows={4}
               value={bulkRejectReason}
               onChange={(e) => setBulkRejectReason(e.target.value)}
