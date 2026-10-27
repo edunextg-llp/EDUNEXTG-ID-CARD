@@ -420,7 +420,6 @@ export default function CreateOrderView({
               <div className="flex items-center justify-between rounded-xl border border-border p-3 bg-muted/40 mt-1">
                 <div>
                   <Label className="text-xs font-bold text-foreground">Clamps Included</Label>
-                  <p className="text-[11px] text-muted-foreground">Attach crocodile clamp to holder</p>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-bold text-muted-foreground">{clip ? "Yes" : "No"}</span>
@@ -434,7 +433,6 @@ export default function CreateOrderView({
               <div className="flex items-center justify-between">
                 <div>
                   <Label className="text-xs font-bold text-foreground">Lanyard Included</Label>
-                  <p className="text-[11px] text-muted-foreground">Provide customized neck lanyards</p>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-bold text-muted-foreground">{lanyardIncluded ? "Yes" : "No"}</span>

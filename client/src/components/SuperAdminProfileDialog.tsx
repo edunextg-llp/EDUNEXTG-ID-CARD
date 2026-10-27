@@ -249,9 +249,7 @@ export default function SuperAdminProfileDialog({
                 <DialogTitle className="text-xl font-extrabold tracking-tight text-foreground">
                   Super Admin Profile
                 </DialogTitle>
-                <DialogDescription className="text-xs text-muted-foreground">
-                  Manage your administrator credentials, personal information, and photo.
-                </DialogDescription>
+                <DialogDescription className="sr-only">Super Admin Profile</DialogDescription>
               </div>
             </div>
             <span className="rounded-full border border-primary/30 bg-primary/10 px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-wider text-primary">
@@ -415,9 +413,6 @@ export default function SuperAdminProfileDialog({
                       required
                     />
                   </div>
-                  <p className="mt-1 text-[10px] text-muted-foreground">
-                    Used for administrator login and system notifications.
-                  </p>
                 </div>
 
                 <div>
@@ -475,14 +470,6 @@ export default function SuperAdminProfileDialog({
           ) : (
             /* Security & Password Form */
             <form onSubmit={handleChangePassword} className="space-y-4">
-              <div className="rounded-2xl border border-primary/20 bg-primary/10 p-3 text-xs text-foreground">
-                <div className="flex items-center gap-2 font-bold text-primary">
-                  <Lock className="h-4 w-4" /> Strong Password Protection
-                </div>
-                <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">
-                  Ensure your administrator password has at least 8 characters. You will need to provide your existing password to verify this update.
-                </p>
-              </div>
 
               <div>
                 <label className="block text-xs font-bold text-foreground">

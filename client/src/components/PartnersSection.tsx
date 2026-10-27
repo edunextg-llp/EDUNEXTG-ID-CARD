@@ -832,8 +832,8 @@ export default function PartnersSection({
                   <DialogTitle className="text-lg font-black text-foreground">
                     Add New Partner
                   </DialogTitle>
-                  <DialogDescription className="text-xs text-muted-foreground mt-0.5">
-                    Create a partner account with location and portal credentials.
+                  <DialogDescription className="sr-only">
+                    Add New Partner
                   </DialogDescription>
                 </div>
               </div>
@@ -942,9 +942,6 @@ export default function PartnersSection({
                   }}
                   autoComplete="off"
                 />
-                <p className="mt-1 text-[11px] text-muted-foreground">
-                  Used by partner to log into the portal.
-                </p>
                 {addErrors.openId && (
                   <p className="mt-1 text-xs font-medium text-red-600">{addErrors.openId}</p>
                 )}
@@ -1010,8 +1007,8 @@ export default function PartnersSection({
               <DialogTitle className="text-lg font-black text-foreground">
                 Edit Partner: {editingPartner?.name || editingPartner?.email}
               </DialogTitle>
-              <DialogDescription className="text-xs text-muted-foreground mt-0.5">
-                Update partner information, location, or reset password.
+              <DialogDescription className="sr-only">
+                Edit Partner
               </DialogDescription>
             </DialogHeader>
 

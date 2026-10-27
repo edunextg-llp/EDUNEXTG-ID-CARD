@@ -2476,9 +2476,6 @@ export default function Home({
                       <CardTitle className="text-[15px] font-extrabold tracking-[-0.02em]">
                         Template library
                       </CardTitle>
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        Active designs across your network
-                      </p>
                     </div>
                     <button
                       onClick={() => goTo("ID card templates")}
@@ -2559,9 +2556,6 @@ export default function Home({
                           <CardTitle className="text-[15px] font-extrabold tracking-[-0.02em]">
                             Overall report
                           </CardTitle>
-                          <p className="mt-1 text-xs text-muted-foreground">
-                            Card status breakdown
-                          </p>
                         </div>
                         <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
                           <Grid2X2 className="h-5 w-5" />
@@ -2897,11 +2891,7 @@ export default function Home({
                   <DialogTitle className="text-lg font-black text-foreground">
                     {editingSchool ? `Edit School: ${editingSchool.name}` : "Add New School"}
                   </DialogTitle>
-                  <DialogDescription className="text-xs text-muted-foreground mt-0.5">
-                    {editingSchool
-                      ? "Update school details, board affiliation, contact, and registration parameters."
-                      : "Register a new school in the identity platform database."}
-                  </DialogDescription>
+                  <DialogDescription className="sr-only">{editingSchool ? "Edit School" : "Add New School"}</DialogDescription>
                 </div>
               </div>
             </DialogHeader>
@@ -3092,9 +3082,7 @@ export default function Home({
           <form onSubmit={handleCreateTemplateSubmit}>
             <DialogHeader>
               <DialogTitle>New ID Card Template</DialogTitle>
-              <DialogDescription>
-                Create a draft template definition in the system.
-              </DialogDescription>
+              <DialogDescription className="sr-only">New ID Card Template</DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
               <div>
@@ -3135,11 +3123,7 @@ export default function Home({
           <form onSubmit={handleUserSubmit} noValidate autoComplete="off">
             <DialogHeader>
               <DialogTitle>{editingUser ? `Edit User: ${editingUser.name || editingUser.email || "User"}` : "Add New User"}</DialogTitle>
-              <DialogDescription>
-                {editingUser
-                  ? "Update user details, role assignment, or change password."
-                  : "Create an administrator, school administrator, or partner account."}
-              </DialogDescription>
+              <DialogDescription className="sr-only">{editingUser ? "Edit User" : "Add New User"}</DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
               <div>
@@ -3273,9 +3257,6 @@ export default function Home({
                       {userFormErrors.schoolId}
                     </p>
                   )}
-                  <p className="mt-1 text-[11px] text-muted-foreground">
-                    The School Admin will manage cards, orders, and approvals for this school.
-                  </p>
                 </div>
               )}
             </div>

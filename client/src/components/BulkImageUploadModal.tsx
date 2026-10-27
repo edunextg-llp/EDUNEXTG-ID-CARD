@@ -350,8 +350,8 @@ export default function BulkImageUploadModal({
               <DialogTitle className="text-lg font-bold text-foreground">
                 Bulk Image Upload
               </DialogTitle>
-              <DialogDescription className="text-xs text-muted-foreground mt-0.5">
-                Upload card photos named by Admission Number (students) or Employee ID (staff).
+              <DialogDescription className="sr-only">
+                Bulk Image Upload
               </DialogDescription>
             </div>
           </div>
