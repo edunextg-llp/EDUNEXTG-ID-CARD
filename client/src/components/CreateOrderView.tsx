@@ -208,9 +208,7 @@ export default function CreateOrderView({
           </Button>
           <div>
             <h1 className="text-2xl font-black text-foreground">Create New ID Card Order</h1>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              Submit requirements for student or staff ID card batch printing & accessories
-            </p>
+
           </div>
         </div>
       </div>

@@ -330,9 +330,7 @@ export default function PartnersSection({
           <h2 className="text-2xl font-extrabold tracking-[-0.05em] sm:text-3xl text-foreground">
             Partners
           </h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Add and manage authorized partners and representatives.
-          </p>
+
         </div>
         <Button
           onClick={() => {
@@ -361,7 +359,7 @@ export default function PartnersSection({
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-black text-foreground">{totalPartners}</div>
-            <p className="text-[11px] text-muted-foreground mt-0.5">Registered partner accounts</p>
+
           </CardContent>
         </Card>
 
@@ -376,7 +374,7 @@ export default function PartnersSection({
             <div className="text-2xl font-black text-emerald-600 dark:text-emerald-400">
               {activePartners}
             </div>
-            <p className="text-[11px] text-muted-foreground mt-0.5">Can access partner portal</p>
+
           </CardContent>
         </Card>
 
@@ -389,7 +387,7 @@ export default function PartnersSection({
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-black text-foreground">{inactivePartners}</div>
-            <p className="text-[11px] text-muted-foreground mt-0.5">Access currently paused</p>
+
           </CardContent>
         </Card>
 
@@ -402,7 +400,7 @@ export default function PartnersSection({
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-black text-foreground">{totalOrdersPlaced}</div>
-            <p className="text-[11px] text-muted-foreground mt-0.5">Total orders placed by partners</p>
+
           </CardContent>
         </Card>
       </div>
@@ -456,7 +454,7 @@ export default function PartnersSection({
               <p className="mt-1">
                 {search || statusFilter !== "ALL"
                   ? "No partners match your current filters. Try resetting the search or filter."
-                  : "No partners have been registered yet. Click 'Add Partner' to create one."}
+                  : ""}
               </p>
               {!search && statusFilter === "ALL" && (
                 <Button

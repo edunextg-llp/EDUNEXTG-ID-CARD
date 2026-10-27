@@ -2069,10 +2069,7 @@ export default function Home({
                     Keep every card moving{" "}
                     <span className="text-primary">forward.</span>
                   </h2>
-                  <p className="mt-3 max-w-lg text-sm leading-6 text-muted-foreground">
-                    Manage school identity, approvals, and print-ready cards from
-                    one calm workspace.
-                  </p>
+
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {authenticatedUser.role === "SUPER_ADMIN" && (
@@ -4294,23 +4291,13 @@ function ModuleView({
                   : label
               : label}
           </h2>
-          <p className="mt-2 text-sm text-muted-foreground">
-            {isRequests
-              ? authenticatedUser.role === "SUPER_ADMIN"
-                ? activeSchool
-                  ? `Showing ID cards for ${activeSchool.name} (${activeSchool.shortCode}).`
-                  : "Create, edit, submit, and manage student ID cards for all schools."
-                : "View and approve or reject student ID cards created for your school."
-              : isApproved
-                ? activeSchool
-                  ? `Showing verified, production-ready ID cards for ${activeSchool.name} (${activeSchool.shortCode}).`
-                  : "Print and export batch production-ready verified ID cards."
-                : isTemplates
-                  ? authenticatedUser.role === "SUPER_ADMIN"
-                    ? "Manage customizable front and back ID card templates."
-                    : "Browse available templates and select your school's final preferred template."
-                  : "A focused workspace for managing your school identity operations."}
-          </p>
+          {((isRequests && activeSchool) || (isApproved && activeSchool)) && (
+            <p className="mt-2 text-sm text-muted-foreground">
+              {isRequests
+                ? `Showing ID cards for ${activeSchool.name} (${activeSchool.shortCode}).`
+                : `Showing verified, production-ready ID cards for ${activeSchool.name} (${activeSchool.shortCode}).`}
+            </p>
+          )}
         </div>
         <div className="flex flex-wrap items-center gap-2.5">
           {isTemplates && (

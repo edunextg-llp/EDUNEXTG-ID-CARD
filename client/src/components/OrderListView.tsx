@@ -202,13 +202,7 @@ export default function OrderListView({
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-black text-foreground">ID Card Orders</h1>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            {isSuperAdmin
-              ? "All ID card batches across all partner schools and partners"
-              : isSchoolAdmin
-              ? "Order batches for your school"
-              : "ID card orders placed by your partner account"}
-          </p>
+
         </div>
         <Button
           onClick={onCreateNew}
