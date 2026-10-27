@@ -162,8 +162,8 @@ export default function ExcelUploadModal({
               <DialogTitle className="text-lg font-bold text-foreground">
                 Upload ID Card Requests
               </DialogTitle>
-              <DialogDescription className="text-xs text-muted-foreground mt-0.5">
-                Bulk create ID card requests from an Excel spreadsheet.
+              <DialogDescription className="sr-only">
+                Upload ID Card Requests
               </DialogDescription>
             </div>
           </div>

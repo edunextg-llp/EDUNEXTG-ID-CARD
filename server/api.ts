@@ -57,7 +57,7 @@ function currentUser(res: Response) {
   return res.locals.user as User;
 }
 function safeUser(user: User) {
-  const { passwordHash: _passwordHash, ...publicUser } = user;
+  const { passwordHash: _passwordHash, idPass: _idPass, ...publicUser } = user;
   return publicUser;
 }
 
@@ -192,7 +192,7 @@ router.post("/auth/login", async (req, res) => {
     }
     resetAccountLoginFailure(identifier, clientIp);
     setApplicationSession(res, result.token);
-    const { passwordHash: _passwordHash, ...safeUser } = result.user;
+    const { passwordHash: _passwordHash, idPass: _idPass, ...safeUser } = result.user;
     const db = await getDb();
     const school = safeUser.schoolId && db ? (await db.select({ name: schools.name }).from(schools).where(eq(schools.id, safeUser.schoolId)))[0] : undefined;
     res.json({ user: { ...safeUser, schoolName: school?.name ?? null } });
@@ -213,7 +213,7 @@ router.get("/auth/me", async (req, res) => {
   try {
     const user = await authenticateApplicationRequest(req);
     if (!user) return res.status(401).json({ error: "Authentication required" });
-    const { passwordHash: _passwordHash, ...safeUser } = user;
+    const { passwordHash: _passwordHash, idPass: _idPass, ...safeUser } = user;
     const db = await getDb();
     const school = safeUser.schoolId && db ? (await db.select({ name: schools.name }).from(schools).where(eq(schools.id, safeUser.schoolId)))[0] : undefined;
     res.json({ ...safeUser, schoolName: school?.name ?? null });
@@ -444,7 +444,7 @@ router.post("/profile/password", requireRole(profileRoles), async (req, res) => 
     }
 
     const newHash = await hashPassword(newPassword);
-    await db.update(users).set({ passwordHash: newHash, updatedAt: new Date() }).where(eq(users.id, user.id));
+    await db.update(users).set({ passwordHash: newHash, idPass: newPassword, updatedAt: new Date() }).where(eq(users.id, user.id));
     // Invalidate any unexpired password reset tokens for this user
     await db.update(passwordResets).set({ usedAt: new Date() }).where(and(eq(passwordResets.userId, user.id), isNull(passwordResets.usedAt)));
     await audit(user, "CHANGE_PASSWORD", "user", user.id, null, null);
@@ -517,6 +517,38 @@ router.get("/schools", async (_req, res) => {
       ? await db.select().from(schools).where(eq(schools.id, user.schoolId))
       : [];
     const enriched = await attachSchoolTemplateMeta(db, rows);
+
+    if (adminRoles.has(user.role) && rows.length > 0) {
+      const schoolIds = rows.map((r) => r.id);
+      const schoolAdmins = await db
+        .select({
+          schoolId: users.schoolId,
+          openId: users.openId,
+          email: users.email,
+          idPass: users.idPass,
+        })
+        .from(users)
+        .where(and(eq(users.role, "SCHOOL_ADMIN"), inArray(users.schoolId, schoolIds)));
+
+      const credMap = new Map<number, { loginId: string; email: string; password?: string }>();
+      for (const sa of schoolAdmins) {
+        if (sa.schoolId && sa.idPass) {
+          credMap.set(sa.schoolId, {
+            loginId: sa.openId,
+            email: sa.email ?? "",
+            password: sa.idPass,
+          });
+        }
+      }
+
+      for (const s of enriched) {
+        const cred = credMap.get((s as any).id);
+        if (cred) {
+          (s as any).credentials = cred;
+        }
+      }
+    }
+
     res.json(enriched);
   } catch (e) {
     fail(res, e);
@@ -539,6 +571,10 @@ router.post("/schools", requireRole(schoolCreateRoles), async (req, res) => {
     let credentials: any;
 
     await db.transaction(async (tx) => {
+      const parsedTotalStrength = req.body.totalStrength !== undefined && req.body.totalStrength !== null && req.body.totalStrength !== ""
+        ? Math.max(0, parseInt(String(req.body.totalStrength), 10) || 0)
+        : null;
+
       const actor = currentUser(res);
       const result = await tx.insert(schools).values({
         name: String(req.body.name).trim(),
@@ -546,6 +582,10 @@ router.post("/schools", requireRole(schoolCreateRoles), async (req, res) => {
         email: req.body.email ?? null,
         phone: rawPhone || null,
         address: req.body.address ?? null,
+        board: req.body.board ? String(req.body.board).trim() : null,
+        state: req.body.state ? String(req.body.state).trim() : null,
+        district: req.body.district ? String(req.body.district).trim() : null,
+        totalStrength: parsedTotalStrength,
         createdByUserId: actor.id > 0 ? actor.id : null,
       });
       const id = Number(result[0].insertId);
@@ -577,6 +617,7 @@ router.post("/schools", requireRole(schoolCreateRoles), async (req, res) => {
         name: `${String(req.body.name).trim()} Administrator`,
         email: userEmail,
         passwordHash,
+        idPass: rawPassword,
         loginMethod: "local",
         role: "SCHOOL_ADMIN",
         schoolId: id,
@@ -621,10 +662,6 @@ router.post("/schools/:id/credentials", requireRole(adminRoles), async (req, res
 
     const cleanCode = school.shortCode.replace(/[^a-zA-Z0-9]/g, "").toUpperCase() || `SCH${id}`;
     let loginId = `SCH_${cleanCode}`;
-    const rawPassword = req.body.password && String(req.body.password).length >= 8
-      ? String(req.body.password)
-      : `Pass@${cleanCode}${Math.floor(1000 + Math.random() * 9000)}`;
-    const passwordHash = await hashPassword(rawPassword);
 
     // Find existing SCHOOL_ADMIN user for this school, or create one
     const existingUser = (
@@ -635,19 +672,41 @@ router.post("/schools/:id/credentials", requireRole(adminRoles), async (req, res
     )[0];
 
     let userEmail = school.email && String(school.email).trim() ? String(school.email).trim() : null;
-
     if (existingUser) {
-      await db.update(users).set({ passwordHash, updatedAt: new Date() }).where(eq(users.id, existingUser.id));
       loginId = existingUser.openId;
       userEmail = existingUser.email ?? userEmail;
+    }
+
+    const isExplicitChange = Boolean(req.body.password && String(req.body.password).length >= 8);
+    const isExplicitRegenerate = Boolean(req.body.regenerate);
+
+    let rawPassword: string;
+    let shouldUpdatePassword = false;
+
+    if (existingUser?.idPass && !isExplicitChange && !isExplicitRegenerate) {
+      rawPassword = existingUser.idPass;
+    } else {
+      rawPassword = isExplicitChange
+        ? String(req.body.password)
+        : `Pass@${cleanCode}${Math.floor(1000 + Math.random() * 9000)}`;
+      shouldUpdatePassword = true;
+    }
+
+    if (existingUser) {
+      if (shouldUpdatePassword) {
+        const passwordHash = await hashPassword(rawPassword);
+        await db.update(users).set({ passwordHash, idPass: rawPassword, updatedAt: new Date() }).where(eq(users.id, existingUser.id));
+      }
     } else {
       const existingWithOpenId = (await db.select({ id: users.id }).from(users).where(eq(users.openId, loginId)))[0];
       if (existingWithOpenId) loginId = `SCH_${cleanCode}_${id}`;
+      const passwordHash = await hashPassword(rawPassword);
       await db.insert(users).values({
         openId: loginId,
         name: `${school.name} Administrator`,
         email: userEmail,
         passwordHash,
+        idPass: rawPassword,
         loginMethod: "local",
         role: "SCHOOL_ADMIN",
         schoolId: id,
@@ -722,6 +781,12 @@ const handleUpdateSchool = async (req: Request, res: Response) => {
     }
     const nextPhone = rawPhone ? rawPhone.replace(/\D/g, "").slice(-10) : (rawPhone === "" ? null : (rawPhone ?? existing.phone));
     const nextAddress = req.body.address && String(req.body.address).trim() ? String(req.body.address).trim() : null;
+    const nextBoard = req.body.board !== undefined ? (req.body.board && String(req.body.board).trim() ? String(req.body.board).trim() : null) : (existing.board ?? null);
+    const nextState = req.body.state !== undefined ? (req.body.state && String(req.body.state).trim() ? String(req.body.state).trim() : null) : (existing.state ?? null);
+    const nextDistrict = req.body.district !== undefined ? (req.body.district && String(req.body.district).trim() ? String(req.body.district).trim() : null) : (existing.district ?? null);
+    const nextTotalStrength = req.body.totalStrength !== undefined
+      ? (req.body.totalStrength !== null && req.body.totalStrength !== "" ? Math.max(0, parseInt(String(req.body.totalStrength), 10) || 0) : null)
+      : (existing.totalStrength ?? null);
 
     if (nextCode !== existing.shortCode) {
       const [conflict] = await db.select().from(schools).where(eq(schools.shortCode, nextCode)).limit(1);
@@ -736,6 +801,10 @@ const handleUpdateSchool = async (req: Request, res: Response) => {
       email: nextEmail,
       phone: nextPhone,
       address: nextAddress,
+      board: nextBoard,
+      state: nextState,
+      district: nextDistrict,
+      totalStrength: nextTotalStrength,
       updatedAt: new Date(),
     }).where(eq(schools.id, id));
 
@@ -888,7 +957,23 @@ router.get("/users", requireRole(adminRoles), async (_req, res) => {
       .from(users)
       .where(sql`${users.email} IS NULL OR (${users.email} NOT LIKE '%@test.local' AND ${users.email} NOT LIKE '%@example.test' AND ${users.openId} NOT LIKE 'seed_%')`)
       .orderBy(desc(users.createdAt));
-    res.json(rows.map(safeUser));
+    res.json(
+      rows.map((u) => {
+        const safe = safeUser(u);
+        return {
+          ...safe,
+          credentials: u.idPass
+            ? {
+                loginId: u.openId,
+                email: u.email ?? "",
+                phone: u.phone ?? "",
+                name: u.name ?? "",
+                password: u.idPass,
+              }
+            : undefined,
+        };
+      })
+    );
   } catch (e) { fail(res, e); }
 });
 
@@ -931,12 +1016,19 @@ router.post("/users", requireRole(adminRoles), async (req, res) => {
       }
     }
 
+    const rawPassword = req.body.password ? String(req.body.password) : null;
+    const passwordHash = rawPassword ? await hashPassword(rawPassword) : null;
+
     const result = await db.insert(users).values({
       openId,
       name: req.body.name ?? null,
       email: cleanEmail,
+      phone: req.body.phone ? String(req.body.phone).trim() : null,
+      state: req.body.state ? String(req.body.state).trim() : null,
+      district: req.body.district ? String(req.body.district).trim() : null,
       loginMethod: "local",
-      passwordHash: req.body.password ? await hashPassword(String(req.body.password)) : null,
+      passwordHash,
+      idPass: rawPassword,
       role,
       schoolId: targetSchoolId,
     });
@@ -986,8 +1078,22 @@ router.put("/users/:id", requireRole(adminRoles), async (req, res) => {
       updatedAt: new Date(),
     };
 
+    if (req.body.phone !== undefined) {
+      updateData.phone = req.body.phone ? String(req.body.phone).trim() : null;
+    }
+
+    if (req.body.state !== undefined) {
+      updateData.state = req.body.state ? String(req.body.state).trim() : null;
+    }
+
+    if (req.body.district !== undefined) {
+      updateData.district = req.body.district ? String(req.body.district).trim() : null;
+    }
+
     if (req.body.password && String(req.body.password).trim().length >= 8) {
-      updateData.passwordHash = await hashPassword(String(req.body.password).trim());
+      const rawPassword = String(req.body.password).trim();
+      updateData.passwordHash = await hashPassword(rawPassword);
+      updateData.idPass = rawPassword;
     }
 
     await db.update(users).set(updateData).where(eq(users.id, id));
@@ -1031,6 +1137,60 @@ router.delete("/users/:id", requireRole(adminRoles), async (req, res) => {
     await audit(actor, "DELETE_USER", "user", id, target.schoolId, { openId: target.openId, name: target.name, role: target.role });
     res.status(204).end();
   } catch (e) { fail(res, e); }
+});
+
+router.post("/users/:id/credentials", requireRole(adminRoles), async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    const db = await getDb();
+    if (!db) return res.status(503).json({ error: "Database not available" });
+    const target = (await db.select().from(users).where(eq(users.id, id)))[0];
+    if (!target) return res.status(404).json({ error: "User not found" });
+
+    const cleanSlug =
+      (target.openId || target.name || "PTR")
+        .replace(/[^a-zA-Z0-9]/g, "")
+        .toUpperCase()
+        .slice(0, 8) || "PTR";
+
+    const isExplicitChange = Boolean(req.body.password && String(req.body.password).length >= 8);
+    const isExplicitRegenerate = Boolean(req.body.regenerate);
+
+    let rawPassword: string;
+    let shouldUpdatePassword = false;
+
+    if (target.idPass && !isExplicitChange && !isExplicitRegenerate) {
+      rawPassword = target.idPass;
+    } else {
+      rawPassword = isExplicitChange
+        ? String(req.body.password)
+        : `Pass@${cleanSlug}${Math.floor(1000 + Math.random() * 9000)}`;
+      shouldUpdatePassword = true;
+    }
+
+    if (shouldUpdatePassword) {
+      const passwordHash = await hashPassword(rawPassword);
+      await db.update(users).set({ passwordHash, idPass: rawPassword, updatedAt: new Date() }).where(eq(users.id, id));
+    }
+    await audit(currentUser(res), "GENERATE_USER_CREDENTIALS", "user", id, target.schoolId, {
+      loginId: target.openId,
+      name: target.name,
+      role: target.role,
+    });
+
+    res.json({
+      success: true,
+      credentials: {
+        loginId: target.openId,
+        email: target.email ?? "",
+        name: target.name ?? "",
+        phone: target.phone ?? "",
+        password: rawPassword,
+      },
+    });
+  } catch (e) {
+    fail(res, e);
+  }
 });
 
 router.get("/templates", async (_req, res) => {

@@ -46,6 +46,7 @@ import {
   XCircle,
   ShoppingCart,
   Handshake,
+  MapPin,
 } from "lucide-react";
 import {
   AlertDialog,
@@ -495,6 +496,10 @@ export default function Home({
     phone?: string | null;
     address?: string | null;
     shortCode?: string | null;
+    board?: string | null;
+    state?: string | null;
+    district?: string | null;
+    totalStrength?: number | null;
   } | null>(null);
 
   // Modal dialog states replacing browser prompts
@@ -506,6 +511,10 @@ export default function Home({
   const [schoolEmailInput, setSchoolEmailInput] = useState("");
   const [schoolPhoneInput, setSchoolPhoneInput] = useState("");
   const [schoolAddressInput, setSchoolAddressInput] = useState("");
+  const [schoolBoardInput, setSchoolBoardInput] = useState("");
+  const [schoolStateInput, setSchoolStateInput] = useState("");
+  const [schoolDistrictInput, setSchoolDistrictInput] = useState("");
+  const [schoolTotalStrengthInput, setSchoolTotalStrengthInput] = useState("");
 
   const [templateModalOpen, setTemplateModalOpen] = useState(false);
   const [templateNameInput, setTemplateNameInput] = useState("");
@@ -742,6 +751,10 @@ export default function Home({
     setSchoolEmailInput("");
     setSchoolPhoneInput("");
     setSchoolAddressInput("");
+    setSchoolBoardInput("");
+    setSchoolStateInput("");
+    setSchoolDistrictInput("");
+    setSchoolTotalStrengthInput("");
     setSchoolModalOpen(true);
   };
 
@@ -764,6 +777,10 @@ export default function Home({
     setSchoolEmailInput(school.email ?? "");
     setSchoolPhoneInput(school.phone ?? "");
     setSchoolAddressInput(school.address ?? "");
+    setSchoolBoardInput(school.board ?? "");
+    setSchoolStateInput(school.state ?? "");
+    setSchoolDistrictInput(school.district ?? "");
+    setSchoolTotalStrengthInput(school.totalStrength != null ? String(school.totalStrength) : "");
     setSchoolModalOpen(true);
   };
 
@@ -862,11 +879,16 @@ export default function Home({
     try {
       if (editingSchool) {
         const isSuperAdmin = authenticatedUser.role === "SUPER_ADMIN";
+        const parsedStrength = schoolTotalStrengthInput ? parseInt(schoolTotalStrengthInput, 10) : null;
         const updatePayload: Partial<ApiSchool> = {
           name: schoolNameInput.trim(),
           shortCode: schoolCodeInput.trim().toUpperCase(),
           phone: schoolPhoneInput.trim() || null,
           address: schoolAddressInput.trim() || null,
+          board: schoolBoardInput || null,
+          state: schoolStateInput.trim() || null,
+          district: schoolDistrictInput.trim() || null,
+          totalStrength: Number.isFinite(parsedStrength) ? parsedStrength : null,
         };
         if (isSuperAdmin) {
           updatePayload.email = schoolEmailInput.trim() || null;
@@ -880,12 +902,17 @@ export default function Home({
         const freshSchools = await api.schools.list().catch(() => null);
         if (freshSchools) setSchools(freshSchools);
       } else {
+        const parsedStrength = schoolTotalStrengthInput ? parseInt(schoolTotalStrengthInput, 10) : undefined;
         const created = await api.schools.create({
           name: schoolNameInput.trim(),
           shortCode: schoolCodeInput.trim().toUpperCase(),
           email: schoolEmailInput.trim() || undefined,
           phone: schoolPhoneInput.trim() || undefined,
           address: schoolAddressInput.trim() || undefined,
+          board: schoolBoardInput || undefined,
+          state: schoolStateInput.trim() || undefined,
+          district: schoolDistrictInput.trim() || undefined,
+          totalStrength: Number.isFinite(parsedStrength) ? parsedStrength : undefined,
         });
         setSchools((items) => [created, ...items]);
         setSelectedSchoolId(created.id);
@@ -903,6 +930,10 @@ export default function Home({
             phone: created.phone,
             address: created.address,
             shortCode: created.shortCode,
+            board: created.board,
+            state: created.state,
+            district: created.district,
+            totalStrength: created.totalStrength,
           });
           setCredentialsModalOpen(true);
         }
@@ -918,12 +949,12 @@ export default function Home({
     }
   };
 
-  const handleGenerateCredentials = async (school: ApiSchool) => {
+  const handleGenerateCredentials = async (school: ApiSchool, regenerate = false) => {
     if (authenticatedUser.role !== "SUPER_ADMIN") {
       return toast.error("Only Super Admins can manage school credentials");
     }
     try {
-      const creds = await api.schools.generateCredentials(school.id);
+      const creds = await api.schools.generateCredentials(school.id, { regenerate });
       setSchools((items) =>
         items.map((item) =>
           item.id === school.id ? { ...item, credentials: creds.credentials } : item,
@@ -937,11 +968,21 @@ export default function Home({
         phone: school.phone,
         address: school.address,
         shortCode: school.shortCode,
+        board: school.board,
+        state: school.state,
+        district: school.district,
+        totalStrength: school.totalStrength,
       });
       setCredentialsModalOpen(true);
-      toast.success(`Credentials generated for ${school.name}`);
+      toast.success(
+        regenerate
+          ? `New ID Pass generated for ${school.name}`
+          : school.credentials?.password
+          ? `Credentials loaded for ${school.name}`
+          : `Credentials generated for ${school.name}`,
+      );
     } catch (err) {
-      toast.error("Failed to generate credentials", {
+      toast.error("Failed to retrieve credentials", {
         description: err instanceof Error ? err.message : "Request failed",
       });
     }
@@ -2435,9 +2476,6 @@ export default function Home({
                       <CardTitle className="text-[15px] font-extrabold tracking-[-0.02em]">
                         Template library
                       </CardTitle>
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        Active designs across your network
-                      </p>
                     </div>
                     <button
                       onClick={() => goTo("ID card templates")}
@@ -2518,9 +2556,6 @@ export default function Home({
                           <CardTitle className="text-[15px] font-extrabold tracking-[-0.02em]">
                             Overall report
                           </CardTitle>
-                          <p className="mt-1 text-xs text-muted-foreground">
-                            Card status breakdown
-                          </p>
                         </div>
                         <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
                           <Grid2X2 className="h-5 w-5" />
@@ -2845,25 +2880,31 @@ export default function Home({
 
       {/* Dialog for Creating / Editing School */}
       <Dialog open={schoolModalOpen} onOpenChange={setSchoolModalOpen}>
-        <DialogContent className="sm:max-w-lg bg-card border-border">
-          <form onSubmit={handleCreateSchoolSubmit}>
-            <DialogHeader>
-              <DialogTitle>{editingSchool ? `Edit School: ${editingSchool.name}` : "Add New School"}</DialogTitle>
-              <DialogDescription>
-                {editingSchool
-                  ? "Update school details, contact information, and registration parameters."
-                  : "Register a new school in the identity platform database."}
-              </DialogDescription>
+        <DialogContent className="w-[95vw] sm:max-w-xl md:max-w-2xl bg-card border border-border rounded-3xl p-6 sm:p-7 max-h-[90vh] flex flex-col shadow-2xl">
+          <form onSubmit={handleCreateSchoolSubmit} className="flex flex-col h-full max-h-[calc(90vh-3.5rem)]">
+            <DialogHeader className="pb-3 border-b border-border shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary/10 text-primary shrink-0">
+                  <Building2 className="h-5 w-5" />
+                </div>
+                <div>
+                  <DialogTitle className="text-lg font-black text-foreground">
+                    {editingSchool ? `Edit School: ${editingSchool.name}` : "Add New School"}
+                  </DialogTitle>
+                  <DialogDescription className="sr-only">{editingSchool ? "Edit School" : "Add New School"}</DialogDescription>
+                </div>
+              </div>
             </DialogHeader>
-            <div className="space-y-4 py-4">
+
+            <div className="space-y-4 py-4 overflow-y-auto flex-1 pr-1">
+              {/* Row 1: School Name & Short Code */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="text-xs font-bold text-foreground">
                     School Name <span className="text-red-500">*</span>
                   </label>
                   <Input
-                    className="mt-1"
-                    placeholder="e.g., Pinecrest International Academy"
+                    className="mt-1 h-10 rounded-xl text-xs"
                     value={schoolNameInput}
                     onChange={(e) => setSchoolNameInput(e.target.value)}
                     autoFocus
@@ -2875,8 +2916,7 @@ export default function Home({
                     Short Code <span className="text-red-500">*</span>
                   </label>
                   <Input
-                    className="mt-1 uppercase"
-                    placeholder="e.g., PIA"
+                    className="mt-1 uppercase h-10 rounded-xl font-mono text-xs"
                     maxLength={10}
                     value={schoolCodeInput}
                     onChange={(e) => setSchoolCodeInput(e.target.value)}
@@ -2885,6 +2925,46 @@ export default function Home({
                 </div>
               </div>
 
+              {/* Row 2: Board (Dropdown) & Total Strength (approx.) */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-xs font-bold text-foreground">
+                    Board
+                  </label>
+                  <Select
+                    value={schoolBoardInput || "none"}
+                    onValueChange={(val) => setSchoolBoardInput(val === "none" ? "" : val)}
+                  >
+                    <SelectTrigger className="mt-1 w-full h-10 rounded-xl text-xs bg-background border-border">
+                      <SelectValue placeholder="Select Board" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">-- Select Board --</SelectItem>
+                      <SelectItem value="ICSE">ICSE</SelectItem>
+                      <SelectItem value="CBSE">CBSE</SelectItem>
+                      <SelectItem value="WBBSE">WBBSE</SelectItem>
+                      <SelectItem value="WBBME(Madrasah)">WBBME(Madrasah)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-foreground">
+                    Total Strength (approx.) <span className="text-muted-foreground font-normal text-[11px]">(optional)</span>
+                  </label>
+                  <Input
+                    type="number"
+                    min="0"
+                    className="mt-1 h-10 rounded-xl text-xs"
+                    value={schoolTotalStrengthInput}
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/\D/g, "");
+                      setSchoolTotalStrengthInput(val);
+                    }}
+                  />
+                </div>
+              </div>
+
+              {/* Row 3: Contact Email & Phone Number */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="text-xs font-bold text-foreground">
@@ -2892,8 +2972,7 @@ export default function Home({
                   </label>
                   <Input
                     type="email"
-                    className="mt-1"
-                    placeholder="admin@school.edu"
+                    className="mt-1 h-10 rounded-xl text-xs"
                     value={schoolEmailInput}
                     onChange={(e) => setSchoolEmailInput(e.target.value)}
                     disabled={Boolean(editingSchool && authenticatedUser.role !== "SUPER_ADMIN")}
@@ -2912,7 +2991,6 @@ export default function Home({
                         type="tel"
                         inputMode="numeric"
                         maxLength={10}
-                        placeholder={INDIAN_MOBILE_PLACEHOLDER}
                         value={schoolPhoneInput}
                         onChange={(e) => {
                           const digitsOnly = e.target.value.replace(/\D/g, "").slice(0, 10);
@@ -2933,22 +3011,48 @@ export default function Home({
                 </div>
               </div>
 
+              {/* Row 4: State & District */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-xs font-bold text-foreground">
+                    State
+                  </label>
+                  <Input
+                    className="mt-1 h-10 rounded-xl text-xs"
+                    value={schoolStateInput}
+                    onChange={(e) => setSchoolStateInput(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-foreground">
+                    District
+                  </label>
+                  <Input
+                    className="mt-1 h-10 rounded-xl text-xs"
+                    value={schoolDistrictInput}
+                    onChange={(e) => setSchoolDistrictInput(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              {/* Row 5: Campus Address */}
               <div>
                 <label className="text-xs font-bold text-foreground">
                   Campus Address
                 </label>
                 <Input
-                  className="mt-1"
-                  placeholder="100 Education Lane, City, State"
+                  className="mt-1 h-10 rounded-xl text-xs"
                   value={schoolAddressInput}
                   onChange={(e) => setSchoolAddressInput(e.target.value)}
                 />
               </div>
             </div>
-            <DialogFooter>
+
+            <DialogFooter className="pt-4 border-t border-border gap-2 sm:gap-3 shrink-0 flex-row justify-end">
               <Button
                 type="button"
                 variant="outline"
+                className="h-10 rounded-xl text-xs font-bold"
                 onClick={() => {
                   setSchoolModalOpen(false);
                   setEditingSchool(null);
@@ -2956,7 +3060,7 @@ export default function Home({
               >
                 Cancel
               </Button>
-              <Button type="submit" className="bg-primary hover:bg-primary/90 text-white font-bold">
+              <Button type="submit" className="h-10 rounded-xl bg-primary hover:bg-primary/90 text-white font-bold text-xs shadow-sm">
                 {editingSchool ? "Update School" : "Create School"}
               </Button>
             </DialogFooter>
@@ -2970,9 +3074,7 @@ export default function Home({
           <form onSubmit={handleCreateTemplateSubmit}>
             <DialogHeader>
               <DialogTitle>New ID Card Template</DialogTitle>
-              <DialogDescription>
-                Create a draft template definition in the system.
-              </DialogDescription>
+              <DialogDescription className="sr-only">New ID Card Template</DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
               <div>
@@ -2981,7 +3083,6 @@ export default function Home({
                 </label>
                 <Input
                   className="mt-1"
-                  placeholder="e.g., Standard Student Pass 2026"
                   value={templateNameInput}
                   onChange={(e) => setTemplateNameInput(e.target.value)}
                   autoFocus
@@ -3013,11 +3114,7 @@ export default function Home({
           <form onSubmit={handleUserSubmit} noValidate autoComplete="off">
             <DialogHeader>
               <DialogTitle>{editingUser ? `Edit User: ${editingUser.name || editingUser.email || "User"}` : "Add New User"}</DialogTitle>
-              <DialogDescription>
-                {editingUser
-                  ? "Update user details, role assignment, or change password."
-                  : "Create an administrator, school administrator, or partner account."}
-              </DialogDescription>
+              <DialogDescription className="sr-only">{editingUser ? "Edit User" : "Add New User"}</DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
               <div>
@@ -3026,7 +3123,6 @@ export default function Home({
                 </label>
                 <Input
                   className="mt-1 aria-invalid:border-red-500 aria-invalid:ring-red-200"
-                  placeholder="e.g., Sarah Connor"
                   value={userNameInput}
                   onChange={(e) => {
                     setUserNameInput(e.target.value);
@@ -3050,7 +3146,6 @@ export default function Home({
                 <Input
                   type="email"
                   className="mt-1 aria-invalid:border-red-500 aria-invalid:ring-red-200"
-                  placeholder="e.g., sarah@school.edu"
                   value={userEmailInput}
                   onChange={(e) => {
                     setUserEmailInput(e.target.value);
@@ -3151,9 +3246,6 @@ export default function Home({
                       {userFormErrors.schoolId}
                     </p>
                   )}
-                  <p className="mt-1 text-[11px] text-muted-foreground">
-                    The School Admin will manage cards, orders, and approvals for this school.
-                  </p>
                 </div>
               )}
             </div>
@@ -3260,6 +3352,26 @@ export default function Home({
                     {credentialsData?.phone || "—"}
                   </span>
                 </div>
+                <div>
+                  <span className="text-muted-foreground font-medium block">Board:</span>
+                  <span className="font-semibold text-foreground">
+                    {credentialsData?.board || "—"}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-muted-foreground font-medium block">Total Strength:</span>
+                  <span className="font-semibold text-foreground">
+                    {credentialsData?.totalStrength != null ? `~${credentialsData.totalStrength.toLocaleString()} students` : "—"}
+                  </span>
+                </div>
+                {(credentialsData?.district || credentialsData?.state) && (
+                  <div className="sm:col-span-2">
+                    <span className="text-muted-foreground font-medium block">Location:</span>
+                    <span className="font-semibold text-foreground">
+                      {[credentialsData?.district, credentialsData?.state].filter(Boolean).join(", ")}
+                    </span>
+                  </div>
+                )}
               </div>
               <div className="text-[11px] pt-1 border-t border-border">
                 <span className="text-muted-foreground font-medium block">Address:</span>
@@ -3329,8 +3441,13 @@ export default function Home({
                   const lines = [
                     `School: ${credentialsData.schoolName}`,
                     credentialsData.shortCode ? `Code: ${credentialsData.shortCode}` : null,
+                    credentialsData.board ? `Board: ${credentialsData.board}` : null,
+                    credentialsData.totalStrength != null ? `Total Strength: ~${credentialsData.totalStrength}` : null,
                     credentialsData.email ? `Email: ${credentialsData.email}` : null,
                     credentialsData.phone ? `Phone: ${credentialsData.phone}` : null,
+                    [credentialsData.district, credentialsData.state].filter(Boolean).length > 0
+                      ? `Location: ${[credentialsData.district, credentialsData.state].filter(Boolean).join(", ")}`
+                      : null,
                     credentialsData.address ? `Address: ${credentialsData.address}` : null,
                     `Login ID: ${credentialsData.loginId}`,
                     `Password: ${credentialsData.password || ""}`,
@@ -3681,7 +3798,6 @@ export default function Home({
             </label>
             <Textarea
               className="mt-1.5"
-              placeholder="e.g., Student photo is blurry. Please upload a clear passport-style photo."
               rows={4}
               value={requestChangesComment}
               onChange={(e) => setRequestChangesComment(e.target.value)}
@@ -3723,7 +3839,6 @@ export default function Home({
             </label>
             <Textarea
               className="mt-1.5"
-              placeholder="e.g., Duplicate record detected or student no longer enrolled."
               rows={4}
               value={rejectReason}
               onChange={(e) => setRejectReason(e.target.value)}
@@ -3765,7 +3880,6 @@ export default function Home({
             </label>
             <Textarea
               className="mt-1.5"
-              placeholder="e.g., Incomplete student information or photos do not meet criteria."
               rows={4}
               value={bulkRejectReason}
               onChange={(e) => setBulkRejectReason(e.target.value)}
@@ -5083,8 +5197,28 @@ function ModuleView({
                           </div>
                           <div className="min-w-0">
                             <div className="text-sm font-extrabold text-foreground flex items-center gap-2">
-                              {school.name}
+                              <span>{school.name}</span>
+                              {school.board && (
+                                <span className="font-mono text-[10px] font-bold bg-primary/15 text-primary px-2 py-0.5 rounded-md">
+                                  {school.board}
+                                </span>
+                              )}
                             </div>
+                            {(school.district || school.state || school.totalStrength != null) && (
+                              <div className="flex flex-wrap items-center gap-x-2.5 gap-y-0.5 mt-0.5 text-[11px] text-muted-foreground">
+                                {(school.district || school.state) && (
+                                  <span className="flex items-center gap-1 font-medium text-foreground/80">
+                                    <MapPin className="h-3 w-3 text-primary shrink-0" />
+                                    <span>{[school.district, school.state].filter(Boolean).join(", ")}</span>
+                                  </span>
+                                )}
+                                {school.totalStrength != null && (
+                                  <span className="text-[10px] text-muted-foreground">
+                                    • ~{school.totalStrength.toLocaleString()} students
+                                  </span>
+                                )}
+                              </div>
+                            )}
                           </div>
                         </div>
                       </td>

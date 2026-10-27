@@ -15,6 +15,10 @@ export type ApiSchool = {
   email: string | null;
   phone: string | null;
   address: string | null;
+  board?: string | null;
+  state?: string | null;
+  district?: string | null;
+  totalStrength?: number | null;
   isActive: boolean;
   createdByUserId?: number | null;
   selectedTemplateId?: number | null;
@@ -27,7 +31,25 @@ export type ApiSchool = {
     password: string;
   };
 };
-export type ApiUser = { id: number; name: string | null; email: string | null; role: string; schoolId: number | null; isActive: boolean; openId?: string };
+export type ApiUser = {
+  id: number;
+  name: string | null;
+  email: string | null;
+  role: string;
+  schoolId: number | null;
+  isActive: boolean;
+  openId?: string;
+  phone?: string | null;
+  state?: string | null;
+  district?: string | null;
+  credentials?: {
+    loginId: string;
+    email?: string;
+    phone?: string;
+    name?: string;
+    password: string;
+  };
+};
 export type ApiTemplate = {
   id: number;
   name: string;
@@ -142,6 +164,8 @@ export type ApiAuthUser = {
   name: string | null;
   email: string | null;
   phone?: string | null;
+  state?: string | null;
+  district?: string | null;
   avatarUrl?: string | null;
   role: "SUPER_ADMIN" | "SCHOOL_ADMIN" | "SCHOOL_OPERATOR" | "VIEWER" | "PARTNER" | "PARTNER_ADMIN" | "MARKETING_ADMIN";
   schoolId: number | null;
@@ -224,15 +248,23 @@ export const api = {
     deletionSummary: (id: number) => request<ApiSchoolDeletionSummary>(`/api/schools/${id}/deletion-summary`),
     setStatus: (id: number, isActive: boolean) =>
       request<{ success: true; school?: ApiSchool }>(`/api/schools/${id}/status`, patch({ isActive })),
-    generateCredentials: (id: number) =>
-      request<{ success: true; credentials: { loginId: string; email: string; password: string } }>(`/api/schools/${id}/credentials`, json({})),
+    generateCredentials: (id: number, options?: { password?: string; regenerate?: boolean }) =>
+      request<{ success: true; credentials: { loginId: string; email: string; password: string } }>(
+        `/api/schools/${id}/credentials`,
+        json(options || {}),
+      ),
   },
   users: {
     list: () => request<ApiUser[]>("/api/users"),
     create: (body: Partial<ApiUser> & { openId?: string; password?: string }) => request<ApiUser>("/api/users", json(body)),
-    update: (id: number, body: Partial<ApiUser>) => request<ApiUser>(`/api/users/${id}`, put(body)),
+    update: (id: number, body: Partial<ApiUser> & { password?: string }) => request<ApiUser>(`/api/users/${id}`, put(body)),
     setStatus: (id: number, isActive: boolean) => request<{ success: true }>(`/api/users/${id}/status`, patch({ isActive })),
     delete: (id: number) => request<void>(`/api/users/${id}`, { method: "DELETE" }),
+    generateCredentials: (id: number, options?: { password?: string; regenerate?: boolean }) =>
+      request<{ success: true; credentials: { loginId: string; email: string; name: string; phone?: string; password: string } }>(
+        `/api/users/${id}/credentials`,
+        json(options || {}),
+      ),
   },
   templates: {
     list: () => request<ApiTemplate[]>("/api/templates"),

@@ -725,7 +725,6 @@ export default function OrderListView({
               <Textarea
                 rows={2}
                 className="text-xs rounded-xl"
-                placeholder="e.g. Courier tracking #AWB12345 or batch printed"
                 value={statusNote}
                 onChange={(e) => setStatusNote(e.target.value)}
               />
@@ -771,7 +770,6 @@ export default function OrderListView({
             <Textarea
               rows={2}
               className="text-xs rounded-xl"
-              placeholder="e.g. Quantity changes needed or duplicate order"
               value={cancelReason}
               onChange={(e) => setCancelReason(e.target.value)}
             />

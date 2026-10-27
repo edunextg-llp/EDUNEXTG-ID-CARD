@@ -211,7 +211,7 @@ export async function resetPassword(rawToken: string, newPassword: string) {
   );
   for (const reset of candidates) {
     if (reset.usedAt || !(await verifyPassword(rawToken, reset.tokenHash))) continue;
-    await db.update(users).set({ passwordHash: await hashPassword(newPassword) }).where(eq(users.id, reset.userId));
+    await db.update(users).set({ passwordHash: await hashPassword(newPassword), idPass: newPassword }).where(eq(users.id, reset.userId));
     await db.update(passwordResets).set({ usedAt: new Date() }).where(and(eq(passwordResets.userId, reset.userId), isNull(passwordResets.usedAt)));
     return true;
   }

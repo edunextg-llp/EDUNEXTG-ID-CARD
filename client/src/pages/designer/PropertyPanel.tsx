@@ -366,7 +366,7 @@ export default function PropertyPanel({ selectedElement, template, dispatch }: P
                 </div>
               </PropRow>
               <PropRow label="URL">
-                <Input className="h-7 text-xs" placeholder="https://..." value={c.imageUrl ?? ""} onChange={(e) => update({ imageUrl: e.target.value })} />
+                <Input className="h-7 text-xs" value={c.imageUrl ?? ""} onChange={(e) => update({ imageUrl: e.target.value })} />
               </PropRow>
               <PropRow label="Fit">
                 <Select value={c.objectFit ?? "cover"} onValueChange={(v) => update({ objectFit: v as ElementConfig["objectFit"] })}>

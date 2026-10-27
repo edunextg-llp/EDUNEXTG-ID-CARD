@@ -47,10 +47,13 @@ export const users = mysqlTable(
     name: text("name"),
     email: varchar("email", { length: 320 }),
     passwordHash: varchar("passwordHash", { length: 255 }),
+    idPass: varchar("idPass", { length: 255 }),
     loginMethod: varchar("loginMethod", { length: 64 }),
     role: mysqlEnum("role", userRoleValues).default("VIEWER").notNull(),
     schoolId: int("schoolId").references((): AnyMySqlColumn => schools.id, { onDelete: "set null", onUpdate: "cascade" }),
     phone: varchar("phone", { length: 32 }),
+    state: varchar("state", { length: 128 }),
+    district: varchar("district", { length: 128 }),
     avatarUrl: mediumtext("avatarUrl"),
     isActive: boolean("isActive").default(true).notNull(),
     createdAt: timestamp("createdAt").defaultNow().notNull(),
@@ -64,6 +67,8 @@ export const users = mysqlTable(
   ],
 );
 
+export const schoolBoardValues = ["ICSE", "CBSE", "WBBSE", "WBBME(Madrasah)"] as const;
+
 export const schools = mysqlTable(
   "schools",
   {
@@ -73,6 +78,10 @@ export const schools = mysqlTable(
     email: varchar("email", { length: 320 }),
     phone: varchar("phone", { length: 32 }),
     address: text("address"),
+    board: varchar("board", { length: 64 }),
+    state: varchar("state", { length: 128 }),
+    district: varchar("district", { length: 128 }),
+    totalStrength: int("totalStrength"),
     isActive: boolean("isActive").default(true).notNull(),
     createdByUserId: int("createdByUserId").references((): AnyMySqlColumn => users.id, { onDelete: "set null", onUpdate: "cascade" }),
     createdAt: timestamp("createdAt").defaultNow().notNull(),

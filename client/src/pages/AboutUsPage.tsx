@@ -1,5 +1,4 @@
 import { useEffect } from "react";
-import { Link } from "wouter";
 import PublicLayout from "@/components/PublicLayout";
 import {
   ShieldCheck,
@@ -12,9 +11,7 @@ import {
   Award,
   Clock,
   Truck,
-  ArrowRight,
 } from "lucide-react";
-import { prefetchRoute } from "@/lib/prefetchRoute";
 import { useRevealOnScroll } from "@/hooks/useRevealOnScroll";
 import StatItem from "@/components/StatItem";
 import LogoMarquee from "@/components/LogoMarquee";

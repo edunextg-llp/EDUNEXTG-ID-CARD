@@ -290,7 +290,6 @@ export default function CreateOrderView({
                   <Label className="text-xs font-bold text-foreground">Class *</Label>
                   <Input
                     className="mt-1 text-xs rounded-xl"
-                    placeholder="e.g. 10th or Grade 5"
                     value={className}
                     onChange={(e) => setClassName(e.target.value)}
                   />
@@ -302,7 +301,6 @@ export default function CreateOrderView({
                   <Label className="text-xs font-bold text-foreground">Section *</Label>
                   <Input
                     className="mt-1 text-xs rounded-xl"
-                    placeholder="e.g. A or Science"
                     value={section}
                     onChange={(e) => setSection(e.target.value)}
                   />
@@ -420,7 +418,6 @@ export default function CreateOrderView({
               <div className="flex items-center justify-between rounded-xl border border-border p-3 bg-muted/40 mt-1">
                 <div>
                   <Label className="text-xs font-bold text-foreground">Clamps Included</Label>
-                  <p className="text-[11px] text-muted-foreground">Attach crocodile clamp to holder</p>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-bold text-muted-foreground">{clip ? "Yes" : "No"}</span>
@@ -434,7 +431,6 @@ export default function CreateOrderView({
               <div className="flex items-center justify-between">
                 <div>
                   <Label className="text-xs font-bold text-foreground">Lanyard Included</Label>
-                  <p className="text-[11px] text-muted-foreground">Provide customized neck lanyards</p>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-bold text-muted-foreground">{lanyardIncluded ? "Yes" : "No"}</span>
@@ -463,7 +459,6 @@ export default function CreateOrderView({
                     <Label className="text-xs font-bold text-foreground">Lanyard Color</Label>
                     <Input
                       className="mt-1 text-xs rounded-xl h-10"
-                      placeholder="e.g. Navy Blue, Maroon, Dark Green"
                       value={lanyardColor}
                       onChange={(e) => setLanyardColor(e.target.value)}
                     />
@@ -488,7 +483,6 @@ export default function CreateOrderView({
                 <Label className="text-xs font-bold text-foreground">Contact Person *</Label>
                 <Input
                   className="mt-1 text-xs rounded-xl"
-                  placeholder="Full name"
                   value={contactPerson}
                   onChange={(e) => setContactPerson(e.target.value)}
                 />
@@ -510,7 +504,6 @@ export default function CreateOrderView({
                       inputMode="numeric"
                       maxLength={10}
                       className="text-xs rounded-xl h-10"
-                      placeholder="9876543210"
                       value={contactPhone}
                       onChange={(e) => {
                         const digits = e.target.value.replace(/\D/g, "").slice(0, 10);
@@ -542,7 +535,6 @@ export default function CreateOrderView({
               <Textarea
                 rows={2}
                 className="mt-1 text-xs rounded-xl"
-                placeholder="Complete shipping address for physical card package delivery"
                 value={deliveryAddress}
                 onChange={(e) => setDeliveryAddress(e.target.value)}
               />
@@ -557,7 +549,6 @@ export default function CreateOrderView({
               <Textarea
                 rows={2}
                 className="mt-1 text-xs rounded-xl"
-                placeholder="Any special printing requests, custom barcode requirements, or packaging notes"
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
               />
