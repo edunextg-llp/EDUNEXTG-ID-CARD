@@ -7,7 +7,6 @@ interface ProductItem {
   category: "idcards" | "lanyards" | "holders" | "clips";
   title: "ID CARDS" | "LANYARDS / RIBBONS" | "ID CARD HOLDERS" | "CLAMPS & HOOKS";
   displayTitle: string;
-  subtitle: string;
   image: string;
 }
 
@@ -17,7 +16,6 @@ const PRODUCTS_DATA: ProductItem[] = [
     category: "idcards",
     title: "ID CARDS",
     displayTitle: "Student & Staff PVC ID Cards",
-    subtitle: "High Definition, durable laminated PVC cards with photo clarity",
     image: "/home/product-idcards.webp",
   },
   {
@@ -25,7 +23,6 @@ const PRODUCTS_DATA: ProductItem[] = [
     category: "lanyards",
     title: "LANYARDS / RIBBONS",
     displayTitle: "Custom Printed Sublimation Lanyards",
-    subtitle: "Silky satin finished personalized ribbons with your institution logo",
     image: "/home/product-lanyards.webp",
   },
   {
@@ -33,7 +30,6 @@ const PRODUCTS_DATA: ProductItem[] = [
     category: "holders",
     title: "ID CARD HOLDERS",
     displayTitle: "Durable Rigid & Soft Card Holders",
-    subtitle: "Engineered protection against bending, moisture, and daily wear",
     image: "/home/product-holders.webp",
   },
   {
@@ -41,7 +37,6 @@ const PRODUCTS_DATA: ProductItem[] = [
     category: "clips",
     title: "CLAMPS & HOOKS",
     displayTitle: "Metal Hooks, Plastic Clamps & Retractable Yoyos",
-    subtitle: "Heavy duty connectors and badge reels for seamless wear",
     image: "/home/product-clips.webp",
   },
 ];
@@ -62,9 +57,6 @@ export default function ProductsPage() {
           <div className="lp-page-banner-content">
             <span className="lp-page-badge">OUR CATALOG</span>
             <h1 className="font-heading">Identity Products &amp; Accessories</h1>
-            <p>
-              Premium PVC ID cards, custom printed lanyards, card holders, and clamps designed for schools, colleges, and institutions.
-            </p>
           </div>
         </div>
       </section>
@@ -96,9 +88,6 @@ export default function ProductsPage() {
 
                 <div className="lp-product-showcase-content">
                   <h3 className="font-heading">{product.displayTitle}</h3>
-                  <p className="lp-product-subtitle" style={{ marginBottom: 0 }}>
-                    {product.subtitle}
-                  </p>
                 </div>
               </div>
             ))}

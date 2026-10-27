@@ -17,9 +17,6 @@ export default function PrivacyPolicyPage() {
           <div className="lp-page-banner-content">
             <span className="lp-page-badge">INSTITUTIONAL TRUST</span>
             <h1 className="font-heading">Data Privacy &amp; Security Policy</h1>
-            <p>
-              How Insight Education protects student data, institutional records, and credentials across our physical manufacturing and digital portals.
-            </p>
           </div>
         </div>
       </section>

@@ -1698,7 +1698,7 @@ button:active:not(:disabled) { transform: scale(0.97); }
 
 .landing-root .lp-footer-grid {
   display: grid;
-  grid-template-columns: 1.4fr 1fr 1.1fr 1.3fr;
+  grid-template-columns: 1.5fr 1fr 1.4fr;
   gap: 32px;
   margin-bottom: 48px;
 }

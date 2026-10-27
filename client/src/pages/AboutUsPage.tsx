@@ -17,12 +17,13 @@ import {
 import { prefetchRoute } from "@/lib/prefetchRoute";
 import { useRevealOnScroll } from "@/hooks/useRevealOnScroll";
 import StatItem from "@/components/StatItem";
+import LogoMarquee from "@/components/LogoMarquee";
 
 const WHY_FEATURES = [
-  { icon: ShieldCheck, title: "Quality Products", desc: "Durable and reliable PVC materials engineered to withstand everyday student and staff use." },
-  { icon: PenSquare, title: "Custom Design", desc: "Your school colors, crest, security watermark, barcodes and specialized card layouts." },
-  { icon: Settings, title: "Professional Finishing", desc: "Glossy/matte lamination, chip embedding, barcode printing and premium edge finishing." },
-  { icon: Handshake, title: "Complete ID Card Solutions", desc: "End-to-end hardware, software, printing, pre-punched holders, and customized ribbons." },
+  { icon: ShieldCheck, title: "Quality Products" },
+  { icon: PenSquare, title: "Custom Design" },
+  { icon: Settings, title: "Professional Finishing" },
+  { icon: Handshake, title: "Complete ID Card Solutions" },
 ] as const;
 
 const STATS = [
@@ -32,10 +33,17 @@ const STATS = [
   { icon: Award, target: 10, suffix: "+", label: "Years in Business" },
 ] as const;
 
-const CLIENT_LOGOS = Array.from({ length: 11 }, (_, i) => {
+const ORIGINAL_CLIENT_LOGOS = Array.from({ length: 11 }, (_, i) => {
   const n = String(i + 1).padStart(2, "0");
   return { src: `/home/client-${n}.webp`, alt: `Partner school logo ${i + 1}`, featured: i === 5 };
 });
+
+const EXTRA_CLIENT_LOGOS = Array.from({ length: 22 }, (_, i) => {
+  const n = String(i + 1).padStart(2, "0");
+  return { src: `/home/client-extra-${n}.webp`, alt: `Client institution logo ${i + 12}`, featured: false };
+});
+
+const CLIENT_LOGOS = [...ORIGINAL_CLIENT_LOGOS, ...EXTRA_CLIENT_LOGOS];
 
 export default function AboutUsPage() {
   const storyReveal = useRevealOnScroll<HTMLElement>();
@@ -56,9 +64,6 @@ export default function AboutUsPage() {
           <div className="lp-page-banner-content">
             <span className="lp-page-badge">WHO WE ARE</span>
             <h1 className="font-heading">About Insight Education</h1>
-            <p>
-              Dedicated to delivering dependable, secure, and world-class identity solutions for educational institutions and organizations across India.
-            </p>
           </div>
         </div>
       </section>
@@ -78,25 +83,19 @@ export default function AboutUsPage() {
               <p className="text-[#555] leading-relaxed mb-4">
                 Insight Education was established with a clear mission: to simplify, elevate, and modernize student and faculty identification systems. We recognize that an ID card represents school pride, campus security, and institutional belonging.
               </p>
-              <p className="text-[#555] leading-relaxed mb-6">
-                From high-density digital smart cards and satin sublimation lanyards to tamper-resistant holders and digital cloud management, our full suite covers every step of the identity lifecycle.
-              </p>
 
               <div className="lp-about-highlights-grid lp-stagger-grid">
                 <div className="lp-about-highlight-box">
                   <Award size={24} className="text-[#00894d] mb-2" />
                   <h4 className="font-bold text-sm text-[#1d5a2e]">ISO 9001:2015</h4>
-                  <p className="text-xs text-[#666]">Standardized industrial production &amp; quality checks</p>
                 </div>
                 <div className="lp-about-highlight-box">
                   <Truck size={24} className="text-[#00894d] mb-2" />
                   <h4 className="font-bold text-sm text-[#1d5a2e]">Pan-India Logistics</h4>
-                  <p className="text-xs text-[#666]">Prompt dispatch with real-time consignment tracking</p>
                 </div>
                 <div className="lp-about-highlight-box">
                   <Clock size={24} className="text-[#00894d] mb-2" />
                   <h4 className="font-bold text-sm text-[#1d5a2e]">Rapid Turnaround</h4>
-                  <p className="text-xs text-[#666]">3–5 business days turnaround for bulk school batches</p>
                 </div>
               </div>
             </div>
@@ -134,7 +133,6 @@ export default function AboutUsPage() {
                 <br />
                 Insight Education?
               </h2>
-              <p>We deliver reliable, high-quality and customized ID card solutions to meet your every need</p>
               <div className="lp-why-underline" />
             </div>
             <div className="lp-why-features lp-stagger-grid">
@@ -144,7 +142,6 @@ export default function AboutUsPage() {
                     <f.icon size={26} />
                   </div>
                   <h4>{f.title}</h4>
-                  <p>{f.desc}</p>
                 </div>
               ))}
             </div>
@@ -184,39 +181,7 @@ export default function AboutUsPage() {
             <span className="line" />
           </div>
 
-          <div className="lp-clients-panel">
-            {CLIENT_LOGOS.map((logo, i) => (
-              <img
-                key={i}
-                src={logo.src}
-                alt={logo.alt}
-                className={logo.featured ? "featured" : ""}
-                loading="lazy"
-                width={logo.featured ? 72 : 50}
-                height={logo.featured ? 72 : 50}
-              />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ════════════ CTA BANNER ════════════ */}
-      <section className="lp-contact-cta-band">
-        <div className="lp-container">
-          <div className="lp-contact-cta-inner">
-            <div>
-              <h3 className="text-2xl font-bold font-heading mb-2">Ready to Upgrade Your Institution's ID Cards?</h3>
-              <p className="text-sm opacity-90">Talk to our campus identity consultant today for free design samples and pricing.</p>
-            </div>
-            <Link
-              href="/contact-us"
-              className="lp-banner-cta"
-              onMouseEnter={() => prefetchRoute("/contact-us")}
-              onTouchStart={() => prefetchRoute("/contact-us")}
-            >
-              Get in Touch <ArrowRight size={16} />
-            </Link>
-          </div>
+          <LogoMarquee logos={CLIENT_LOGOS} singleRow />
         </div>
       </section>
     </PublicLayout>

@@ -118,7 +118,7 @@ export default function PublicLayout({ children, activePath, enableSmoothScroll 
                     href={link.href}
                     className={
                       currentPath === link.href ||
-                      (link.href !== "/" && currentPath.startsWith(link.href))
+                        (link.href !== "/" && currentPath.startsWith(link.href))
                         ? "active"
                         : ""
                     }
@@ -178,7 +178,7 @@ export default function PublicLayout({ children, activePath, enableSmoothScroll 
               href={link.href}
               className={
                 currentPath === link.href ||
-                (link.href !== "/" && currentPath.startsWith(link.href))
+                  (link.href !== "/" && currentPath.startsWith(link.href))
                   ? "active"
                   : ""
               }
@@ -233,7 +233,7 @@ export default function PublicLayout({ children, activePath, enableSmoothScroll 
               </Link>
               <p className="lp-footer-brand-desc">
                 Insight Education is a trusted manufacturer and supplier of institutional identity solutions,
-                providing premium ID cards, custom lanyards, holders, and accessories across 500+ institutions.
+                providing premium ID cards, custom lanyards, holders, and accessories across 100+ institutions.
               </p>
               <div className="lp-footer-badge">
                 <ShieldCheck size={16} />
@@ -282,15 +282,6 @@ export default function PublicLayout({ children, activePath, enableSmoothScroll 
                   </Link>
                 </li>
                 <li>
-                  <Link
-                    href="/privacy"
-                    onMouseEnter={() => prefetchRoute("/privacy")}
-                    onTouchStart={() => prefetchRoute("/privacy")}
-                  >
-                    Privacy Policy
-                  </Link>
-                </li>
-                <li>
                   <a
                     href="/login"
                     className="lp-footer-login-link"
@@ -304,59 +295,7 @@ export default function PublicLayout({ children, activePath, enableSmoothScroll 
               </ul>
             </div>
 
-            {/* Column 3: Products */}
-            <div className="lp-footer-col">
-              <h4 className="lp-footer-col-title">Our Products</h4>
-              <ul className="lp-footer-nav-list">
-                <li>
-                  <Link
-                    href="/products"
-                    onMouseEnter={() => prefetchRoute("/products")}
-                    onTouchStart={() => prefetchRoute("/products")}
-                  >
-                    Institutional &amp; School ID Cards
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/products"
-                    onMouseEnter={() => prefetchRoute("/products")}
-                    onTouchStart={() => prefetchRoute("/products")}
-                  >
-                    Custom Printed &amp; Plain Lanyards
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/products"
-                    onMouseEnter={() => prefetchRoute("/products")}
-                    onTouchStart={() => prefetchRoute("/products")}
-                  >
-                    Durable ID Card Holders
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/products"
-                    onMouseEnter={() => prefetchRoute("/products")}
-                    onTouchStart={() => prefetchRoute("/products")}
-                  >
-                    Metal Hooks &amp; Retractable Yoyos
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/contact-us"
-                    onMouseEnter={() => prefetchRoute("/contact-us")}
-                    onTouchStart={() => prefetchRoute("/contact-us")}
-                  >
-                    Customized Institutional Packages
-                  </Link>
-                </li>
-              </ul>
-            </div>
-
-            {/* Column 4: Contact Us */}
+            {/* Column 3: Contact Us */}
             <div className="lp-footer-col">
               <h4 className="lp-footer-col-title">Contact Us</h4>
               <div className="lp-footer-contact-details">

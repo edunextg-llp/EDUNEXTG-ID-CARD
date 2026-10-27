@@ -59,22 +59,18 @@ const CLIENT_LOGOS = [...ORIGINAL_CLIENT_LOGOS, ...EXTRA_CLIENT_LOGOS];
 const PRODUCT_CARDS = [
   {
     title: "ID CARDS",
-    subtitle: "School, College & Institutional ID Cards",
     image: "/home/product-idcards.webp",
   },
   {
     title: "LANYARDS / RIBBONS",
-    subtitle: "Custom Printed & Plain Lanyards",
     image: "/home/product-lanyards.webp",
   },
   {
     title: "ID CARD HOLDERS",
-    subtitle: "Durable Holders in Multiple Sizes",
     image: "/home/product-holders.webp",
   },
   {
     title: "CLAMPS & HOOKS",
-    subtitle: "Clips, Hooks & Yoyos for Daily Use",
     image: "/home/product-clips.webp",
   },
 ] as const;
@@ -83,10 +79,10 @@ const PRODUCT_CARDS = [
    Why choose us features
    ─────────────────────────────────────────── */
 const WHY_FEATURES = [
-  { icon: ShieldCheck, title: "Quality Products", desc: "Durable and reliable ID cards and accessories." },
-  { icon: PenSquare, title: "Custom Design", desc: "Design cards tailored to your school's identity." },
-  { icon: Settings, title: "Professional Finishing", desc: "Complete ID card professional look." },
-  { icon: Handshake, title: "Complete ID Card Solutions", desc: "From card to lanyard, we provide everything." },
+  { icon: ShieldCheck, title: "Quality Products" },
+  { icon: PenSquare, title: "Custom Design" },
+  { icon: Settings, title: "Professional Finishing" },
+  { icon: Handshake, title: "Complete ID Card Solutions" },
 ] as const;
 
 /* ───────────────────────────────────────────
@@ -496,7 +492,6 @@ export default function Landing() {
                   />
                   <div className="card-body">
                     <h3>{card.title}</h3>
-                    <p>{card.subtitle}</p>
                     <div className="card-body-footer">
                       <Link
                         href="/contact-us"
@@ -529,7 +524,6 @@ export default function Landing() {
                   <br />
                   Insight Education?
                 </h2>
-                <p>We deliver reliable, high-quality and customized ID card solutions to meet your every need</p>
                 <div className="lp-why-underline" />
               </div>
               <div className="lp-why-features lp-stagger-grid">
@@ -539,7 +533,6 @@ export default function Landing() {
                       <f.icon size={26} />
                     </div>
                     <h4>{f.title}</h4>
-                    <p>{f.desc}</p>
                   </div>
                 ))}
               </div>
@@ -589,7 +582,7 @@ export default function Landing() {
               </a>
               <p className="lp-footer-brand-desc">
                 Insight Education is a trusted manufacturer and supplier of institutional identity solutions,
-                providing premium ID cards, custom lanyards, holders, and accessories across 500+ institutions.
+                providing premium ID cards, custom lanyards, holders, and accessories across 100+ institutions.
               </p>
               <div className="lp-footer-badge">
                 <ShieldCheck size={16} />
@@ -634,15 +627,6 @@ export default function Landing() {
                   </Link>
                 </li>
                 <li>
-                  <Link
-                    href="/privacy"
-                    onMouseEnter={() => prefetchRoute("/privacy")}
-                    onTouchStart={() => prefetchRoute("/privacy")}
-                  >
-                    Privacy Policy
-                  </Link>
-                </li>
-                <li>
                   <a
                     href="/login"
                     className="lp-footer-login-link"
@@ -656,59 +640,7 @@ export default function Landing() {
               </ul>
             </div>
 
-            {/* Column 3: Products */}
-            <div className="lp-footer-col">
-              <h4 className="lp-footer-col-title">Our Products</h4>
-              <ul className="lp-footer-nav-list">
-                <li>
-                  <Link
-                    href="/products"
-                    onMouseEnter={() => prefetchRoute("/products")}
-                    onTouchStart={() => prefetchRoute("/products")}
-                  >
-                    Institutional &amp; School ID Cards
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/products"
-                    onMouseEnter={() => prefetchRoute("/products")}
-                    onTouchStart={() => prefetchRoute("/products")}
-                  >
-                    Custom Printed &amp; Plain Lanyards
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/products"
-                    onMouseEnter={() => prefetchRoute("/products")}
-                    onTouchStart={() => prefetchRoute("/products")}
-                  >
-                    Durable ID Card Holders
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/products"
-                    onMouseEnter={() => prefetchRoute("/products")}
-                    onTouchStart={() => prefetchRoute("/products")}
-                  >
-                    Metal Hooks &amp; Retractable Yoyos
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/contact-us"
-                    onMouseEnter={() => prefetchRoute("/contact-us")}
-                    onTouchStart={() => prefetchRoute("/contact-us")}
-                  >
-                    Customized Institutional Packages
-                  </Link>
-                </li>
-              </ul>
-            </div>
-
-            {/* Column 4: Contact Us */}
+            {/* Column 3: Contact Us */}
             <div className="lp-footer-col">
               <h4 className="lp-footer-col-title">Contact Us</h4>
               <div className="lp-footer-contact-details">
