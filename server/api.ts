@@ -935,6 +935,7 @@ router.post("/users", requireRole(adminRoles), async (req, res) => {
       openId,
       name: req.body.name ?? null,
       email: cleanEmail,
+      phone: req.body.phone ? String(req.body.phone).trim() : null,
       loginMethod: "local",
       passwordHash: req.body.password ? await hashPassword(String(req.body.password)) : null,
       role,
@@ -986,6 +987,10 @@ router.put("/users/:id", requireRole(adminRoles), async (req, res) => {
       updatedAt: new Date(),
     };
 
+    if (req.body.phone !== undefined) {
+      updateData.phone = req.body.phone ? String(req.body.phone).trim() : null;
+    }
+
     if (req.body.password && String(req.body.password).trim().length >= 8) {
       updateData.passwordHash = await hashPassword(String(req.body.password).trim());
     }
@@ -1031,6 +1036,47 @@ router.delete("/users/:id", requireRole(adminRoles), async (req, res) => {
     await audit(actor, "DELETE_USER", "user", id, target.schoolId, { openId: target.openId, name: target.name, role: target.role });
     res.status(204).end();
   } catch (e) { fail(res, e); }
+});
+
+router.post("/users/:id/credentials", requireRole(adminRoles), async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    const db = await getDb();
+    if (!db) return res.status(503).json({ error: "Database not available" });
+    const target = (await db.select().from(users).where(eq(users.id, id)))[0];
+    if (!target) return res.status(404).json({ error: "User not found" });
+
+    const cleanSlug =
+      (target.openId || target.name || "PTR")
+        .replace(/[^a-zA-Z0-9]/g, "")
+        .toUpperCase()
+        .slice(0, 8) || "PTR";
+    const rawPassword =
+      req.body.password && String(req.body.password).length >= 8
+        ? String(req.body.password)
+        : `Pass@${cleanSlug}${Math.floor(1000 + Math.random() * 9000)}`;
+    const passwordHash = await hashPassword(rawPassword);
+
+    await db.update(users).set({ passwordHash, updatedAt: new Date() }).where(eq(users.id, id));
+    await audit(currentUser(res), "GENERATE_USER_CREDENTIALS", "user", id, target.schoolId, {
+      loginId: target.openId,
+      name: target.name,
+      role: target.role,
+    });
+
+    res.json({
+      success: true,
+      credentials: {
+        loginId: target.openId,
+        email: target.email ?? "",
+        name: target.name ?? "",
+        phone: target.phone ?? "",
+        password: rawPassword,
+      },
+    });
+  } catch (e) {
+    fail(res, e);
+  }
 });
 
 router.get("/templates", async (_req, res) => {

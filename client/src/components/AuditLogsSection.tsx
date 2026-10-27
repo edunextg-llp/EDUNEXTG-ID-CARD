@@ -63,6 +63,7 @@ export default function AuditLogsSection({
       "UPDATE_SCHOOL_STATUS",
       "DELETE_SCHOOL",
       "GENERATE_SCHOOL_CREDENTIALS",
+      "GENERATE_USER_CREDENTIALS",
       "CREATE_USER",
       "UPDATE_USER",
       "UPDATE_USER_STATUS",
@@ -689,6 +690,7 @@ function RenderActionBadge({ action }: { action: string }) {
         </span>
       );
     case "GENERATE_SCHOOL_CREDENTIALS":
+    case "GENERATE_USER_CREDENTIALS":
       return (
         <span className="inline-flex items-center gap-1 rounded-md bg-[#fef9c3] border border-[#fde047] px-2 py-0.5 text-xs font-bold text-[#854d0e]">
           Credentials Issued
@@ -897,9 +899,10 @@ function RenderActionNarrative({ log }: { log: ApiActivity }) {
       );
 
     case "GENERATE_SCHOOL_CREDENTIALS":
+    case "GENERATE_USER_CREDENTIALS":
       return (
         <span>
-          Generated login credentials for <span className="font-bold text-[#854d0e]">"{schoolName}"</span>
+          Generated login credentials for {log.action === "GENERATE_USER_CREDENTIALS" ? `user "${nv.name || nv.loginId || `User #${log.entityId}`}"` : `"${schoolName}"`}
         </span>
       );
 

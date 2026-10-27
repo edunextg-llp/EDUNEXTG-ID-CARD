@@ -2200,21 +2200,6 @@ button:active:not(:disabled) { transform: scale(0.97); }
   gap: 12px;
 }
 
-.landing-root .lp-contact-cta-band {
-  background: linear-gradient(135deg, var(--lp-green) 0%, #15803d 100%);
-  color: #ffffff;
-  padding: 44px 0;
-  margin-top: 40px;
-}
-
-.landing-root .lp-contact-cta-inner {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 24px;
-  flex-wrap: wrap;
-}
-
 /* --- Products Catalog Page --- */
 .landing-root .lp-products-catalog-section {
   padding: 56px 0;

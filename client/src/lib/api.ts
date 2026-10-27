@@ -27,7 +27,23 @@ export type ApiSchool = {
     password: string;
   };
 };
-export type ApiUser = { id: number; name: string | null; email: string | null; role: string; schoolId: number | null; isActive: boolean; openId?: string };
+export type ApiUser = {
+  id: number;
+  name: string | null;
+  email: string | null;
+  role: string;
+  schoolId: number | null;
+  isActive: boolean;
+  openId?: string;
+  phone?: string | null;
+  credentials?: {
+    loginId: string;
+    email?: string;
+    phone?: string;
+    name?: string;
+    password: string;
+  };
+};
 export type ApiTemplate = {
   id: number;
   name: string;
@@ -230,9 +246,14 @@ export const api = {
   users: {
     list: () => request<ApiUser[]>("/api/users"),
     create: (body: Partial<ApiUser> & { openId?: string; password?: string }) => request<ApiUser>("/api/users", json(body)),
-    update: (id: number, body: Partial<ApiUser>) => request<ApiUser>(`/api/users/${id}`, put(body)),
+    update: (id: number, body: Partial<ApiUser> & { password?: string }) => request<ApiUser>(`/api/users/${id}`, put(body)),
     setStatus: (id: number, isActive: boolean) => request<{ success: true }>(`/api/users/${id}/status`, patch({ isActive })),
     delete: (id: number) => request<void>(`/api/users/${id}`, { method: "DELETE" }),
+    generateCredentials: (id: number, password?: string) =>
+      request<{ success: true; credentials: { loginId: string; email: string; name: string; phone?: string; password: string } }>(
+        `/api/users/${id}/credentials`,
+        json(password ? { password } : {}),
+      ),
   },
   templates: {
     list: () => request<ApiTemplate[]>("/api/templates"),
