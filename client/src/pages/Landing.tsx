@@ -100,7 +100,7 @@ const STATS = [
    ─────────────────────────────────────────── */
 const HERO_IMAGES = [
   {
-    image: "/home/carousel-slide-1.webp",
+    image: "/home/carousel-slide-1.jpg",
     alt: "ID cards, holders, lanyards, clips and clamps displayed together",
   },
   {
@@ -385,7 +385,7 @@ export default function Landing() {
                   aria-hidden={!isActive}
                 >
                   <picture>
-                    <source type="image/webp" srcSet={item.image} />
+                    {item.image.endsWith(".webp") && <source type="image/webp" srcSet={item.image} />}
                     <img
                       src={item.image}
                       alt={item.alt}
