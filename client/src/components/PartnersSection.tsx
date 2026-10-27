@@ -179,12 +179,12 @@ export default function PartnersSection({
     }
   };
 
-  const handleGenerateCredentials = async (partner: ApiUser) => {
+  const handleGenerateCredentials = async (partner: ApiUser, regenerate = false) => {
     if (currentUser.role !== "SUPER_ADMIN") {
       return toast.error("Only Super Admins can manage partner credentials");
     }
     try {
-      const creds = await api.users.generateCredentials(partner.id);
+      const creds = await api.users.generateCredentials(partner.id, { regenerate });
       setPartners((items) =>
         items.map((item) =>
           item.id === partner.id
@@ -200,9 +200,15 @@ export default function PartnersSection({
         phone: creds.credentials.phone || partner.phone,
       });
       setCredentialsModalOpen(true);
-      toast.success(`Credentials generated for ${partner.name || partner.openId}`);
+      toast.success(
+        regenerate
+          ? `New ID Pass generated for ${partner.name || partner.openId}`
+          : partner.credentials?.password
+          ? `Credentials loaded for ${partner.name || partner.openId}`
+          : `Credentials generated for ${partner.name || partner.openId}`,
+      );
     } catch (err: any) {
-      toast.error("Failed to generate credentials", {
+      toast.error("Failed to retrieve credentials", {
         description: err instanceof Error ? err.message : "Request failed",
       });
     }

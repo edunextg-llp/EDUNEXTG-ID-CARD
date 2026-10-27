@@ -240,8 +240,11 @@ export const api = {
     deletionSummary: (id: number) => request<ApiSchoolDeletionSummary>(`/api/schools/${id}/deletion-summary`),
     setStatus: (id: number, isActive: boolean) =>
       request<{ success: true; school?: ApiSchool }>(`/api/schools/${id}/status`, patch({ isActive })),
-    generateCredentials: (id: number) =>
-      request<{ success: true; credentials: { loginId: string; email: string; password: string } }>(`/api/schools/${id}/credentials`, json({})),
+    generateCredentials: (id: number, options?: { password?: string; regenerate?: boolean }) =>
+      request<{ success: true; credentials: { loginId: string; email: string; password: string } }>(
+        `/api/schools/${id}/credentials`,
+        json(options || {}),
+      ),
   },
   users: {
     list: () => request<ApiUser[]>("/api/users"),
@@ -249,10 +252,10 @@ export const api = {
     update: (id: number, body: Partial<ApiUser> & { password?: string }) => request<ApiUser>(`/api/users/${id}`, put(body)),
     setStatus: (id: number, isActive: boolean) => request<{ success: true }>(`/api/users/${id}/status`, patch({ isActive })),
     delete: (id: number) => request<void>(`/api/users/${id}`, { method: "DELETE" }),
-    generateCredentials: (id: number, password?: string) =>
+    generateCredentials: (id: number, options?: { password?: string; regenerate?: boolean }) =>
       request<{ success: true; credentials: { loginId: string; email: string; name: string; phone?: string; password: string } }>(
         `/api/users/${id}/credentials`,
-        json(password ? { password } : {}),
+        json(options || {}),
       ),
   },
   templates: {

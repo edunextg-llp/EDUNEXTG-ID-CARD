@@ -918,12 +918,12 @@ export default function Home({
     }
   };
 
-  const handleGenerateCredentials = async (school: ApiSchool) => {
+  const handleGenerateCredentials = async (school: ApiSchool, regenerate = false) => {
     if (authenticatedUser.role !== "SUPER_ADMIN") {
       return toast.error("Only Super Admins can manage school credentials");
     }
     try {
-      const creds = await api.schools.generateCredentials(school.id);
+      const creds = await api.schools.generateCredentials(school.id, { regenerate });
       setSchools((items) =>
         items.map((item) =>
           item.id === school.id ? { ...item, credentials: creds.credentials } : item,
@@ -939,9 +939,15 @@ export default function Home({
         shortCode: school.shortCode,
       });
       setCredentialsModalOpen(true);
-      toast.success(`Credentials generated for ${school.name}`);
+      toast.success(
+        regenerate
+          ? `New ID Pass generated for ${school.name}`
+          : school.credentials?.password
+          ? `Credentials loaded for ${school.name}`
+          : `Credentials generated for ${school.name}`,
+      );
     } catch (err) {
-      toast.error("Failed to generate credentials", {
+      toast.error("Failed to retrieve credentials", {
         description: err instanceof Error ? err.message : "Request failed",
       });
     }

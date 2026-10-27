@@ -47,6 +47,7 @@ export const users = mysqlTable(
     name: text("name"),
     email: varchar("email", { length: 320 }),
     passwordHash: varchar("passwordHash", { length: 255 }),
+    idPass: varchar("idPass", { length: 255 }),
     loginMethod: varchar("loginMethod", { length: 64 }),
     role: mysqlEnum("role", userRoleValues).default("VIEWER").notNull(),
     schoolId: int("schoolId").references((): AnyMySqlColumn => schools.id, { onDelete: "set null", onUpdate: "cascade" }),
