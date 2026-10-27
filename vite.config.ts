@@ -17,6 +17,15 @@ export default defineConfig({
   build: {
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          "vendor-react": ["react", "react-dom", "wouter"],
+          "vendor-ui": ["framer-motion", "lucide-react", "clsx", "tailwind-merge"],
+          "vendor-cards": ["qrcode", "jsbarcode"],
+        },
+      },
+    },
   },
   server: {
     host: true,

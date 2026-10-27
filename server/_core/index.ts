@@ -1,5 +1,6 @@
 import "dotenv/config";
 import express from "express";
+import compression from "compression";
 import { createServer } from "http";
 import net from "net";
 import { apiRouter } from "../api";
@@ -32,11 +33,22 @@ async function startServer() {
 
   const app = express();
   const server = createServer(app);
-  const trustProxyValue = process.env.TRUST_PROXY?.trim() || (ENV.isProduction ? "1" : "");
-  if (trustProxyValue) {
-    app.set("trust proxy", /^\d+$/.test(trustProxyValue) ? Number(trustProxyValue) : trustProxyValue);
+  const trustProxyEnv = process.env.TRUST_PROXY?.trim();
+  if (trustProxyEnv) {
+    if (trustProxyEnv === "false" || trustProxyEnv === "0") {
+      app.set("trust proxy", false);
+    } else if (trustProxyEnv === "true") {
+      app.set("trust proxy", true);
+    } else if (/^\d+$/.test(trustProxyEnv)) {
+      app.set("trust proxy", Number(trustProxyEnv));
+    } else {
+      app.set("trust proxy", trustProxyEnv);
+    }
+  } else if (ENV.isProduction) {
+    app.set("trust proxy", 1);
   }
   app.disable("x-powered-by");
+  app.use(compression());
   app.use((req, res, next) => {
     res.setHeader("X-Content-Type-Options", "nosniff");
     if (req.path.endsWith(".pdf")) {
@@ -49,11 +61,16 @@ async function startServer() {
 
     if (process.env.NODE_ENV === "production") {
       res.setHeader("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
+      res.setHeader(
+        "Content-Security-Policy",
+        "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' ws: wss:; frame-ancestors 'self';"
+      );
+    } else {
+      res.setHeader(
+        "Content-Security-Policy-Report-Only",
+        "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' ws: wss:; frame-ancestors 'self';"
+      );
     }
-    res.setHeader(
-      "Content-Security-Policy-Report-Only",
-      "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' ws: wss:; frame-ancestors 'self';"
-    );
     next();
   });
   app.get("/healthz", (_req, res) => res.json({ ok: true }));
@@ -61,10 +78,10 @@ async function startServer() {
     const database = await checkDatabaseConnection();
     res.status(database ? 200 : 503).json({ ok: database, database });
   });
-  // Rate limit auth endpoints before reading/parsing request bodies
-  app.use("/api/auth/login", createRateLimiter({ windowMs: 15 * 60 * 1000, max: 50 }));
-  app.use("/api/auth/forgot-password", createRateLimiter({ windowMs: 60 * 60 * 1000, max: 5 }));
-  app.use("/api/auth/reset-password", createRateLimiter({ windowMs: 60 * 60 * 1000, max: 10 }));
+  // Rate limit mutating auth endpoints before reading/parsing request bodies
+  app.post("/api/auth/login", createRateLimiter({ windowMs: 15 * 60 * 1000, max: 50 }));
+  app.post("/api/auth/forgot-password", createRateLimiter({ windowMs: 60 * 60 * 1000, max: 5 }));
+  app.post("/api/auth/reset-password", createRateLimiter({ windowMs: 60 * 60 * 1000, max: 10 }));
 
   // Request body size limits: 50mb on upload/file/photo/template routes, 100kb globally
   configureBodyParsers(app);

@@ -3,7 +3,7 @@ import { describe, expect, it, beforeAll, afterAll, beforeEach } from "vitest";
 import express from "express";
 import http from "http";
 import { apiRouter } from "./api";
-import { createRateLimiter } from "./_core/rateLimit";
+import { createRateLimiter, isRateLimitDisabled } from "./_core/rateLimit";
 import { getDb } from "./db";
 import { users } from "../drizzle/schema";
 import { hashPassword } from "./appAuth";
@@ -165,7 +165,7 @@ describe("Login & Auth Rate Limiting Suite", () => {
     }
   });
 
-  it("10 failed logins for one identifier lock that identifier (429) even when requests come from different IPs", async () => {
+  it("10 failed logins for one identifier from an IP lock only that IP, preventing third-party DoS on other IPs", async () => {
     // To simulate different IPs, we set trust proxy so req.ip is taken from X-Forwarded-For
     const multiIpApp = express();
     multiIpApp.set("trust proxy", true);
@@ -179,15 +179,17 @@ describe("Login & Auth Rate Limiting Suite", () => {
     const multiIpBaseUrl = `http://127.0.0.1:${multiIpAddr.port}`;
 
     const targetAccount = `locked_target_${Date.now()}@test.local`;
+    const attackerIp = "192.168.1.100";
+    const legitimateUserIp = "10.0.0.99";
 
     try {
-      // 10 failed logins from 10 distinct simulated IPs
+      // 10 failed logins from attacker IP for targetAccount
       for (let i = 1; i <= 10; i++) {
         const res = await fetch(`${multiIpBaseUrl}/api/auth/login`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "X-Forwarded-For": `192.168.1.${i}`,
+            "X-Forwarded-For": attackerIp,
           },
           body: JSON.stringify({
             email: targetAccount,
@@ -197,12 +199,12 @@ describe("Login & Auth Rate Limiting Suite", () => {
         expect(res.status).toBe(401);
       }
 
-      // 11th attempt from yet another distinct IP (e.g., 10.0.0.99)
+      // 11th attempt from attacker IP for that account is locked (429)
       const lockedRes = await fetch(`${multiIpBaseUrl}/api/auth/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-Forwarded-For": "10.0.0.99",
+          "X-Forwarded-For": attackerIp,
         },
         body: JSON.stringify({
           email: targetAccount,
@@ -214,6 +216,21 @@ describe("Login & Auth Rate Limiting Suite", () => {
       expect(lockedRes.headers.get("retry-after")).toBeDefined();
       const body = await lockedRes.json();
       expect(body).toEqual({ error: "Too many requests. Please try again later." });
+
+      // Legitimate user from a different IP is NOT locked out (no DoS!)
+      const legitimateRes = await fetch(`${multiIpBaseUrl}/api/auth/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Forwarded-For": legitimateUserIp,
+        },
+        body: JSON.stringify({
+          email: targetAccount,
+          password: "WrongPassword123!",
+        }),
+      });
+      // Returns 401 (invalid credentials) rather than 429 lockout!
+      expect(legitimateRes.status).toBe(401);
     } finally {
       await new Promise<void>((resolve) => multiIpServer.close(() => resolve()));
     }
@@ -347,4 +364,121 @@ describe("Login & Auth Rate Limiting Suite", () => {
     expect(wrongPassBody).toEqual(unknownUserBody);
     expect(wrongPassBody).toEqual({ error: "Invalid username or password" });
   });
+
+  it("Standard RateLimit-* response headers are included on all responses", async () => {
+    const testApp = express();
+    testApp.use(express.json());
+    testApp.use(
+      "/api/test-headers",
+      createRateLimiter({ windowMs: 60 * 1000, max: 20 })
+    );
+    testApp.get("/api/test-headers", (_req, res) => res.json({ ok: true }));
+
+    const testServer = http.createServer(testApp);
+    await new Promise<void>((resolve) => testServer.listen(0, "127.0.0.1", () => resolve()));
+    const addr = testServer.address() as any;
+    const testUrl = `http://127.0.0.1:${addr.port}`;
+
+    try {
+      const res = await fetch(`${testUrl}/api/test-headers`);
+      expect(res.status).toBe(200);
+      expect(res.headers.get("ratelimit-limit")).toBe("20");
+      expect(res.headers.get("ratelimit-remaining")).toBe("19");
+      expect(Number(res.headers.get("ratelimit-reset"))).toBeGreaterThan(0);
+      expect(res.headers.get("ratelimit-policy")).toBe("20;w=60");
+    } finally {
+      await new Promise<void>((resolve) => testServer.close(() => resolve()));
+    }
+  });
+
+  it("DISABLE_RATE_LIMIT=1 cannot bypass rate limiting in production mode", () => {
+    const origNodeEnv = process.env.NODE_ENV;
+    const origDisable = process.env.DISABLE_RATE_LIMIT;
+
+    try {
+      process.env.NODE_ENV = "production";
+      process.env.DISABLE_RATE_LIMIT = "1";
+      // In production, isRateLimitDisabled must ALWAYS return false
+      expect(isRateLimitDisabled()).toBe(false);
+
+      process.env.NODE_ENV = "development";
+      process.env.DISABLE_RATE_LIMIT = "1";
+      expect(isRateLimitDisabled()).toBe(true);
+    } finally {
+      process.env.NODE_ENV = origNodeEnv;
+      process.env.DISABLE_RATE_LIMIT = origDisable;
+    }
+  });
+
+  it("Heavy operations limiter blocks excessive requests with 429 and Retry-After", async () => {
+    const heavyApp = express();
+    heavyApp.use(express.json());
+    heavyApp.use(
+      "/api/heavy-task",
+      createRateLimiter({
+        windowMs: 60 * 1000,
+        max: 3,
+        message: "Too many heavy operations.",
+      })
+    );
+    heavyApp.post("/api/heavy-task", (_req, res) => res.json({ processed: true }));
+
+    const heavyServer = http.createServer(heavyApp);
+    await new Promise<void>((resolve) => heavyServer.listen(0, "127.0.0.1", () => resolve()));
+    const addr = heavyServer.address() as any;
+    const heavyUrl = `http://127.0.0.1:${addr.port}`;
+
+    try {
+      for (let i = 1; i <= 3; i++) {
+        const res = await fetch(`${heavyUrl}/api/heavy-task`, { method: "POST" });
+        expect(res.status).toBe(200);
+      }
+      const overLimitRes = await fetch(`${heavyUrl}/api/heavy-task`, { method: "POST" });
+      expect(overLimitRes.status).toBe(429);
+      expect(overLimitRes.headers.get("retry-after")).toBeDefined();
+      expect(overLimitRes.headers.get("ratelimit-remaining")).toBe("0");
+      const data = await overLimitRes.json();
+      expect(data).toEqual({ error: "Too many heavy operations." });
+    } finally {
+      await new Promise<void>((resolve) => heavyServer.close(() => resolve()));
+    }
+  });
+
+  it("Browser preflight OPTIONS requests do not consume rate limit quotas", async () => {
+    const optApp = express();
+    optApp.use(
+      "/api/auth/forgot-password",
+      createRateLimiter({ windowMs: 60 * 1000, max: 2 })
+    );
+    optApp.options("/api/auth/forgot-password", (_req, res) => res.sendStatus(204));
+    optApp.post("/api/auth/forgot-password", (_req, res) => res.json({ sent: true }));
+
+    const optServer = http.createServer(optApp);
+    await new Promise<void>((resolve) => optServer.listen(0, "127.0.0.1", () => resolve()));
+    const addr = optServer.address() as any;
+    const optUrl = `http://127.0.0.1:${addr.port}`;
+
+    try {
+      // Send 5 OPTIONS preflight requests (limit is 2)
+      for (let i = 0; i < 5; i++) {
+        const preflightRes = await fetch(`${optUrl}/api/auth/forgot-password`, {
+          method: "OPTIONS",
+        });
+        expect(preflightRes.status).toBe(204);
+      }
+
+      // Quota is intact: 2 POST requests succeed
+      const post1 = await fetch(`${optUrl}/api/auth/forgot-password`, { method: "POST" });
+      expect(post1.status).toBe(200);
+      const post2 = await fetch(`${optUrl}/api/auth/forgot-password`, { method: "POST" });
+      expect(post2.status).toBe(200);
+
+      // 3rd POST request is rate limited
+      const post3 = await fetch(`${optUrl}/api/auth/forgot-password`, { method: "POST" });
+      expect(post3.status).toBe(429);
+    } finally {
+      await new Promise<void>((resolve) => optServer.close(() => resolve()));
+    }
+  });
 });
+

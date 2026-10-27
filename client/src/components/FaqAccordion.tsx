@@ -12,7 +12,7 @@ export const DEFAULT_FAQ_ITEMS: FaqItem[] = [
     id: "photo-requirements",
     question: "What photo specifications and formats do you require?",
     answer:
-      "Photographs should be clear passport-style portraits against a plain, light background in JPEG or PNG format (minimum 300 DPI recommended). Images should ideally be named by student roll number, admission number, or unique ID for automated database mapping.",
+      "Photographs should be clear passport-style portraits against a plain, light background in JPEG or PNG format. Images should ideally be named by student roll number, admission number, or unique ID for automated database mapping.",
   },
   {
     id: "bulk-excel-upload",
@@ -41,7 +41,7 @@ export default function FaqAccordion({
   allowMultiple = false,
   className = "",
   title = "Frequently Asked Questions",
-  subtitle = "Everything school administrators and institutional purchase teams need to know about our identity card solutions.",
+  subtitle,
 }: FaqAccordionProps) {
   const baseId = useId();
   // Store either a single open ID or a set of open IDs

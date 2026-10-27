@@ -3,7 +3,7 @@ import { createHash, randomBytes, scrypt as scryptCallback, timingSafeEqual } fr
 import { parse as parseCookieHeader } from "cookie";
 import { SignJWT, jwtVerify } from "jose";
 import type { Request, Response } from "express";
-import { eq, gt, and, or, sql } from "drizzle-orm";
+import { eq, gt, and, or, sql, isNull } from "drizzle-orm";
 import { COOKIE_NAME } from "@shared/const";
 import { passwordResets, users, schools, type User } from "../drizzle/schema";
 import { getDb } from "./db";
@@ -212,7 +212,7 @@ export async function resetPassword(rawToken: string, newPassword: string) {
   for (const reset of candidates) {
     if (reset.usedAt || !(await verifyPassword(rawToken, reset.tokenHash))) continue;
     await db.update(users).set({ passwordHash: await hashPassword(newPassword) }).where(eq(users.id, reset.userId));
-    await db.update(passwordResets).set({ usedAt: new Date() }).where(and(eq(passwordResets.id, reset.id), eq(passwordResets.userId, reset.userId)));
+    await db.update(passwordResets).set({ usedAt: new Date() }).where(and(eq(passwordResets.userId, reset.userId), isNull(passwordResets.usedAt)));
     return true;
   }
   return false;

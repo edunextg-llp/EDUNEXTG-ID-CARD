@@ -110,9 +110,6 @@ export default function Login() {
             <h1 className="lp-login-brand-title">
               Complete ID Card &amp; Student Identity Management
             </h1>
-            <p className="lp-login-brand-desc">
-              Log in to manage student &amp; faculty ID records, bulk photo uploads, real-time verification, and track card production orders.
-            </p>
 
             <div className="lp-login-features-list">
               <div className="lp-login-feature-item">
@@ -121,7 +118,6 @@ export default function Login() {
                 </div>
                 <div className="lp-login-feature-text">
                   <h4>Role-Based Access</h4>
-                  <p>Dedicated dashboards for School Coordinators, Partners &amp; Super Admins.</p>
                 </div>
               </div>
 
@@ -131,7 +127,6 @@ export default function Login() {
                 </div>
                 <div className="lp-login-feature-text">
                   <h4>Premium Materials &amp; Clamps</h4>
-                  <p>High-durability PVC Inkjet and PVC Core cards with custom sublimation lanyards.</p>
                 </div>
               </div>
 
@@ -141,20 +136,19 @@ export default function Login() {
                 </div>
                 <div className="lp-login-feature-text">
                   <h4>Instant Approvals &amp; Tracking</h4>
-                  <p>One-click batch proofs, automated data error-checking, and real-time order dispatch status.</p>
                 </div>
               </div>
             </div>
 
             <div className="lp-login-trust-card">
               <div className="lp-login-trust-avatar-group">
-                <img src="/home/client-01.jpg" alt="Partner school" className="lp-login-trust-avatar" />
-                <img src="/home/client-02.jpg" alt="Partner school" className="lp-login-trust-avatar" />
-                <img src="/home/client-03.jpg" alt="Partner school" className="lp-login-trust-avatar" />
-                <img src="/home/client-04.jpg" alt="Partner school" className="lp-login-trust-avatar" />
+                <img src="/home/client-01.webp" alt="Partner school" className="lp-login-trust-avatar" />
+                <img src="/home/client-02.webp" alt="Partner school" className="lp-login-trust-avatar" />
+                <img src="/home/client-03.webp" alt="Partner school" className="lp-login-trust-avatar" />
+                <img src="/home/client-04.webp" alt="Partner school" className="lp-login-trust-avatar" />
               </div>
               <div className="lp-login-trust-text">
-                Trusted by 500+ Educational Institutions Across India
+                Trusted by 100+ Educational Institutions Across India
               </div>
             </div>
           </div>
@@ -278,11 +272,10 @@ export default function Login() {
               <Button
                 type="submit"
                 disabled={busy || success}
-                className={`mt-6 h-11 w-full rounded-xl font-bold cursor-pointer transition-all duration-200 ${
-                  success
+                className={`mt-6 h-11 w-full rounded-xl font-bold cursor-pointer transition-all duration-200 ${success
                     ? "bg-[#00894d] text-white"
                     : "bg-primary text-primary-foreground hover:bg-primary/90"
-                }`}
+                  }`}
               >
                 {busy ? (
                   <span className="inline-flex items-center gap-2">

@@ -1,11 +1,6 @@
 import {
-  CheckCircle2,
-  FileCheck2,
   GraduationCap,
   HeartHandshake,
-  Layers,
-  Lock,
-  Palette,
   Printer,
   QrCode,
   ShieldCheck,
@@ -91,101 +86,6 @@ export default function AboutUsSection() {
         </Card>
       </section>
 
-      {/* Key Architectural Pillars */}
-      <section className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="text-xs font-extrabold uppercase tracking-wider text-primary">
-              Platform Capabilities
-            </div>
-            <h2 className="text-2xl font-black tracking-tight text-foreground">
-              Built for Modern Education
-            </h2>
-          </div>
-          <span className="hidden rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-bold text-primary sm:inline-block">
-            Fast & Reliable
-          </span>
-        </div>
-
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="rounded-2xl border border-border bg-card p-5 shadow-sm transition hover:shadow-md text-card-foreground">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
-              <Layers className="h-5 w-5" />
-            </div>
-            <h3 className="mt-4 text-sm font-extrabold text-foreground">Independent School Accounts</h3>
-            <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-              Each school has its own dedicated portal with private access, ensuring student records and card data remain completely separated and confidential.
-            </p>
-          </div>
-
-          <div className="rounded-2xl border border-border bg-card p-5 shadow-sm transition hover:shadow-md text-card-foreground">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#e9ebfa] dark:bg-[#1e223d] text-[#5c64b7] dark:text-[#8a94e8]">
-              <Palette className="h-5 w-5" />
-            </div>
-            <h3 className="mt-4 text-sm font-extrabold text-foreground">Visual Template Designer</h3>
-            <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-              Easily create and customize school ID cards with portrait and landscape layouts, custom school logos, dynamic student fields, and brand colors.
-            </p>
-          </div>
-
-          <div className="rounded-2xl border border-border bg-card p-5 shadow-sm transition hover:shadow-md text-card-foreground">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#fff8d9] dark:bg-[#3d3314] text-[#9d7611] dark:text-[#f2c94c]">
-              <FileCheck2 className="h-5 w-5" />
-            </div>
-            <h3 className="mt-4 text-sm font-extrabold text-foreground">Seamless Review & Approval</h3>
-            <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-              A transparent review workflow where schools review student cards, request corrections with feedback notes, and approve ready-to-print designs.
-            </p>
-          </div>
-
-          <div className="rounded-2xl border border-border bg-card p-5 shadow-sm transition hover:shadow-md text-card-foreground">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#fff0e8] dark:bg-[#3d1e16] text-[#c65c3d] dark:text-[#f28a63]">
-              <Printer className="h-5 w-5" />
-            </div>
-            <h3 className="mt-4 text-sm font-extrabold text-foreground">Print & Export Ready</h3>
-            <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-              Generate crisp print files for individual cards or entire batches with one click, formatted perfectly for professional card printers.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* Security & Compliance Highlights */}
-      <section className="rounded-3xl border border-border bg-muted/40 p-6 sm:p-8">
-        <div className="max-w-2xl space-y-3">
-          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-primary">
-            <Lock className="h-3.5 w-3.5" /> Security & Trust
-          </div>
-          <h2 className="text-xl font-black text-foreground">
-            Protected, Safe & Reliable
-          </h2>
-          <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-            We prioritize student data privacy and system security at every step. Insight Education combines strict
-            access permissions, encrypted credentials, and comprehensive activity tracking to ensure your institution's
-            records are always safeguarded.
-          </p>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 text-xs font-bold text-foreground">
-            <div className="flex items-center gap-2">
-              <CheckCircle2 className="h-4 w-4 text-primary" />
-              <span>Role-based permissions for administrators and staff</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <CheckCircle2 className="h-4 w-4 text-primary" />
-              <span>Secure student data protection across all schools</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <CheckCircle2 className="h-4 w-4 text-primary" />
-              <span>Instant QR code verification for card authenticity</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <CheckCircle2 className="h-4 w-4 text-primary" />
-              <span>Complete activity logs for review and accountability</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* Company & Support Information Footer Card */}
       <section className="rounded-3xl border border-border bg-card p-6 sm:p-8 shadow-sm text-card-foreground">
         <div className="flex flex-col justify-between gap-6 sm:flex-row sm:items-center">
@@ -197,7 +97,7 @@ export default function AboutUsSection() {
               Insight Education Management Suite
             </h3>
             <p className="text-xs text-muted-foreground">
-              Version 2.3.0 (Internal Build) · Developed by Rishu Rajak.
+              Version 3.3.0  · Developed by Rishu Rajak.
             </p>
           </div>
 

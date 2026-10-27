@@ -5,7 +5,6 @@ import {
   Phone,
   Mail,
   MapPin,
-  LockKeyhole,
   ArrowRight,
   ShieldCheck,
 } from "lucide-react";
@@ -31,9 +30,6 @@ export default function ContactUsPage() {
           <div className="lp-page-banner-content">
             <span className="lp-page-badge">DIRECT CONTACT</span>
             <h1 className="font-heading">Contact Our Institutional Team</h1>
-            <p>
-              Direct contact channels and official inquiry desk for school principals, college administrators, and institutional purchase teams across India.
-            </p>
           </div>
         </div>
       </section>
@@ -54,9 +50,6 @@ export default function ContactUsPage() {
                 <div>
                   <h4>Phone &amp; WhatsApp Support</h4>
                   <p className="lp-contact-main-text">+91 81008 79809</p>
-                  <p className="lp-contact-sub-text">
-                    Direct line to our institutional order desk. Available Monday through Saturday, 9:30 AM to 6:30 PM IST.
-                  </p>
                   <div className="lp-contact-action-bar">
                     <a href="tel:+918100879809" className="lp-contact-cta-btn">
                       Call Support
@@ -81,9 +74,6 @@ export default function ContactUsPage() {
                 <div>
                   <h4>Official Email Inquiries</h4>
                   <p className="lp-contact-main-text">insiteducation@gmail.com</p>
-                  <p className="lp-contact-sub-text">
-                    Send tender inquiries, bulk RFP requirements, or sample requests. Typical response turnaround within 2–4 business hours.
-                  </p>
                   <div className="lp-contact-action-bar">
                     <a href="mailto:insiteducation@gmail.com?subject=School%20ID%20Card%20Inquiry" className="lp-contact-cta-btn">
                       Send Email
@@ -99,8 +89,7 @@ export default function ContactUsPage() {
                 </div>
                 <div>
                   <h4>Head Office</h4>
-                  <p className="lp-contact-main-text">Insight Education Identity Solutions</p>
-                  <p className="lp-contact-sub-text">
+                  <p className="lp-contact-main-text">
                     AF-333, Rabindrapally, Talbagan, P.O. Prafulla Kanan, Kolkata-700101, India.
                   </p>
                 </div>
@@ -114,9 +103,6 @@ export default function ContactUsPage() {
                 <div>
                   <h4>100% Quality &amp; Accuracy Guarantee</h4>
                   <p className="lp-contact-main-text">Thermal &amp; Re-transfer High Def Finishing</p>
-                  <p className="lp-contact-sub-text">
-                    Every batch undergoes digital proofing and multi-point barcode/QR scanning verification prior to dispatch.
-                  </p>
                 </div>
               </div>
             </div>
@@ -125,9 +111,6 @@ export default function ContactUsPage() {
             <div className="lp-contact-portal-banner">
               <div>
                 <h3>Already a Partner School or Registered Admin?</h3>
-                <p>
-                  Access your institution portal to approve card proofs, review student data, and monitor live printing status.
-                </p>
               </div>
               <Link
                 href="/login"
