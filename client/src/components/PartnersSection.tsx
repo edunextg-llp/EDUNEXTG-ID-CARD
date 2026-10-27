@@ -7,7 +7,6 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import {
   Dialog,
@@ -638,11 +637,8 @@ export default function PartnersSection({
                             {initials}
                           </div>
                           <div className="min-w-0">
-                            <div className="text-sm font-extrabold text-foreground flex items-center gap-2">
+                            <div className="text-sm font-extrabold text-foreground">
                               <span className="truncate">{partner.name || "Unnamed Partner"}</span>
-                              <Badge className="bg-emerald-100 text-emerald-800 dark:bg-emerald-950/70 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800 text-[10px] font-bold">
-                                Partner
-                              </Badge>
                             </div>
                             <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 mt-0.5 text-[11px] text-muted-foreground">
                               {partner.email && (
