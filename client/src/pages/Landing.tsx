@@ -108,7 +108,7 @@ const HERO_IMAGES = [
     alt: "Custom school ID cards, printed lanyards and holders",
   },
   {
-    image: "/home/carousel-slide-3.webp",
+    image: "/home/carousel-slide-3.jpg",
     alt: "Institutional custom printed ribbons and identity cards",
   },
 ] as const;
