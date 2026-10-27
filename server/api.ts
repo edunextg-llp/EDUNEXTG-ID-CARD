@@ -22,7 +22,14 @@ import {
 } from "../drizzle/schema";
 import { getDb } from "./db";
 import { ENV } from "./_core/env";
-import { checkAccountLockout, recordAccountLoginFailure, resetAccountLoginFailure } from "./_core/rateLimit";
+import {
+  checkAccountLockout,
+  recordAccountLoginFailure,
+  resetAccountLoginFailure,
+  heavyOperationsLimiter,
+  uploadLimiter,
+  authenticatedApiLimiter,
+} from "./_core/rateLimit";
 import { authenticateApplicationRequest, clearApplicationSession, createPasswordReset, hashPassword, loginUser, resetPassword, setApplicationSession, signApplicationSession, verifyPassword } from "./appAuth";
 import { generateSingleCardPdf, generateBulkCardPdf, type CardPdfData, type PrintPdfOptions } from "./pdf";
 import { isValidIndianMobileNumber, INDIAN_MOBILE_ERROR_MESSAGE } from "../shared/phoneValidation";
@@ -168,6 +175,9 @@ router.post("/auth/login", async (req, res) => {
     const lockout = checkAccountLockout(identifier);
     if (lockout.locked) {
       res.setHeader("Retry-After", lockout.retryAfterSeconds);
+      res.setHeader("RateLimit-Limit", 10);
+      res.setHeader("RateLimit-Remaining", 0);
+      res.setHeader("RateLimit-Reset", lockout.retryAfterSeconds);
       return res.status(429).json({ error: "Too many requests. Please try again later." });
     }
 
@@ -211,6 +221,7 @@ router.post("/auth/forgot-password", async (req, res) => { try { const email = S
 router.post("/auth/reset-password", async (req, res) => { try { const token = String(req.body.token ?? ""); const password = String(req.body.password ?? ""); if (!token || password.length < 8) return res.status(400).json({ error: "Token and a password of at least 8 characters are required" }); const success = await resetPassword(token, password); if (!success) return res.status(400).json({ error: "Invalid or expired reset token" }); res.json({ success: true }); } catch (e) { fail(res, e); } });
 
 router.use(auth);
+router.use(authenticatedApiLimiter);
 
 // Restrict Partner to auth, profile, notifications, orders, schools, and about
 router.use((req, res, next) => {
@@ -313,7 +324,7 @@ router.put("/profile", requireRole(profileRoles), async (req, res) => {
   }
 });
 
-router.post("/profile/picture", requireRole(profileRoles), async (req, res) => {
+router.post("/profile/picture", requireRole(profileRoles), uploadLimiter, async (req, res) => {
   try {
     const user = currentUser(res);
     const db = await getDb();
@@ -1168,7 +1179,7 @@ router.delete("/templates/:id", requireRole(adminRoles), async (req, res) => {
   }
 });
 
-router.post("/upload", async (req, res) => {
+router.post("/upload", uploadLimiter, async (req, res) => {
   try {
     const user = currentUser(res);
     if (!user) {
@@ -2479,20 +2490,20 @@ async function handleBulkApprovalTransition(
   }
 }
 
-router.post("/approvals/bulk-approve", requireRole(schoolManagerRoles), async (req, res) => {
+router.post("/approvals/bulk-approve", requireRole(schoolManagerRoles), heavyOperationsLimiter, async (req, res) => {
   await handleBulkApprovalTransition(req, res, "APPROVED", "APPROVE_ID_CARD", req.body.comment);
 });
-router.post("/approvals/bulk-reject", requireRole(schoolManagerRoles), async (req, res) => {
+router.post("/approvals/bulk-reject", requireRole(schoolManagerRoles), heavyOperationsLimiter, async (req, res) => {
   await handleBulkApprovalTransition(req, res, "REJECTED", "REJECT_ID_CARD", req.body.reason || req.body.comment || "Rejected via bulk action");
 });
-router.post("/id-cards/bulk-approve", requireRole(schoolManagerRoles), async (req, res) => {
+router.post("/id-cards/bulk-approve", requireRole(schoolManagerRoles), heavyOperationsLimiter, async (req, res) => {
   await handleBulkApprovalTransition(req, res, "APPROVED", "APPROVE_ID_CARD", req.body.comment);
 });
-router.post("/id-cards/bulk-reject", requireRole(schoolManagerRoles), async (req, res) => {
+router.post("/id-cards/bulk-reject", requireRole(schoolManagerRoles), heavyOperationsLimiter, async (req, res) => {
   await handleBulkApprovalTransition(req, res, "REJECTED", "REJECT_ID_CARD", req.body.reason || req.body.comment || "Rejected via bulk action");
 });
 
-router.post("/id-cards/bulk-remove-approved", requireRole(schoolManagerRoles), async (req, res) => {
+router.post("/id-cards/bulk-remove-approved", requireRole(schoolManagerRoles), heavyOperationsLimiter, async (req, res) => {
   try {
     const user = currentUser(res);
     const db = await getDb();
@@ -2689,7 +2700,7 @@ router.post("/id-cards/:id/mark-printed", requireRole(adminRoles), async (req, r
   }
 });
 
-router.post("/id-cards/bulk-print", requireRole(adminRoles), async (req, res) => {
+router.post("/id-cards/bulk-print", requireRole(adminRoles), heavyOperationsLimiter, async (req, res) => {
   try {
     const user = currentUser(res);
     const db = await getDb();
@@ -2759,7 +2770,7 @@ async function fetchCardPdfData(db: any, cardId: number): Promise<CardPdfData | 
   };
 }
 
-router.get("/id-cards/:id/pdf", requireRole(adminRoles), async (req, res) => {
+router.get("/id-cards/:id/pdf", requireRole(adminRoles), heavyOperationsLimiter, async (req, res) => {
   try {
     const user = currentUser(res);
     const db = await getDb();
@@ -2788,7 +2799,7 @@ router.get("/id-cards/:id/pdf", requireRole(adminRoles), async (req, res) => {
   }
 });
 
-router.post("/id-cards/bulk-pdf", requireRole(adminRoles), async (req, res) => {
+router.post("/id-cards/bulk-pdf", requireRole(adminRoles), heavyOperationsLimiter, async (req, res) => {
   try {
     const user = currentUser(res);
     const db = await getDb();
@@ -2826,7 +2837,7 @@ router.post("/id-cards/bulk-pdf", requireRole(adminRoles), async (req, res) => {
 });
 
 // ─── FILE METADATA ────────────────────────────────────────────────────────
-router.post("/id-cards/:id/files", requireRole(adminRoles), async (req, res) => {
+router.post("/id-cards/:id/files", requireRole(adminRoles), uploadLimiter, async (req, res) => {
   try {
     const user = currentUser(res);
     const db = await getDb();
@@ -3129,7 +3140,7 @@ router.delete("/audit-logs", async (req, res) => {
 });
 
 // ─── REPORTS: REMOVED CARDS HISTORY ───────────────────────────────────────
-router.get("/reports/removed-cards", requireRole(schoolManagerRoles), async (req, res) => {
+router.get("/reports/removed-cards", requireRole(schoolManagerRoles), heavyOperationsLimiter, async (req, res) => {
   try {
     const db = await getDb();
     if (!db) return res.status(503).json({ error: "Database not available" });
@@ -3466,7 +3477,7 @@ router.get("/id-card-requests/example-excel", async (req, res) => {
   }
 });
 
-router.post("/id-card-requests/upload-excel", requireRole(schoolWriteRoles), async (req, res) => {
+router.post("/id-card-requests/upload-excel", requireRole(schoolWriteRoles), heavyOperationsLimiter, async (req, res) => {
   try {
     const user = currentUser(res);
     const db = await getDb();
@@ -3665,6 +3676,7 @@ router.post("/id-card-requests/upload-excel", requireRole(schoolWriteRoles), asy
 router.post(
   ["/id-card-requests/bulk-upload-photos", "/id-cards/bulk-upload-photos"],
   requireRole(schoolWriteRoles),
+  heavyOperationsLimiter,
   async (req, res) => {
     try {
       const user = currentUser(res);

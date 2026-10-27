@@ -32,9 +32,19 @@ async function startServer() {
 
   const app = express();
   const server = createServer(app);
-  const trustProxyValue = process.env.TRUST_PROXY?.trim() || (ENV.isProduction ? "1" : "");
-  if (trustProxyValue) {
-    app.set("trust proxy", /^\d+$/.test(trustProxyValue) ? Number(trustProxyValue) : trustProxyValue);
+  const trustProxyEnv = process.env.TRUST_PROXY?.trim();
+  if (trustProxyEnv) {
+    if (trustProxyEnv === "false" || trustProxyEnv === "0") {
+      app.set("trust proxy", false);
+    } else if (trustProxyEnv === "true") {
+      app.set("trust proxy", true);
+    } else if (/^\d+$/.test(trustProxyEnv)) {
+      app.set("trust proxy", Number(trustProxyEnv));
+    } else {
+      app.set("trust proxy", trustProxyEnv);
+    }
+  } else if (ENV.isProduction) {
+    app.set("trust proxy", 1);
   }
   app.disable("x-powered-by");
   app.use((req, res, next) => {
