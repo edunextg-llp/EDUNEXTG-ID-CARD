@@ -88,15 +88,11 @@ export function isRateLimitDisabled(): boolean {
 
 /**
  * Resolves the client IP address.
- * Prioritizes trusted CDN headers (e.g. cf-connecting-ip when deployed behind Cloudflare)
- * and falls back to Express req.ip or socket remote address.
+ * Relies on Express's built-in req.ip backed by app.set("trust proxy", ...),
+ * falling back to socket remote address or "unknown".
  */
 export function resolveClientIp(req: Request): string {
-  const cfConnectingIp = req.headers["cf-connecting-ip"];
-  if (typeof cfConnectingIp === "string" && cfConnectingIp.trim()) {
-    return cfConnectingIp.trim();
-  }
-  return req.ip || req.socket.remoteAddress || "unknown";
+  return req.ip || req.socket?.remoteAddress || "unknown";
 }
 
 /**

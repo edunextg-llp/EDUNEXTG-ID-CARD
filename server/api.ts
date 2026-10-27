@@ -38,7 +38,7 @@ import { generateExampleExcelBuffer, parseExcelBuffer } from "./excel";
 import { getAvailableDynamicFields } from "../shared/templateDesigner";
 import { DEFAULT_TEMPLATE_CARD_SIZE } from "../shared/printLayout";
 import { HOOK_TYPES, CARD_MATERIALS, ORDER_TYPES, PRINT_SIDES, ORDER_STATUSES } from "../shared/orders";
-import { processBulkPhotoUpload, BulkPhotoError } from "./bulkPhotos";
+import { processBulkPhotoUpload, compressPhotoBuffer, BulkPhotoError } from "./bulkPhotos";
 import { detectImageMimeType } from "./imageValidation";
 import { sanitizeForAudit } from "./auditSanitize";
 export { sanitizeForAudit };
@@ -221,7 +221,17 @@ router.get("/auth/me", async (req, res) => {
     res.status(401).json({ error: "Authentication required" });
   }
 });
-router.post("/auth/forgot-password", async (req, res) => { try { const email = String(req.body.email ?? "").trim().toLowerCase(); if (!email) return res.status(400).json({ error: "Email is required" }); const token = await createPasswordReset(email); res.json({ success: true, ...(ENV.isProduction || !token ? {} : { developmentResetToken: token }) }); } catch (e) { fail(res, e); } });
+router.post("/auth/forgot-password", async (req, res) => {
+  try {
+    const email = String(req.body.email ?? "").trim().toLowerCase();
+    if (!email) return res.status(400).json({ error: "Email is required" });
+    const token = await createPasswordReset(email);
+    const exposeDevToken = process.env.EXPOSE_DEV_RESET_TOKENS === "true" && !ENV.isProduction;
+    res.json({ success: true, ...(exposeDevToken && token ? { developmentResetToken: token } : {}) });
+  } catch (e) {
+    fail(res, e);
+  }
+});
 router.post("/auth/reset-password", async (req, res) => { try { const token = String(req.body.token ?? ""); const password = String(req.body.password ?? ""); if (!token || password.length < 8) return res.status(400).json({ error: "Token and a password of at least 8 characters are required" }); const success = await resetPassword(token, password); if (!success) return res.status(400).json({ error: "Invalid or expired reset token" }); res.json({ success: true }); } catch (e) { fail(res, e); } });
 
 router.use(auth);
@@ -339,13 +349,41 @@ router.post("/profile/picture", requireRole(profileRoles), uploadLimiter, async 
       return res.status(400).json({ error: "Please provide a valid profile image." });
     }
 
-    await db.update(users).set({ avatarUrl, updatedAt: new Date() }).where(eq(users.id, user.id));
+    const MAX_AVATAR_BYTES = 500 * 1024;
+    let finalAvatarUrl = avatarUrl;
+    if (avatarUrl.startsWith("data:")) {
+      const parts = avatarUrl.split(",");
+      const base64Data = parts[1] || "";
+      const raw = Buffer.from(base64Data, "base64");
+      const detectedMime = detectImageMimeType(raw);
+      if (
+        raw.length > MAX_AVATAR_BYTES ||
+        !detectedMime ||
+        !["image/png", "image/jpeg", "image/webp"].includes(detectedMime)
+      ) {
+        return res.status(400).json({
+          error: "Invalid image or image exceeds 500KB limit. Only PNG, JPEG, and WebP are allowed.",
+        });
+      }
+      if (raw.length > 50 * 1024) {
+        const compressed = await compressPhotoBuffer(raw);
+        finalAvatarUrl = `data:image/jpeg;base64,${compressed.toString("base64")}`;
+      }
+    } else if (/^https?:\/\//i.test(avatarUrl)) {
+      if (avatarUrl.length > 2048) {
+        return res.status(400).json({ error: "Avatar URL exceeds maximum allowed length." });
+      }
+    } else {
+      return res.status(400).json({ error: "Invalid image format. Must be a valid image data URI or URL." });
+    }
+
+    await db.update(users).set({ avatarUrl: finalAvatarUrl, updatedAt: new Date() }).where(eq(users.id, user.id));
     await audit(user, "UPDATE_PROFILE_PICTURE", "user", user.id, null, null);
 
     res.json({
       success: true,
       message: "Profile picture updated successfully.",
-      avatarUrl,
+      avatarUrl: finalAvatarUrl,
     });
   } catch (e) {
     console.error("[Profile Picture Error]", e);
@@ -551,7 +589,7 @@ router.post("/schools", requireRole(schoolCreateRoles), async (req, res) => {
         action: "CREATE_SCHOOL",
         entityType: "school",
         entityId: id,
-        newValues: req.body as never,
+        newValues: sanitizeForAudit(req.body) as never,
       });
 
       createdSchool = (await tx.select().from(schools).where(eq(schools.id, id)))[0];
@@ -885,10 +923,18 @@ router.post("/users", requireRole(adminRoles), async (req, res) => {
       }
     }
 
+    const cleanEmail = req.body.email ? String(req.body.email).trim().toLowerCase() : null;
+    if (cleanEmail) {
+      const existingEmail = (await db.select({ id: users.id }).from(users).where(eq(users.email, cleanEmail)))[0];
+      if (existingEmail) {
+        return res.status(409).json({ error: `Email "${cleanEmail}" is already in use.` });
+      }
+    }
+
     const result = await db.insert(users).values({
       openId,
       name: req.body.name ?? null,
-      email: req.body.email ?? null,
+      email: cleanEmail,
       loginMethod: "local",
       passwordHash: req.body.password ? await hashPassword(String(req.body.password)) : null,
       role,
@@ -920,9 +966,21 @@ router.put("/users/:id", requireRole(adminRoles), async (req, res) => {
     if (!target) return res.status(404).json({ error: "User not found" });
 
     const nextSchoolId = req.body.schoolId !== undefined ? (req.body.schoolId ? Number(req.body.schoolId) : null) : target.schoolId;
+    let nextEmail = target.email;
+    if (req.body.email !== undefined) {
+      const cleanEmail = req.body.email ? String(req.body.email).trim().toLowerCase() : null;
+      if (cleanEmail) {
+        const existingEmail = (await db.select({ id: users.id }).from(users).where(and(eq(users.email, cleanEmail), ne(users.id, id))))[0];
+        if (existingEmail) {
+          return res.status(409).json({ error: `Email "${cleanEmail}" is already in use.` });
+        }
+      }
+      nextEmail = cleanEmail;
+    }
+
     const updateData: Record<string, any> = {
       name: req.body.name,
-      email: req.body.email,
+      email: nextEmail,
       role: req.body.role,
       schoolId: nextSchoolId,
       updatedAt: new Date(),

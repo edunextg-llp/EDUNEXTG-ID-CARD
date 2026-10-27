@@ -313,7 +313,7 @@ describe("server/_core/rateLimit unit test suite", () => {
   });
 
   describe("resolveClientIp & resolveClientKey", () => {
-    it("prioritizes cf-connecting-ip when deployed behind Cloudflare", () => {
+    it("does not blindly trust unverified cf-connecting-ip header and uses req.ip", () => {
       const req = {
         headers: {
           "cf-connecting-ip": "203.0.113.195",
@@ -322,8 +322,8 @@ describe("server/_core/rateLimit unit test suite", () => {
         socket: { remoteAddress: "127.0.0.1" },
       } as unknown as Request;
 
-      expect(resolveClientIp(req)).toBe("203.0.113.195");
-      expect(resolveClientKey(req)).toBe("203.0.113.195");
+      expect(resolveClientIp(req)).toBe("10.0.0.1");
+      expect(resolveClientKey(req)).toBe("10.0.0.1");
     });
 
     it("falls back to req.ip and socket.remoteAddress", () => {

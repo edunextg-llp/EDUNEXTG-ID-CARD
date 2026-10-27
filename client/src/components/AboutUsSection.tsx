@@ -197,7 +197,7 @@ export default function AboutUsSection() {
               Insight Education Management Suite
             </h3>
             <p className="text-xs text-muted-foreground">
-              Version 2.3.0 (Internal Build) · Developed by Rishu Rajak.
+              Version 2.3.0  · Developed by Rishu Rajak.
             </p>
           </div>
 
