@@ -15,6 +15,10 @@ export type ApiSchool = {
   email: string | null;
   phone: string | null;
   address: string | null;
+  board?: string | null;
+  state?: string | null;
+  district?: string | null;
+  totalStrength?: number | null;
   isActive: boolean;
   createdByUserId?: number | null;
   selectedTemplateId?: number | null;

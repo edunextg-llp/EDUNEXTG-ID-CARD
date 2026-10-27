@@ -571,6 +571,10 @@ router.post("/schools", requireRole(schoolCreateRoles), async (req, res) => {
     let credentials: any;
 
     await db.transaction(async (tx) => {
+      const parsedTotalStrength = req.body.totalStrength !== undefined && req.body.totalStrength !== null && req.body.totalStrength !== ""
+        ? Math.max(0, parseInt(String(req.body.totalStrength), 10) || 0)
+        : null;
+
       const actor = currentUser(res);
       const result = await tx.insert(schools).values({
         name: String(req.body.name).trim(),
@@ -578,6 +582,10 @@ router.post("/schools", requireRole(schoolCreateRoles), async (req, res) => {
         email: req.body.email ?? null,
         phone: rawPhone || null,
         address: req.body.address ?? null,
+        board: req.body.board ? String(req.body.board).trim() : null,
+        state: req.body.state ? String(req.body.state).trim() : null,
+        district: req.body.district ? String(req.body.district).trim() : null,
+        totalStrength: parsedTotalStrength,
         createdByUserId: actor.id > 0 ? actor.id : null,
       });
       const id = Number(result[0].insertId);
@@ -773,6 +781,12 @@ const handleUpdateSchool = async (req: Request, res: Response) => {
     }
     const nextPhone = rawPhone ? rawPhone.replace(/\D/g, "").slice(-10) : (rawPhone === "" ? null : (rawPhone ?? existing.phone));
     const nextAddress = req.body.address && String(req.body.address).trim() ? String(req.body.address).trim() : null;
+    const nextBoard = req.body.board !== undefined ? (req.body.board && String(req.body.board).trim() ? String(req.body.board).trim() : null) : (existing.board ?? null);
+    const nextState = req.body.state !== undefined ? (req.body.state && String(req.body.state).trim() ? String(req.body.state).trim() : null) : (existing.state ?? null);
+    const nextDistrict = req.body.district !== undefined ? (req.body.district && String(req.body.district).trim() ? String(req.body.district).trim() : null) : (existing.district ?? null);
+    const nextTotalStrength = req.body.totalStrength !== undefined
+      ? (req.body.totalStrength !== null && req.body.totalStrength !== "" ? Math.max(0, parseInt(String(req.body.totalStrength), 10) || 0) : null)
+      : (existing.totalStrength ?? null);
 
     if (nextCode !== existing.shortCode) {
       const [conflict] = await db.select().from(schools).where(eq(schools.shortCode, nextCode)).limit(1);
@@ -787,6 +801,10 @@ const handleUpdateSchool = async (req: Request, res: Response) => {
       email: nextEmail,
       phone: nextPhone,
       address: nextAddress,
+      board: nextBoard,
+      state: nextState,
+      district: nextDistrict,
+      totalStrength: nextTotalStrength,
       updatedAt: new Date(),
     }).where(eq(schools.id, id));
 
