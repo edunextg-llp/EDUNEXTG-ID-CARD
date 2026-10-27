@@ -5,7 +5,6 @@ import {
   Phone,
   Mail,
   MapPin,
-  LockKeyhole,
   ArrowRight,
   ShieldCheck,
 } from "lucide-react";

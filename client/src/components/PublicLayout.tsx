@@ -12,6 +12,7 @@ import {
   Clock,
 } from "lucide-react";
 import { prefetchRoute } from "@/lib/prefetchRoute";
+import { InteractiveHoverButton } from "@/components/ui/interactive-hover-button";
 
 export const PUBLIC_NAV_LINKS = [
   { label: "Home", href: "/" },
@@ -28,7 +29,7 @@ interface PublicLayoutProps {
 }
 
 export default function PublicLayout({ children, activePath, enableSmoothScroll = true }: PublicLayoutProps) {
-  const [location] = useLocation();
+  const [location, navigate] = useLocation();
   const currentPath = activePath || location;
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -132,17 +133,18 @@ export default function PublicLayout({ children, activePath, enableSmoothScroll 
           </nav>
 
           <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-            {/* Login button (hidden on login page itself) */}
+            {/* Login button with interactive hover effect (hidden on login page itself) */}
             {currentPath !== "/login" && (
-              <a
-                href="/login"
-                className="lp-portal-btn"
+              <div
                 onMouseEnter={() => prefetchRoute("/login")}
                 onTouchStart={() => prefetchRoute("/login")}
               >
-                <LockKeyhole size={16} />
-                Login
-              </a>
+                <InteractiveHoverButton
+                  text="Login"
+                  onClick={() => navigate("/login")}
+                  className="h-10 min-w-28 px-4 text-xs font-bold border-primary/30 bg-primary/10 text-primary hover:text-primary-foreground shadow-xs"
+                />
+              </div>
             )}
 
             {/* Hamburger (mobile) */}
@@ -187,16 +189,19 @@ export default function PublicLayout({ children, activePath, enableSmoothScroll 
             </Link>
           ))}
           {currentPath !== "/login" && (
-            <a
-              href="/login"
-              className="lp-portal-btn"
+            <div
               style={{ alignSelf: "flex-start", marginTop: 8 }}
-              onClick={() => setMobileMenuOpen(false)}
               onTouchStart={() => prefetchRoute("/login")}
             >
-              <LockKeyhole size={16} />
-              Login
-            </a>
+              <InteractiveHoverButton
+                text="Login"
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  navigate("/login");
+                }}
+                className="h-10 min-w-28 px-4 text-xs font-bold border-primary/30 bg-primary/10 text-primary hover:text-primary-foreground shadow-xs"
+              />
+            </div>
           )}
         </nav>
       </header>
