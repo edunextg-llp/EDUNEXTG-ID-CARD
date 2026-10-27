@@ -36,6 +36,8 @@ export type ApiUser = {
   isActive: boolean;
   openId?: string;
   phone?: string | null;
+  state?: string | null;
+  district?: string | null;
   credentials?: {
     loginId: string;
     email?: string;
@@ -158,6 +160,8 @@ export type ApiAuthUser = {
   name: string | null;
   email: string | null;
   phone?: string | null;
+  state?: string | null;
+  district?: string | null;
   avatarUrl?: string | null;
   role: "SUPER_ADMIN" | "SCHOOL_ADMIN" | "SCHOOL_OPERATOR" | "VIEWER" | "PARTNER" | "PARTNER_ADMIN" | "MARKETING_ADMIN";
   schoolId: number | null;

@@ -1006,6 +1006,8 @@ router.post("/users", requireRole(adminRoles), async (req, res) => {
       name: req.body.name ?? null,
       email: cleanEmail,
       phone: req.body.phone ? String(req.body.phone).trim() : null,
+      state: req.body.state ? String(req.body.state).trim() : null,
+      district: req.body.district ? String(req.body.district).trim() : null,
       loginMethod: "local",
       passwordHash,
       idPass: rawPassword,
@@ -1060,6 +1062,14 @@ router.put("/users/:id", requireRole(adminRoles), async (req, res) => {
 
     if (req.body.phone !== undefined) {
       updateData.phone = req.body.phone ? String(req.body.phone).trim() : null;
+    }
+
+    if (req.body.state !== undefined) {
+      updateData.state = req.body.state ? String(req.body.state).trim() : null;
+    }
+
+    if (req.body.district !== undefined) {
+      updateData.district = req.body.district ? String(req.body.district).trim() : null;
     }
 
     if (req.body.password && String(req.body.password).trim().length >= 8) {

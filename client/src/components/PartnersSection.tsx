@@ -40,6 +40,7 @@ import {
   Users,
   Copy,
   KeyRound,
+  MapPin,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -71,6 +72,8 @@ export default function PartnersSection({
     password?: string;
     email?: string | null;
     phone?: string | null;
+    state?: string | null;
+    district?: string | null;
   } | null>(null);
 
   // Add Partner Dialog State
@@ -80,6 +83,8 @@ export default function PartnersSection({
   const [addOpenId, setAddOpenId] = useState("");
   const [addPassword, setAddPassword] = useState("");
   const [addPhone, setAddPhone] = useState("");
+  const [addState, setAddState] = useState("");
+  const [addDistrict, setAddDistrict] = useState("");
   const [showAddPassword, setShowAddPassword] = useState(false);
   const [addErrors, setAddErrors] = useState<{
     name?: string;
@@ -87,6 +92,8 @@ export default function PartnersSection({
     openId?: string;
     password?: string;
     phone?: string;
+    state?: string;
+    district?: string;
   }>({});
   const [submittingAdd, setSubmittingAdd] = useState(false);
 
@@ -96,12 +103,16 @@ export default function PartnersSection({
   const [editName, setEditName] = useState("");
   const [editEmail, setEditEmail] = useState("");
   const [editPhone, setEditPhone] = useState("");
+  const [editState, setEditState] = useState("");
+  const [editDistrict, setEditDistrict] = useState("");
   const [editPassword, setEditPassword] = useState("");
   const [showEditPassword, setShowEditPassword] = useState(false);
   const [editErrors, setEditErrors] = useState<{
     name?: string;
     email?: string;
     phone?: string;
+    state?: string;
+    district?: string;
     password?: string;
   }>({});
   const [submittingEdit, setSubmittingEdit] = useState(false);
@@ -198,6 +209,8 @@ export default function PartnersSection({
         password: creds.credentials.password,
         email: partner.email,
         phone: creds.credentials.phone || partner.phone,
+        state: partner.state,
+        district: partner.district,
       });
       setCredentialsModalOpen(true);
       toast.success(
@@ -269,6 +282,8 @@ export default function PartnersSection({
       const password = addPassword;
       const email = addEmail.trim().toLowerCase();
       const phone = addPhone.trim() || undefined;
+      const state = addState.trim() || undefined;
+      const district = addDistrict.trim() || undefined;
 
       const newUser = await api.users.create({
         name: partnerName,
@@ -276,6 +291,8 @@ export default function PartnersSection({
         openId: loginId,
         password,
         phone,
+        state,
+        district,
         role: "PARTNER" as any,
         schoolId: null,
       });
@@ -290,6 +307,8 @@ export default function PartnersSection({
         password,
         email,
         phone: phone || null,
+        state: state || null,
+        district: district || null,
       });
       setCredentialsModalOpen(true);
 
@@ -299,6 +318,8 @@ export default function PartnersSection({
       setAddOpenId("");
       setAddPassword("");
       setAddPhone("");
+      setAddState("");
+      setAddDistrict("");
       setAddErrors({});
       await loadData();
 
@@ -309,6 +330,8 @@ export default function PartnersSection({
               ? {
                   ...p,
                   phone: phone || null,
+                  state: state || null,
+                  district: district || null,
                   credentials: { loginId, password, email, phone: phone || "", name: partnerName },
                 }
               : p,
@@ -328,6 +351,8 @@ export default function PartnersSection({
     setEditName(partner.name || "");
     setEditEmail(partner.email || "");
     setEditPhone(partner.phone || "");
+    setEditState(partner.state || "");
+    setEditDistrict(partner.district || "");
     setEditPassword("");
     setEditErrors({});
     setEditModalOpen(true);
@@ -365,6 +390,8 @@ export default function PartnersSection({
         name: editName.trim(),
         email: editEmail.trim().toLowerCase(),
         phone: editPhone.trim() || undefined,
+        state: editState.trim() || undefined,
+        district: editDistrict.trim() || undefined,
         role: "PARTNER",
         schoolId: null,
         ...(editPassword ? { password: editPassword } : {}),
@@ -434,6 +461,8 @@ export default function PartnersSection({
             setAddOpenId("");
             setAddPassword("");
             setAddPhone("");
+            setAddState("");
+            setAddDistrict("");
             setAddErrors({});
             setAddModalOpen(true);
           }}
@@ -571,7 +600,17 @@ export default function PartnersSection({
                     </p>
                     {!search && statusFilter === "ALL" && (
                       <Button
-                        onClick={() => setAddModalOpen(true)}
+                        onClick={() => {
+                          setAddName("");
+                          setAddEmail("");
+                          setAddOpenId("");
+                          setAddPassword("");
+                          setAddPhone("");
+                          setAddState("");
+                          setAddDistrict("");
+                          setAddErrors({});
+                          setAddModalOpen(true);
+                        }}
                         className="mt-4 rounded-xl bg-primary text-primary-foreground font-bold cursor-pointer"
                       >
                         <PlusCircle className="h-4 w-4 mr-1.5" /> Add First Partner
@@ -605,12 +644,20 @@ export default function PartnersSection({
                                 Partner
                               </Badge>
                             </div>
-                            {partner.email && (
-                              <div className="text-[11px] text-muted-foreground flex items-center gap-1 mt-0.5">
-                                <Mail className="h-3 w-3 text-muted-foreground shrink-0" />
-                                <span className="truncate">{partner.email}</span>
-                              </div>
-                            )}
+                            <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 mt-0.5 text-[11px] text-muted-foreground">
+                              {partner.email && (
+                                <span className="flex items-center gap-1">
+                                  <Mail className="h-3 w-3 text-muted-foreground shrink-0" />
+                                  <span className="truncate">{partner.email}</span>
+                                </span>
+                              )}
+                              {(partner.district || partner.state) && (
+                                <span className="flex items-center gap-1 font-medium text-foreground/80">
+                                  <MapPin className="h-3 w-3 text-primary shrink-0" />
+                                  <span>{[partner.district, partner.state].filter(Boolean).join(", ")}</span>
+                                </span>
+                              )}
+                            </div>
                           </div>
                         </div>
                       </td>
@@ -778,23 +825,27 @@ export default function PartnersSection({
 
       {/* Add Partner Dialog */}
       <Dialog open={addModalOpen} onOpenChange={setAddModalOpen}>
-        <DialogContent className="sm:max-w-md bg-card border-border rounded-3xl">
-          <form onSubmit={handleAddSubmit}>
-            <DialogHeader>
-              <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
-                <Handshake className="h-6 w-6" />
+        <DialogContent className="w-[95vw] sm:max-w-xl md:max-w-2xl bg-card border border-border rounded-3xl p-6 sm:p-7 max-h-[90vh] flex flex-col shadow-2xl">
+          <form onSubmit={handleAddSubmit} className="flex flex-col flex-1 min-h-0">
+            <DialogHeader className="text-left pb-4 border-b border-border shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 shrink-0">
+                  <Handshake className="h-6 w-6" />
+                </div>
+                <div>
+                  <DialogTitle className="text-lg font-black text-foreground">
+                    Add New Partner
+                  </DialogTitle>
+                  <DialogDescription className="text-xs text-muted-foreground mt-0.5">
+                    Create a partner account with location and portal credentials.
+                  </DialogDescription>
+                </div>
               </div>
-              <DialogTitle className="text-center text-lg font-black text-foreground">
-                Add New Partner
-              </DialogTitle>
-              <DialogDescription className="text-center text-xs text-muted-foreground">
-                Create a partner account. They will use these credentials to log in to the Partner portal.
-              </DialogDescription>
             </DialogHeader>
 
-            <div className="space-y-4 py-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 py-4 overflow-y-auto flex-1 pr-1">
               {/* Full Name */}
-              <div>
+              <div className="sm:col-span-2">
                 <label className="text-xs font-bold text-foreground">
                   Partner / Representative Name <span className="text-red-500">*</span>
                 </label>
@@ -832,6 +883,54 @@ export default function PartnersSection({
                 )}
               </div>
 
+              {/* Contact Phone */}
+              <div>
+                <label className="text-xs font-bold text-foreground">
+                  Contact Phone (Optional)
+                </label>
+                <Input
+                  className="mt-1 h-10 rounded-xl"
+                  placeholder={INDIAN_MOBILE_PLACEHOLDER}
+                  value={addPhone}
+                  onChange={(e) => {
+                    setAddPhone(e.target.value);
+                    setAddErrors((prev) => ({ ...prev, phone: undefined }));
+                  }}
+                  autoComplete="off"
+                />
+                {addErrors.phone && (
+                  <p className="mt-1 text-xs font-medium text-red-600">{addErrors.phone}</p>
+                )}
+              </div>
+
+              {/* State */}
+              <div>
+                <label className="text-xs font-bold text-foreground">
+                  State
+                </label>
+                <Input
+                  className="mt-1 h-10 rounded-xl"
+                  placeholder="e.g., Maharashtra, Delhi, Karnataka"
+                  value={addState}
+                  onChange={(e) => setAddState(e.target.value)}
+                  autoComplete="off"
+                />
+              </div>
+
+              {/* District */}
+              <div>
+                <label className="text-xs font-bold text-foreground">
+                  District
+                </label>
+                <Input
+                  className="mt-1 h-10 rounded-xl"
+                  placeholder="e.g., Pune, Mumbai Suburban, Bengaluru"
+                  value={addDistrict}
+                  onChange={(e) => setAddDistrict(e.target.value)}
+                  autoComplete="off"
+                />
+              </div>
+
               {/* Login ID / Username */}
               <div>
                 <label className="text-xs font-bold text-foreground">
@@ -848,14 +947,14 @@ export default function PartnersSection({
                   autoComplete="off"
                 />
                 <p className="mt-1 text-[11px] text-muted-foreground">
-                  Used by the partner to log into the Partner portal.
+                  Used by partner to log into the portal.
                 </p>
                 {addErrors.openId && (
                   <p className="mt-1 text-xs font-medium text-red-600">{addErrors.openId}</p>
                 )}
               </div>
 
-              {/* Password */}
+              {/* Temporary Password */}
               <div>
                 <label className="text-xs font-bold text-foreground">
                   Temporary Password <span className="text-red-500">*</span>
@@ -884,29 +983,9 @@ export default function PartnersSection({
                   <p className="mt-1 text-xs font-medium text-red-600">{addErrors.password}</p>
                 )}
               </div>
-
-              {/* Phone */}
-              <div>
-                <label className="text-xs font-bold text-foreground">
-                  Contact Phone (Optional)
-                </label>
-                <Input
-                  className="mt-1 h-10 rounded-xl"
-                  placeholder={INDIAN_MOBILE_PLACEHOLDER}
-                  value={addPhone}
-                  onChange={(e) => {
-                    setAddPhone(e.target.value);
-                    setAddErrors((prev) => ({ ...prev, phone: undefined }));
-                  }}
-                  autoComplete="off"
-                />
-                {addErrors.phone && (
-                  <p className="mt-1 text-xs font-medium text-red-600">{addErrors.phone}</p>
-                )}
-              </div>
             </div>
 
-            <DialogFooter className="gap-2 sm:gap-0">
+            <DialogFooter className="pt-4 border-t border-border gap-2 sm:gap-3 shrink-0 flex-row justify-end">
               <Button
                 type="button"
                 variant="outline"
@@ -929,19 +1008,19 @@ export default function PartnersSection({
 
       {/* Edit Partner Dialog */}
       <Dialog open={editModalOpen} onOpenChange={setEditModalOpen}>
-        <DialogContent className="sm:max-w-md bg-card border-border rounded-3xl">
-          <form onSubmit={handleEditSubmit}>
-            <DialogHeader>
+        <DialogContent className="w-[95vw] sm:max-w-xl md:max-w-2xl bg-card border border-border rounded-3xl p-6 sm:p-7 max-h-[90vh] flex flex-col shadow-2xl">
+          <form onSubmit={handleEditSubmit} className="flex flex-col flex-1 min-h-0">
+            <DialogHeader className="text-left pb-4 border-b border-border shrink-0">
               <DialogTitle className="text-lg font-black text-foreground">
                 Edit Partner: {editingPartner?.name || editingPartner?.email}
               </DialogTitle>
-              <DialogDescription className="text-xs text-muted-foreground">
-                Update partner information or reset password.
+              <DialogDescription className="text-xs text-muted-foreground mt-0.5">
+                Update partner information, location, or reset password.
               </DialogDescription>
             </DialogHeader>
 
-            <div className="space-y-4 py-4">
-              <div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 py-4 overflow-y-auto flex-1 pr-1">
+              <div className="sm:col-span-2">
                 <label className="text-xs font-bold text-foreground">
                   Full Name <span className="text-red-500">*</span>
                 </label>
@@ -978,6 +1057,51 @@ export default function PartnersSection({
 
               <div>
                 <label className="text-xs font-bold text-foreground">
+                  Contact Phone (Optional)
+                </label>
+                <Input
+                  className="mt-1 h-10 rounded-xl"
+                  placeholder={INDIAN_MOBILE_PLACEHOLDER}
+                  value={editPhone}
+                  onChange={(e) => {
+                    setEditPhone(e.target.value);
+                    setEditErrors((prev) => ({ ...prev, phone: undefined }));
+                  }}
+                  autoComplete="off"
+                />
+                {editErrors.phone && (
+                  <p className="mt-1 text-xs font-medium text-red-600">{editErrors.phone}</p>
+                )}
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-foreground">
+                  State
+                </label>
+                <Input
+                  className="mt-1 h-10 rounded-xl"
+                  placeholder="e.g., Maharashtra, Delhi"
+                  value={editState}
+                  onChange={(e) => setEditState(e.target.value)}
+                  autoComplete="off"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-foreground">
+                  District
+                </label>
+                <Input
+                  className="mt-1 h-10 rounded-xl"
+                  placeholder="e.g., Pune, Mumbai"
+                  value={editDistrict}
+                  onChange={(e) => setEditDistrict(e.target.value)}
+                  autoComplete="off"
+                />
+              </div>
+
+              <div className="sm:col-span-2">
+                <label className="text-xs font-bold text-foreground">
                   Reset Password (leave blank to keep current)
                 </label>
                 <div className="relative mt-1">
@@ -1003,29 +1127,9 @@ export default function PartnersSection({
                   <p className="mt-1 text-xs font-medium text-red-600">{editErrors.password}</p>
                 )}
               </div>
-
-              {/* Phone */}
-              <div>
-                <label className="text-xs font-bold text-foreground">
-                  Contact Phone (Optional)
-                </label>
-                <Input
-                  className="mt-1 h-10 rounded-xl"
-                  placeholder={INDIAN_MOBILE_PLACEHOLDER}
-                  value={editPhone}
-                  onChange={(e) => {
-                    setEditPhone(e.target.value);
-                    setEditErrors((prev) => ({ ...prev, phone: undefined }));
-                  }}
-                  autoComplete="off"
-                />
-                {editErrors.phone && (
-                  <p className="mt-1 text-xs font-medium text-red-600">{editErrors.phone}</p>
-                )}
-              </div>
             </div>
 
-            <DialogFooter className="gap-2 sm:gap-0">
+            <DialogFooter className="pt-4 border-t border-border gap-2 sm:gap-3 shrink-0 flex-row justify-end">
               <Button
                 type="button"
                 variant="outline"
@@ -1091,6 +1195,15 @@ export default function PartnersSection({
                     {credentialsData?.phone || "—"}
                   </span>
                 </div>
+                {(credentialsData?.district || credentialsData?.state) && (
+                  <div className="sm:col-span-2 pt-1 border-t border-border">
+                    <span className="text-muted-foreground font-medium block">Location:</span>
+                    <span className="font-semibold text-foreground flex items-center gap-1">
+                      <MapPin className="h-3 w-3 text-primary shrink-0" />
+                      {[credentialsData?.district, credentialsData?.state].filter(Boolean).join(", ")}
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -1155,6 +1268,7 @@ export default function PartnersSection({
                     `Partner: ${credentialsData.partnerName}`,
                     credentialsData.email ? `Email: ${credentialsData.email}` : null,
                     credentialsData.phone ? `Phone: ${credentialsData.phone}` : null,
+                    (credentialsData.district || credentialsData.state) ? `Location: ${[credentialsData.district, credentialsData.state].filter(Boolean).join(", ")}` : null,
                     `Login ID: ${credentialsData.loginId}`,
                     `Password: ${credentialsData.password || ""}`,
                     `Portal URL: ${window.location.origin}`,

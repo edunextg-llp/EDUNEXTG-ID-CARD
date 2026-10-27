@@ -52,6 +52,8 @@ export const users = mysqlTable(
     role: mysqlEnum("role", userRoleValues).default("VIEWER").notNull(),
     schoolId: int("schoolId").references((): AnyMySqlColumn => schools.id, { onDelete: "set null", onUpdate: "cascade" }),
     phone: varchar("phone", { length: 32 }),
+    state: varchar("state", { length: 128 }),
+    district: varchar("district", { length: 128 }),
     avatarUrl: mediumtext("avatarUrl"),
     isActive: boolean("isActive").default(true).notNull(),
     createdAt: timestamp("createdAt").defaultNow().notNull(),
