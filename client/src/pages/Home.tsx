@@ -2948,6 +2948,7 @@ export default function Home({
                       <SelectItem value="WBCHSE">WBCHSE</SelectItem>
                       <SelectItem value="WBBME(Madrasah)">WBBME(Madrasah)</SelectItem>
                       <SelectItem value="Other State Board">Other State Board</SelectItem>
+                      <SelectItem value="Other Board">Other Board</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

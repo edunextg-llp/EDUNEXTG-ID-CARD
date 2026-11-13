@@ -75,6 +75,7 @@ export const schoolBoardValues = [
   "WBCHSE",
   "WBBME(Madrasah)",
   "Other State Board",
+  "Other Board",
 ] as const;
 
 export const schools = mysqlTable(
