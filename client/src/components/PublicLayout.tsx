@@ -3,7 +3,6 @@ import { useSmoothScroll, getLenis } from "@/hooks/useSmoothScroll";
 import { Link, useLocation } from "wouter";
 import {
   ShieldCheck,
-  LockKeyhole,
   Menu,
   X,
   MapPin,
@@ -280,17 +279,6 @@ export default function PublicLayout({ children, activePath, enableSmoothScroll 
                   >
                     Contact Us
                   </Link>
-                </li>
-                <li>
-                  <a
-                    href="/login"
-                    className="lp-footer-login-link"
-                    onMouseEnter={() => prefetchRoute("/login")}
-                    onTouchStart={() => prefetchRoute("/login")}
-                  >
-                    <LockKeyhole size={13} />
-                    School Portal Login
-                  </a>
                 </li>
               </ul>
             </div>

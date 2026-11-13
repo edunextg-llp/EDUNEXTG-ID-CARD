@@ -682,9 +682,9 @@ button:active:not(:disabled) { transform: scale(0.97); }
   .landing-root .lp-hero.lp-hero-full-bg .lp-hero-content {
     position: relative;
     z-index: 3;
-    max-width: 540px;
+    max-width: 471px;
     margin-left: clamp(20px, 2.5vw, 44px);
-    padding: 40px 44px;
+    padding: 36px 32px 36px 30px;
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.46)) !important;
     -webkit-backdrop-filter: blur(16px) saturate(140%);
     backdrop-filter: blur(16px) saturate(140%);
@@ -700,11 +700,84 @@ button:active:not(:disabled) { transform: scale(0.97); }
   }
 }
 
-@media (min-width: 1024px) and (max-width: 1279px) {
+/* Stepwise card width rules (gap-aligned with lanyard rail badges) */
+@media (min-width: 1024px) and (max-width: 1099px) {
+  .landing-root .lp-hero.lp-hero-full-bg .lp-hero-content {
+    max-width: 471px;
+    padding: 34px 30px 34px 28px;
+  }
+}
+
+@media (min-width: 1100px) and (max-width: 1179px) {
+  .landing-root .lp-hero.lp-hero-full-bg .lp-hero-content {
+    max-width: 506px;
+    padding: 38px 36px 38px 32px;
+  }
+}
+
+@media (min-width: 1180px) and (max-width: 1279px) {
+  .landing-root .lp-hero.lp-hero-full-bg .lp-hero-content {
+    max-width: 544px;
+    padding: 40px 38px 40px 34px;
+  }
+}
+
+@media (min-width: 1280px) and (max-width: 1339px) {
+  .landing-root .lp-hero.lp-hero-full-bg .lp-hero-content {
+    max-width: 452px;
+    padding: 36px 30px 36px 28px;
+  }
+}
+
+@media (min-width: 1340px) and (max-width: 1365px) {
+  .landing-root .lp-hero.lp-hero-full-bg .lp-hero-content {
+    max-width: 472px;
+    padding: 38px 32px 38px 30px;
+  }
+}
+
+@media (min-width: 1366px) and (max-width: 1439px) {
+  .landing-root .lp-hero.lp-hero-full-bg .lp-hero-content {
+    max-width: 481px;
+    padding: 38px 34px 38px 32px;
+  }
+}
+
+@media (min-width: 1440px) and (max-width: 1535px) {
+  .landing-root .lp-hero.lp-hero-full-bg .lp-hero-content {
+    max-width: 509px;
+    padding: 40px 38px 40px 36px;
+  }
+}
+
+@media (min-width: 1536px) and (max-width: 1679px) {
+  .landing-root .lp-hero.lp-hero-full-bg .lp-hero-content {
+    max-width: 546px;
+    padding: 40px 40px 40px 36px;
+  }
+}
+
+@media (min-width: 1680px) and (max-width: 1919px) {
+  .landing-root .lp-hero.lp-hero-full-bg .lp-hero-content {
+    max-width: 422px;
+    padding: 34px 28px 34px 28px;
+  }
+  .landing-root .lp-hero h1 {
+    font-size: 42px;
+  }
+}
+
+@media (min-width: 1920px) and (max-width: 2199px) {
+  .landing-root .lp-hero.lp-hero-full-bg .lp-hero-content {
+    max-width: 526px;
+    padding: 40px 40px 40px 36px;
+  }
+}
+
+@media (min-width: 2200px) {
   .landing-root .lp-hero.lp-hero-full-bg .lp-hero-content {
     max-width: 460px;
-    margin-left: clamp(16px, 2vw, 28px);
-    padding: 28px 30px;
+    padding: 36px 32px 36px 30px;
   }
 }
 

@@ -13,7 +13,6 @@ import {
   ChevronRight,
   Menu,
   X,
-  LockKeyhole,
   ArrowRight,
   MapPin,
   Phone,
@@ -518,17 +517,6 @@ export default function Landing() {
                   >
                     Contact Us
                   </Link>
-                </li>
-                <li>
-                  <a
-                    href="/login"
-                    className="lp-footer-login-link"
-                    onMouseEnter={() => prefetchRoute("/login")}
-                    onTouchStart={() => prefetchRoute("/login")}
-                  >
-                    <LockKeyhole size={13} />
-                    School Portal Login
-                  </a>
                 </li>
               </ul>
             </div>
