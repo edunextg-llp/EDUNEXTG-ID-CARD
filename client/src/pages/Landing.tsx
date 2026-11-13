@@ -313,6 +313,7 @@ export default function Landing() {
       <main>
         {/* ════════════ FULL-WIDTH HERO SECTION ════════════ */}
         <section id="home" className="lp-hero lp-hero-full-bg">
+          <div className="lp-hero-dots" aria-hidden="true" />
           {/* Hero text placed in the left space with no box */}
           <div className="lp-hero-content">
             <p className="lp-hero-tagline">IDENTITY &nbsp;|&nbsp; SECURITY &nbsp;|&nbsp; PROFESSIONALISM</p>

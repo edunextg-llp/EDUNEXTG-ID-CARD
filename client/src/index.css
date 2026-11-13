@@ -572,7 +572,47 @@ button:active:not(:disabled) { transform: scale(0.97); }
   min-height: 0;
   overflow: hidden;
   position: relative;
-  background: linear-gradient(180deg, #f7fafc 0%, #e6f1e8 100%);
+  background: linear-gradient(180deg, #f7fbf9 0%, #e9f3ec 55%, #dcebe0 100%);
+}
+
+/* Layer 2: Glows & top light wash (mobile/tablet base) */
+.landing-root .lp-hero.lp-hero-full-bg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0) 38%),
+    radial-gradient(312px 216px at 15% 25%, color-mix(in srgb, var(--chart-1) 24%, transparent), transparent 70%),
+    radial-gradient(336px 228px at 55% 12%, color-mix(in srgb, var(--chart-4) 16%, transparent), transparent 70%),
+    radial-gradient(312px 216px at 85% 65%, color-mix(in srgb, var(--chart-2) 20%, transparent), transparent 70%),
+    radial-gradient(276px 180px at 60% 92%, color-mix(in srgb, var(--chart-3) 16%, transparent), transparent 70%);
+}
+
+/* Layer 3: Floor wash */
+.landing-root .lp-hero.lp-hero-full-bg::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 120px;
+  pointer-events: none;
+  z-index: 0;
+  background: linear-gradient(to top, rgba(31, 92, 54, 0.08), transparent);
+}
+
+/* Layer 2b: Dot grid with ellipse fade (hidden on mobile, enabled on desktop) */
+.landing-root .lp-hero-dots {
+  display: none;
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background: radial-gradient(rgba(31, 92, 54, 0.10) 1px, transparent 1.4px) 0 0 / 22px 22px;
+  -webkit-mask-image: radial-gradient(ellipse 90% 80% at 50% 55%, #000 45%, transparent 100%);
+  mask-image: radial-gradient(ellipse 90% 80% at 50% 55%, #000 45%, transparent 100%);
 }
 
 .landing-root .lp-hero-rail {
@@ -580,6 +620,11 @@ button:active:not(:disabled) { transform: scale(0.97); }
   max-width: none;
   margin: 0;
   padding: 0;
+}
+
+/* Hide component internal dot grid so only page-level grid renders */
+.landing-root .lp-hero-rail [data-slot="team-lanyard-rail"] > div[aria-hidden="true"] {
+  display: none !important;
 }
 
 /* Text naturally placed over the left area without any box */
@@ -601,13 +646,31 @@ button:active:not(:disabled) { transform: scale(0.97); }
     display: flex;
     flex-direction: row;
     align-items: center;
-    min-height: 580px;
+    min-height: 520px;
     overflow: hidden;
+  }
+
+  /* Desktop glows at full scale */
+  .landing-root .lp-hero.lp-hero-full-bg::before {
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0) 38%),
+      radial-gradient(520px 360px at 12% 30%, color-mix(in srgb, var(--chart-1) 26%, transparent), transparent 70%),
+      radial-gradient(560px 380px at 55% 15%, color-mix(in srgb, var(--chart-4) 18%, transparent), transparent 70%),
+      radial-gradient(520px 360px at 88% 70%, color-mix(in srgb, var(--chart-2) 22%, transparent), transparent 70%),
+      radial-gradient(460px 300px at 60% 95%, color-mix(in srgb, var(--chart-3) 18%, transparent), transparent 70%);
+  }
+
+  /* Show masked dot grid on desktop */
+  .landing-root .lp-hero-dots {
+    display: block;
   }
 
   .landing-root .lp-hero-rail {
     position: absolute;
-    inset: 0;
+    left: 0;
+    right: 0;
+    top: 8px;
+    bottom: 0;
     z-index: 1;
     display: flex;
     flex-direction: column;
@@ -642,6 +705,15 @@ button:active:not(:disabled) { transform: scale(0.97); }
     max-width: 460px;
     margin-left: clamp(16px, 2vw, 28px);
     padding: 28px 30px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-root .lp-hero.lp-hero-full-bg::before,
+  .landing-root .lp-hero.lp-hero-full-bg::after,
+  .landing-root .lp-hero-dots {
+    animation: none;
+    transition: none;
   }
 }
 
@@ -2511,31 +2583,46 @@ button:active:not(:disabled) { transform: scale(0.97); }
   overflow: hidden;
 }
 
+/* Layer 1: Soft color glows (desktop full scale) */
 .landing-root .lp-login-section::before {
   content: "";
   position: absolute;
   inset: 0;
-  background-image: 
-    radial-gradient(rgba(11, 106, 162, 0.08) 1.5px, transparent 1.5px),
-    radial-gradient(circle at 10% 20%, rgba(27, 74, 124, 0.08) 0%, transparent 40%),
-    radial-gradient(circle at 90% 80%, rgba(126, 217, 87, 0.12) 0%, transparent 45%);
-  background-size: 24px 24px, 100% 100%, 100% 100%;
   pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(520px 360px at 8% 25%, color-mix(in srgb, var(--chart-1, #40c8bb) 24%, transparent), transparent 70%),
+    radial-gradient(520px 380px at 50% 5%, color-mix(in srgb, var(--chart-4, #6a78d4) 16%, transparent), transparent 70%),
+    radial-gradient(560px 380px at 92% 85%, color-mix(in srgb, var(--chart-2, #f28a63) 20%, transparent), transparent 70%),
+    radial-gradient(420px 300px at 30% 100%, color-mix(in srgb, var(--chart-3, #f2c94c) 16%, transparent), transparent 70%);
+}
+
+/* Layer 2: Dot grid with ellipse fade mask */
+.landing-root .lp-login-section::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background: radial-gradient(rgba(11, 106, 162, 0.07) 1.2px, transparent 1.5px) 0 0 / 24px 24px;
+  -webkit-mask-image: radial-gradient(ellipse 85% 75% at 50% 50%, #000 40%, transparent 100%);
+  mask-image: radial-gradient(ellipse 85% 75% at 50% 50%, #000 40%, transparent 100%);
 }
 
 .landing-root .lp-login-container {
   width: 100%;
-  max-width: 1080px;
+  max-width: 1200px;
   position: relative;
   z-index: 2;
   display: grid;
-  grid-template-columns: 1.15fr 0.85fr;
-  gap: 48px;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 72px;
   align-items: center;
 }
 
 .landing-root .lp-login-brand-col {
-  padding-right: 12px;
+  position: relative;
+  padding-right: 180px;
 }
 
 .landing-root .lp-login-brand-badge {
@@ -2560,7 +2647,7 @@ button:active:not(:disabled) { transform: scale(0.97); }
   font-weight: 700;
   color: #1b4a7c;
   line-height: 1.25;
-  margin-bottom: 16px;
+  margin-bottom: 14px;
 }
 
 .landing-root .lp-login-brand-desc {
@@ -2570,10 +2657,202 @@ button:active:not(:disabled) { transform: scale(0.97); }
   margin-bottom: 28px;
 }
 
+/* Decorative hanging ID card */
+.landing-root .lp-login-hang {
+  position: absolute;
+  top: 12px;
+  right: 0;
+  width: 160px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: none;
+  user-select: none;
+  z-index: 1;
+  transform-origin: top center;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .landing-root .lp-login-hang {
+    animation: lp-login-swing 6s ease-in-out infinite alternate;
+  }
+}
+
+@keyframes lp-login-swing {
+  0% { transform: rotate(-3deg); }
+  100% { transform: rotate(3deg); }
+}
+
+.landing-root .lp-login-hang-strap {
+  width: 14px;
+  height: 110px;
+  background:
+    repeating-linear-gradient(135deg, transparent 0 2.5px, rgba(255, 255, 255, 0.2) 2.5px 3.5px),
+    linear-gradient(180deg, #2dd4bf 0%, #0d9488 50%, #042f2e 100%);
+  border-radius: 2px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12);
+}
+
+.landing-root .lp-login-hang-clip {
+  width: 16px;
+  height: 18px;
+  margin-top: -2px;
+  background: linear-gradient(180deg, #64748b 0%, #334155 50%, #1e293b 100%);
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.22);
+  position: relative;
+  z-index: 2;
+}
+
+.landing-root .lp-login-hang-clip::after {
+  content: "";
+  position: absolute;
+  bottom: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 8px;
+  height: 6px;
+  border-radius: 50%;
+  background: #0f172a;
+}
+
+.landing-root .lp-login-card-stack {
+  position: relative;
+  width: 150px;
+  height: 220px;
+  margin-top: -2px;
+}
+
+.landing-root .lp-login-card {
+  position: absolute;
+  inset: 0;
+  width: 150px;
+  height: 220px;
+  border-radius: 14px;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 16px 36px -6px rgba(15, 60, 40, 0.18), 0 4px 12px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+}
+
+.landing-root .lp-login-card-back {
+  transform: rotate(8deg) translate(8px, 6px);
+  z-index: 0;
+  opacity: 0.88;
+}
+
+.landing-root .lp-login-card-back::before {
+  content: "";
+  display: block;
+  height: 24px;
+  background: var(--chart-2, #f28a63);
+}
+
+.landing-root .lp-login-card-front {
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 14px 14px;
+}
+
+.landing-root .lp-login-card-band {
+  width: calc(100% + 28px);
+  margin-left: -14px;
+  margin-right: -14px;
+  height: 28px;
+  background: var(--chart-1, #40c8bb);
+}
+
+.landing-root .lp-login-card-hole {
+  width: 22px;
+  height: 5px;
+  border-radius: 3px;
+  background: #cbd5e1;
+  margin-top: -20px;
+  margin-bottom: 12px;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.25);
+}
+
+.landing-root .lp-login-card-avatar {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: #e2e8f0;
+  border: 2px solid #ffffff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  margin-bottom: 12px;
+  position: relative;
+  overflow: hidden;
+}
+
+.landing-root .lp-login-card-avatar::before {
+  content: "";
+  position: absolute;
+  top: 9px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: #94a3b8;
+}
+
+.landing-root .lp-login-card-avatar::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 30px;
+  height: 15px;
+  border-radius: 15px 15px 0 0;
+  background: #94a3b8;
+}
+
+.landing-root .lp-login-card-lines {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: auto;
+}
+
+.landing-root .lp-login-card-lines span:first-child {
+  width: 70%;
+  height: 6px;
+  background: #94a3b8;
+  border-radius: 3px;
+}
+
+.landing-root .lp-login-card-lines span:last-child {
+  width: 45%;
+  height: 5px;
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+.landing-root .lp-login-card-barcode {
+  width: 80%;
+  height: 16px;
+  background: repeating-linear-gradient(
+    90deg,
+    #1e293b 0 2px,
+    transparent 2px 4px,
+    #1e293b 4px 5px,
+    transparent 5px 8px,
+    #1e293b 8px 11px,
+    transparent 11px 13px,
+    #1e293b 13px 14px
+  );
+  margin-top: 6px;
+}
+
 .landing-root .lp-login-features-list {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 16px;
   margin-bottom: 32px;
 }
 
@@ -2608,7 +2887,7 @@ button:active:not(:disabled) { transform: scale(0.97); }
   font-size: 12px;
   color: #6b7280;
   margin: 0;
-  line-height: 1.4;
+  line-height: 1.45;
 }
 
 .landing-root .lp-login-trust-card {
@@ -2652,11 +2931,42 @@ button:active:not(:disabled) { transform: scale(0.97); }
   border: 1px solid rgba(11, 106, 162, 0.15);
   border-radius: 24px;
   padding: 36px 32px;
-  box-shadow: 0 20px 48px -10px rgba(27, 74, 124, 0.16);
+  box-shadow: 0 24px 60px -12px rgba(27, 74, 124, 0.22);
   position: relative;
 }
 
+.landing-root .lp-login-form-card::before {
+  content: "";
+  position: absolute;
+  top: -10%;
+  left: -10%;
+  width: 120%;
+  height: 120%;
+  background: radial-gradient(closest-side, rgba(11, 106, 162, 0.18), transparent 70%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+@media (min-width: 961px) and (max-width: 1199px) {
+  .landing-root .lp-login-container {
+    gap: 40px;
+  }
+  .landing-root .lp-login-brand-col {
+    padding-right: 0;
+  }
+  .landing-root .lp-login-hang {
+    display: none;
+  }
+}
+
 @media (max-width: 960px) {
+  .landing-root .lp-login-section::before {
+    background:
+      radial-gradient(312px 216px at 10% 25%, color-mix(in srgb, var(--chart-1, #40c8bb) 24%, transparent), transparent 70%),
+      radial-gradient(312px 228px at 50% 5%, color-mix(in srgb, var(--chart-4, #6a78d4) 16%, transparent), transparent 70%),
+      radial-gradient(336px 228px at 90% 85%, color-mix(in srgb, var(--chart-2, #f28a63) 20%, transparent), transparent 70%),
+      radial-gradient(252px 180px at 30% 98%, color-mix(in srgb, var(--chart-3, #f2c94c) 16%, transparent), transparent 70%);
+  }
   .landing-root .lp-login-container {
     grid-template-columns: 1fr;
     max-width: 480px;

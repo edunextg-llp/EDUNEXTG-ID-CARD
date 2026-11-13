@@ -110,6 +110,28 @@ export default function Login() {
             <h1 className="lp-login-brand-title">
               Complete ID Card &amp; Student Identity Management
             </h1>
+            <p className="lp-login-brand-desc">
+              Sign in to manage ID card requests, approvals, orders and printing for your institution.
+            </p>
+
+            {/* Decorative Hanging ID Card Motif */}
+            <div className="lp-login-hang" aria-hidden="true">
+              <div className="lp-login-hang-strap" />
+              <div className="lp-login-hang-clip" />
+              <div className="lp-login-card-stack">
+                <div className="lp-login-card lp-login-card-back" />
+                <div className="lp-login-card lp-login-card-front">
+                  <div className="lp-login-card-band" />
+                  <div className="lp-login-card-hole" />
+                  <div className="lp-login-card-avatar" />
+                  <div className="lp-login-card-lines">
+                    <span />
+                    <span />
+                  </div>
+                  <div className="lp-login-card-barcode" />
+                </div>
+              </div>
+            </div>
 
             <div className="lp-login-features-list">
               <div className="lp-login-feature-item">
@@ -118,6 +140,7 @@ export default function Login() {
                 </div>
                 <div className="lp-login-feature-text">
                   <h4>Role-Based Access</h4>
+                  <p>Separate dashboards for administrators, schools and partners.</p>
                 </div>
               </div>
 
@@ -127,6 +150,7 @@ export default function Login() {
                 </div>
                 <div className="lp-login-feature-text">
                   <h4>Premium Materials &amp; Clamps</h4>
+                  <p>ID cards, lanyards, holders and clamps in one order.</p>
                 </div>
               </div>
 
@@ -136,6 +160,7 @@ export default function Login() {
                 </div>
                 <div className="lp-login-feature-text">
                   <h4>Instant Approvals &amp; Tracking</h4>
+                  <p>Review, approve and follow every request in one place.</p>
                 </div>
               </div>
             </div>
