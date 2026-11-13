@@ -572,7 +572,7 @@ button:active:not(:disabled) { transform: scale(0.97); }
   min-height: 0;
   overflow: hidden;
   position: relative;
-  background: linear-gradient(180deg, #f7fbf9 0%, #e9f3ec 55%, #dcebe0 100%);
+  background: linear-gradient(180deg, #eaf6ef 0%, #d5eedf 50%, #bde4ce 100%);
 }
 
 /* Layer 2: Glows & top light wash (mobile/tablet base) */
@@ -583,11 +583,11 @@ button:active:not(:disabled) { transform: scale(0.97); }
   pointer-events: none;
   z-index: 0;
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0) 38%),
-    radial-gradient(312px 216px at 15% 25%, color-mix(in srgb, var(--chart-1) 24%, transparent), transparent 70%),
-    radial-gradient(336px 228px at 55% 12%, color-mix(in srgb, var(--chart-4) 16%, transparent), transparent 70%),
-    radial-gradient(312px 216px at 85% 65%, color-mix(in srgb, var(--chart-2) 20%, transparent), transparent 70%),
-    radial-gradient(276px 180px at 60% 92%, color-mix(in srgb, var(--chart-3) 16%, transparent), transparent 70%);
+    linear-gradient(180deg, rgba(255, 255, 255, 0.35) 0%, rgba(255, 255, 255, 0) 38%),
+    radial-gradient(360px 250px at 15% 25%, color-mix(in srgb, var(--chart-1) 45%, transparent), transparent 70%),
+    radial-gradient(380px 260px at 55% 12%, color-mix(in srgb, var(--chart-4) 36%, transparent), transparent 70%),
+    radial-gradient(360px 250px at 85% 65%, color-mix(in srgb, var(--chart-2) 42%, transparent), transparent 70%),
+    radial-gradient(320px 220px at 60% 92%, color-mix(in srgb, var(--chart-3) 38%, transparent), transparent 70%);
 }
 
 /* Layer 3: Floor wash */
@@ -600,7 +600,7 @@ button:active:not(:disabled) { transform: scale(0.97); }
   height: 120px;
   pointer-events: none;
   z-index: 0;
-  background: linear-gradient(to top, rgba(31, 92, 54, 0.08), transparent);
+  background: linear-gradient(to top, rgba(16, 75, 40, 0.18), transparent);
 }
 
 /* Layer 2b: Dot grid with ellipse fade (hidden on mobile, enabled on desktop) */
@@ -610,7 +610,7 @@ button:active:not(:disabled) { transform: scale(0.97); }
   inset: 0;
   pointer-events: none;
   z-index: 0;
-  background: radial-gradient(rgba(31, 92, 54, 0.10) 1px, transparent 1.4px) 0 0 / 22px 22px;
+  background: radial-gradient(rgba(16, 75, 40, 0.22) 1.2px, transparent 1.6px) 0 0 / 22px 22px;
   -webkit-mask-image: radial-gradient(ellipse 90% 80% at 50% 55%, #000 45%, transparent 100%);
   mask-image: radial-gradient(ellipse 90% 80% at 50% 55%, #000 45%, transparent 100%);
 }
@@ -653,11 +653,11 @@ button:active:not(:disabled) { transform: scale(0.97); }
   /* Desktop glows at full scale */
   .landing-root .lp-hero.lp-hero-full-bg::before {
     background:
-      linear-gradient(180deg, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0) 38%),
-      radial-gradient(520px 360px at 12% 30%, color-mix(in srgb, var(--chart-1) 26%, transparent), transparent 70%),
-      radial-gradient(560px 380px at 55% 15%, color-mix(in srgb, var(--chart-4) 18%, transparent), transparent 70%),
-      radial-gradient(520px 360px at 88% 70%, color-mix(in srgb, var(--chart-2) 22%, transparent), transparent 70%),
-      radial-gradient(460px 300px at 60% 95%, color-mix(in srgb, var(--chart-3) 18%, transparent), transparent 70%);
+      linear-gradient(180deg, rgba(255, 255, 255, 0.35) 0%, rgba(255, 255, 255, 0) 38%),
+      radial-gradient(560px 400px at 12% 30%, color-mix(in srgb, var(--chart-1) 50%, transparent), transparent 70%),
+      radial-gradient(600px 420px at 55% 15%, color-mix(in srgb, var(--chart-4) 40%, transparent), transparent 70%),
+      radial-gradient(560px 400px at 88% 70%, color-mix(in srgb, var(--chart-2) 46%, transparent), transparent 70%),
+      radial-gradient(480px 340px at 60% 95%, color-mix(in srgb, var(--chart-3) 42%, transparent), transparent 70%);
   }
 
   /* Show masked dot grid on desktop */
@@ -2579,7 +2579,7 @@ button:active:not(:disabled) { transform: scale(0.97); }
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #f0f7ff 0%, #eaf5ee 50%, #f6fbf7 100%);
+  background: linear-gradient(135deg, #dcecfe 0%, #c8efe0 48%, #dbf5ea 100%);
   overflow: hidden;
 }
 
@@ -2591,10 +2591,10 @@ button:active:not(:disabled) { transform: scale(0.97); }
   pointer-events: none;
   z-index: 0;
   background:
-    radial-gradient(520px 360px at 8% 25%, color-mix(in srgb, var(--chart-1, #40c8bb) 24%, transparent), transparent 70%),
-    radial-gradient(520px 380px at 50% 5%, color-mix(in srgb, var(--chart-4, #6a78d4) 16%, transparent), transparent 70%),
-    radial-gradient(560px 380px at 92% 85%, color-mix(in srgb, var(--chart-2, #f28a63) 20%, transparent), transparent 70%),
-    radial-gradient(420px 300px at 30% 100%, color-mix(in srgb, var(--chart-3, #f2c94c) 16%, transparent), transparent 70%);
+    radial-gradient(560px 380px at 8% 25%, color-mix(in srgb, var(--chart-1, #40c8bb) 48%, transparent), transparent 70%),
+    radial-gradient(540px 400px at 50% 5%, color-mix(in srgb, var(--chart-4, #6a78d4) 38%, transparent), transparent 70%),
+    radial-gradient(580px 400px at 92% 85%, color-mix(in srgb, var(--chart-2, #f28a63) 44%, transparent), transparent 70%),
+    radial-gradient(460px 320px at 30% 100%, color-mix(in srgb, var(--chart-3, #f2c94c) 40%, transparent), transparent 70%);
 }
 
 /* Layer 2: Dot grid with ellipse fade mask */
@@ -2604,7 +2604,7 @@ button:active:not(:disabled) { transform: scale(0.97); }
   inset: 0;
   pointer-events: none;
   z-index: 0;
-  background: radial-gradient(rgba(11, 106, 162, 0.07) 1.2px, transparent 1.5px) 0 0 / 24px 24px;
+  background: radial-gradient(rgba(11, 106, 162, 0.18) 1.2px, transparent 1.6px) 0 0 / 24px 24px;
   -webkit-mask-image: radial-gradient(ellipse 85% 75% at 50% 50%, #000 40%, transparent 100%);
   mask-image: radial-gradient(ellipse 85% 75% at 50% 50%, #000 40%, transparent 100%);
 }
@@ -2962,10 +2962,10 @@ button:active:not(:disabled) { transform: scale(0.97); }
 @media (max-width: 960px) {
   .landing-root .lp-login-section::before {
     background:
-      radial-gradient(312px 216px at 10% 25%, color-mix(in srgb, var(--chart-1, #40c8bb) 24%, transparent), transparent 70%),
-      radial-gradient(312px 228px at 50% 5%, color-mix(in srgb, var(--chart-4, #6a78d4) 16%, transparent), transparent 70%),
-      radial-gradient(336px 228px at 90% 85%, color-mix(in srgb, var(--chart-2, #f28a63) 20%, transparent), transparent 70%),
-      radial-gradient(252px 180px at 30% 98%, color-mix(in srgb, var(--chart-3, #f2c94c) 16%, transparent), transparent 70%);
+      radial-gradient(340px 240px at 10% 25%, color-mix(in srgb, var(--chart-1, #40c8bb) 42%, transparent), transparent 70%),
+      radial-gradient(340px 250px at 50% 5%, color-mix(in srgb, var(--chart-4, #6a78d4) 34%, transparent), transparent 70%),
+      radial-gradient(360px 250px at 90% 85%, color-mix(in srgb, var(--chart-2, #f28a63) 38%, transparent), transparent 70%),
+      radial-gradient(280px 200px at 30% 98%, color-mix(in srgb, var(--chart-3, #f2c94c) 35%, transparent), transparent 70%);
   }
   .landing-root .lp-login-container {
     grid-template-columns: 1fr;
