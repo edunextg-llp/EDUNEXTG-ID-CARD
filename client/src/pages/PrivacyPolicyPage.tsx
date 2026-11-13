@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { Link } from "wouter";
 import PublicLayout from "@/components/PublicLayout";
-import { ShieldCheck, Lock, CheckCircle2, ArrowRight } from "lucide-react";
+import { ShieldCheck, Lock, CheckCircle2 } from "lucide-react";
 
 export default function PrivacyPolicyPage() {
   useEffect(() => {
@@ -89,10 +89,7 @@ export default function PrivacyPolicyPage() {
               </div>
             </div>
 
-            <div className="pt-6 border-t border-gray-200 flex flex-wrap items-center justify-between gap-4">
-              <Link href="/contact-us" className="lp-banner-cta">
-                Contact Governance Desk <ArrowRight size={16} />
-              </Link>
+            <div className="pt-6 border-t border-gray-200 flex items-center justify-end">
               <Link href="/" className="text-sm font-semibold text-[#0b6aa2] hover:underline">
                 Return to Home
               </Link>
