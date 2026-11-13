@@ -582,6 +582,10 @@ button:active:not(:disabled) { transform: scale(0.97); }
   padding: 0;
 }
 
+.landing-root .lp-hero-rail [id$="-caption"] {
+  min-height: 1.5rem;
+}
+
 /* Text naturally placed over the left area without any box */
 .landing-root .lp-hero.lp-hero-full-bg .lp-hero-content {
   position: relative;
