@@ -108,6 +108,7 @@ import { toast } from "sonner";
 import {
   INDIAN_MOBILE_PLACEHOLDER,
 } from "@shared/phoneValidation";
+import { IndiaStateDistrictSelect } from "@/components/IndiaStateDistrictSelect";
 
 const PrintModal = lazy(() => import("@/components/PrintModal"));
 const DeleteSchoolDialog = lazy(() => import("@/components/DeleteSchoolDialog"));
@@ -3013,26 +3014,12 @@ export default function Home({
 
               {/* Row 4: State & District */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="text-xs font-bold text-foreground">
-                    State
-                  </label>
-                  <Input
-                    className="mt-1 h-10 rounded-xl text-xs"
-                    value={schoolStateInput}
-                    onChange={(e) => setSchoolStateInput(e.target.value)}
-                  />
-                </div>
-                <div>
-                  <label className="text-xs font-bold text-foreground">
-                    District
-                  </label>
-                  <Input
-                    className="mt-1 h-10 rounded-xl text-xs"
-                    value={schoolDistrictInput}
-                    onChange={(e) => setSchoolDistrictInput(e.target.value)}
-                  />
-                </div>
+                <IndiaStateDistrictSelect
+                  stateValue={schoolStateInput}
+                  districtValue={schoolDistrictInput}
+                  onStateChange={setSchoolStateInput}
+                  onDistrictChange={setSchoolDistrictInput}
+                />
               </div>
 
               {/* Row 5: Campus Address */}

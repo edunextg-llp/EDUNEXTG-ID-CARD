@@ -42,6 +42,7 @@ import {
   MapPin,
 } from "lucide-react";
 import { toast } from "sonner";
+import { IndiaStateDistrictSelect } from "@/components/IndiaStateDistrictSelect";
 import {
   isValidIndianMobileNumber,
   INDIAN_MOBILE_ERROR_MESSAGE,
@@ -896,31 +897,13 @@ export default function PartnersSection({
                 )}
               </div>
 
-              {/* State */}
-              <div>
-                <label className="text-xs font-bold text-foreground">
-                  State
-                </label>
-                <Input
-                  className="mt-1 h-10 rounded-xl"
-                  value={addState}
-                  onChange={(e) => setAddState(e.target.value)}
-                  autoComplete="off"
-                />
-              </div>
-
-              {/* District */}
-              <div>
-                <label className="text-xs font-bold text-foreground">
-                  District
-                </label>
-                <Input
-                  className="mt-1 h-10 rounded-xl"
-                  value={addDistrict}
-                  onChange={(e) => setAddDistrict(e.target.value)}
-                  autoComplete="off"
-                />
-              </div>
+              {/* State & District */}
+              <IndiaStateDistrictSelect
+                stateValue={addState}
+                districtValue={addDistrict}
+                onStateChange={setAddState}
+                onDistrictChange={setAddDistrict}
+              />
 
               {/* Login ID / Username */}
               <div>
@@ -1059,29 +1042,13 @@ export default function PartnersSection({
                 )}
               </div>
 
-              <div>
-                <label className="text-xs font-bold text-foreground">
-                  State
-                </label>
-                <Input
-                  className="mt-1 h-10 rounded-xl"
-                  value={editState}
-                  onChange={(e) => setEditState(e.target.value)}
-                  autoComplete="off"
-                />
-              </div>
-
-              <div>
-                <label className="text-xs font-bold text-foreground">
-                  District
-                </label>
-                <Input
-                  className="mt-1 h-10 rounded-xl"
-                  value={editDistrict}
-                  onChange={(e) => setEditDistrict(e.target.value)}
-                  autoComplete="off"
-                />
-              </div>
+              {/* State & District */}
+              <IndiaStateDistrictSelect
+                stateValue={editState}
+                districtValue={editDistrict}
+                onStateChange={setEditState}
+                onDistrictChange={setEditDistrict}
+              />
 
               <div className="sm:col-span-2">
                 <label className="text-xs font-bold text-foreground">
