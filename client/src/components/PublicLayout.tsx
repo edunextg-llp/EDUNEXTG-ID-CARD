@@ -49,12 +49,38 @@ export default function PublicLayout({ children, activePath, enableSmoothScroll 
     }
   }, [currentPath]);
 
-  // 2. Track window scroll for sticky header shrinkage and soft shadow
+  // 2. Disable browser scroll anchoring on public pages to prevent header jitter
   useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 20);
+    const prevAnchor = document.documentElement.style.overflowAnchor;
+    document.documentElement.style.overflowAnchor = "none";
+    return () => {
+      document.documentElement.style.overflowAnchor = prevAnchor;
     };
-    handleScroll();
+  }, []);
+
+  // 3. Track window scroll with hysteresis (>40px to shrink, <10px to expand) & rAF throttling
+  useEffect(() => {
+    let ticking = false;
+    let isScrolled = window.scrollY > 40;
+    setScrolled(isScrolled);
+
+    const updateScroll = () => {
+      const y = window.scrollY;
+      const nextScrolled = y > 40 ? true : y < 10 ? false : isScrolled;
+      if (nextScrolled !== isScrolled) {
+        isScrolled = nextScrolled;
+        setScrolled(nextScrolled);
+      }
+      ticking = false;
+    };
+
+    const handleScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(updateScroll);
+        ticking = true;
+      }
+    };
+
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
@@ -86,6 +112,7 @@ export default function PublicLayout({ children, activePath, enableSmoothScroll 
 
   return (
     <div className="landing-root">
+      <div className="lp-header-spacer" aria-hidden="true" />
       {/* ════════════ HEADER ════════════ */}
       <header
         className={`lp-header ${scrolled ? "scrolled" : ""}`}
