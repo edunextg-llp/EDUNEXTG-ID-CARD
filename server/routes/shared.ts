@@ -2,6 +2,7 @@ import { type NextFunction, type Request, type Response } from "express";
 import { eq } from "drizzle-orm";
 import {
   auditLogs,
+  idCards,
   notifications,
   schools,
   type User,
@@ -134,4 +135,21 @@ export function fail(res: Response, error: unknown) {
       : "Database operation failed";
   const message = isProduction ? "An internal error occurred. Please try again or contact support." : rawMessage;
   return res.status(500).json({ error: message });
+}
+
+export async function generateCardNumber(schoolId: number): Promise<string> {
+  const db = await getDb();
+  const year = new Date().getFullYear();
+  const prefix = `IDC-${year}-`;
+  const existingCards = db
+    ? await db.select({ cardNumber: idCards.cardNumber }).from(idCards).where(eq(idCards.schoolId, schoolId))
+    : [];
+  let seq = existingCards.length + 1;
+  let candidate = `${prefix}${String(seq).padStart(6, "0")}`;
+  const existingSet = new Set(existingCards.map((c) => c.cardNumber));
+  while (existingSet.has(candidate)) {
+    seq++;
+    candidate = `${prefix}${String(seq).padStart(6, "0")}`;
+  }
+  return candidate;
 }
