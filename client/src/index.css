@@ -582,8 +582,9 @@ button:active:not(:disabled) { transform: scale(0.97); }
   padding: 0;
 }
 
-.landing-root .lp-hero-rail [id$="-caption"] {
-  min-height: 1.5rem;
+.landing-root .lp-hero-rail [id$="-caption"],
+.landing-root .lp-hero-rail [data-slot="team-lanyard-rail"] > .relative.z-10.flex.flex-col {
+  display: none !important;
 }
 
 /* Text naturally placed over the left area without any box */
