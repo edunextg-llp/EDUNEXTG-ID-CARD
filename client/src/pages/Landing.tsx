@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useRef } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useSmoothScroll, getLenis } from "@/hooks/useSmoothScroll";
 import { Link, useLocation } from "wouter";
 import {
@@ -10,7 +10,6 @@ import {
   Users,
   PackageCheck,
   Award,
-  ChevronLeft,
   ChevronRight,
   Menu,
   X,
@@ -27,6 +26,7 @@ import LogoMarquee from "@/components/LogoMarquee";
 import StatItem from "@/components/StatItem";
 import FaqAccordion from "@/components/FaqAccordion";
 import { InteractiveHoverButton } from "@/components/ui/interactive-hover-button";
+import HeroLanyardRail from "@/components/HeroLanyardRail";
 
 /* ───────────────────────────────────────────
    Nav links
@@ -95,24 +95,6 @@ const STATS = [
   { icon: Award, target: 5, suffix: "+", label: "Years in Business" },
 ] as const;
 
-/* ───────────────────────────────────────────
-   Hero Carousel Images
-   ─────────────────────────────────────────── */
-const HERO_IMAGES = [
-  {
-    image: "/home/carousel-slide-1.jpg",
-    alt: "ID cards, holders, lanyards, clips and clamps displayed together",
-  },
-  {
-    image: "/home/carousel-slide-2.webp",
-    alt: "Custom school ID cards, printed lanyards and holders",
-  },
-  {
-    image: "/home/carousel-slide-3.jpg",
-    alt: "Institutional custom printed ribbons and identity cards",
-  },
-] as const;
-
 /* ═══════════════════════════════════════════
    Landing Component
    ═══════════════════════════════════════════ */
@@ -120,7 +102,6 @@ export default function Landing() {
   const [, navigate] = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("home");
-  const [currentSlide, setCurrentSlide] = useState(0);
   const [scrolled, setScrolled] = useState(false);
 
   // Lenis smooth scrolling for public pages
@@ -131,42 +112,6 @@ export default function Landing() {
   const productsReveal = useRevealOnScroll<HTMLElement>();
   const whyReveal = useRevealOnScroll<HTMLElement>();
   const statsReveal = useRevealOnScroll<HTMLElement>();
-
-  // Touch swipe support for Hero Carousel
-  const touchStartXRef = useRef<number | null>(null);
-
-  /* ── Auto-slide carousel rotation (every 3s, continuous without hover pause) ── */
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % HERO_IMAGES.length);
-    }, 3000);
-    return () => clearInterval(timer);
-  }, []);
-
-  const nextSlide = useCallback(() => {
-    setCurrentSlide((prev) => (prev + 1) % HERO_IMAGES.length);
-  }, []);
-
-  const prevSlide = useCallback(() => {
-    setCurrentSlide((prev) => (prev - 1 + HERO_IMAGES.length) % HERO_IMAGES.length);
-  }, []);
-
-  // Touch handlers for carousel swipe
-  const handleTouchStart = (e: React.TouchEvent) => {
-    touchStartXRef.current = e.touches[0].clientX;
-  };
-
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    if (touchStartXRef.current === null) return;
-    const touchEndX = e.changedTouches[0].clientX;
-    const diff = touchStartXRef.current - touchEndX;
-    if (diff > 45) {
-      nextSlide();
-    } else if (diff < -45) {
-      prevSlide();
-    }
-    touchStartXRef.current = null;
-  };
 
   /* ── Track scroll for sticky header shrinkage ── */
   useEffect(() => {
@@ -366,41 +311,8 @@ export default function Landing() {
       </header>
 
       <main>
-        {/* ════════════ FULL-WIDTH HERO CAROUSEL ════════════ */}
-        <section
-          id="home"
-          className="lp-hero lp-hero-full-bg"
-          style={{ touchAction: "pan-y" }}
-          onTouchStart={handleTouchStart}
-          onTouchEnd={handleTouchEnd}
-        >
-          {/* Full-width carousel background with crossfade */}
-          <div className="lp-hero-full-carousel" aria-roledescription="carousel">
-            {HERO_IMAGES.map((item, idx) => {
-              const isActive = idx === currentSlide;
-              return (
-                <div
-                  key={idx}
-                  className={`lp-hero-full-slide ${isActive ? "active" : ""}`}
-                  aria-hidden={!isActive}
-                >
-                  <picture>
-                    {item.image.endsWith(".webp") && <source type="image/webp" srcSet={item.image} />}
-                    <img
-                      src={item.image}
-                      alt={item.alt}
-                      width={1920}
-                      height={500}
-                      loading={idx === 0 ? "eager" : "lazy"}
-                      fetchPriority={idx === 0 ? "high" : "auto"}
-                      className="lp-hero-full-img"
-                    />
-                  </picture>
-                </div>
-              );
-            })}
-          </div>
-
+        {/* ════════════ FULL-WIDTH HERO SECTION ════════════ */}
+        <section id="home" className="lp-hero lp-hero-full-bg">
           {/* Hero text placed in the left space with no box */}
           <div className="lp-hero-content">
             <p className="lp-hero-tagline">IDENTITY &nbsp;|&nbsp; SECURITY &nbsp;|&nbsp; PROFESSIONALISM</p>
@@ -422,37 +334,7 @@ export default function Landing() {
             </div>
           </div>
 
-          {/* Carousel Controls */}
-          <button
-            type="button"
-            className="lp-carousel-arrow lp-carousel-prev"
-            onClick={prevSlide}
-            aria-label="Previous slide"
-          >
-            <ChevronLeft size={22} />
-          </button>
-          <button
-            type="button"
-            className="lp-carousel-arrow lp-carousel-next"
-            onClick={nextSlide}
-            aria-label="Next slide"
-          >
-            <ChevronRight size={22} />
-          </button>
-
-          <div className="lp-carousel-dots" role="tablist" aria-label="Hero carousel pagination">
-            {HERO_IMAGES.map((_, idx) => (
-              <button
-                key={idx}
-                type="button"
-                className={`lp-carousel-dot ${idx === currentSlide ? "active" : ""}`}
-                onClick={() => setCurrentSlide(idx)}
-                aria-label={`Go to slide ${idx + 1}`}
-                role="tab"
-                aria-selected={idx === currentSlide}
-              />
-            ))}
-          </div>
+          <HeroLanyardRail />
         </section>
 
         {/* ════════════ OUR CLIENTS ════════════ */}
