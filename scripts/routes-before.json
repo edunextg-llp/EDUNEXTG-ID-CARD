@@ -1,0 +1,847 @@
+[
+  {
+    "type": "route",
+    "method": "POST",
+    "path": "/auth/login",
+    "middlewareCount": 1,
+    "handlers": [
+      "<anonymous>"
+    ]
+  },
+  {
+    "type": "route",
+    "method": "POST",
+    "path": "/auth/logout",
+    "middlewareCount": 1,
+    "handlers": [
+      "<anonymous>"
+    ]
+  },
+  {
+    "type": "route",
+    "method": "GET",
+    "path": "/auth/me",
+    "middlewareCount": 1,
+    "handlers": [
+      "<anonymous>"
+    ]
+  },
+  {
+    "type": "route",
+    "method": "POST",
+    "path": "/auth/forgot-password",
+    "middlewareCount": 1,
+    "handlers": [
+      "<anonymous>"
+    ]
+  },
+  {
+    "type": "route",
+    "method": "POST",
+    "path": "/auth/reset-password",
+    "middlewareCount": 1,
+    "handlers": [
+      "<anonymous>"
+    ]
+  },
+  {
+    "type": "middleware",
+    "name": "auth"
+  },
+  {
+    "type": "middleware",
+    "name": "<anonymous>"
+  },
+  {
+    "type": "middleware",
+    "name": "<anonymous>"
+  },
+  {
+    "type": "route",
+    "method": "GET",
+    "path": "/about",
+    "middlewareCount": 1,
+    "handlers": [
+      "<anonymous>"
+    ]
+  },
+  {
+    "type": "route",
+    "method": "GET",
+    "path": "/profile",
+    "middlewareCount": 2,
+    "handlers": [
+      "<anonymous>",
+      "<anonymous>"
+    ]
+  },
+  {
+    "type": "route",
+    "method": "PUT",
+    "path": "/profile",
+    "middlewareCount": 2,
+    "handlers": [
+      "<anonymous>",
+      "<anonymous>"
+    ]
+  },
+  {
+    "type": "route",
+    "method": "POST",
+    "path": "/profile/picture",
+    "middlewareCount": 3,
+    "handlers": [
+      "<anonymous>",
+      "<anonymous>",
+      "<anonymous>"
+    ]
+  },
+  {
+    "type": "route",
+    "method": "DELETE",
+    "path": "/profile/picture",
+    "middlewareCount": 2,
+    "handlers": [
+      "<anonymous>",
+      "<anonymous>"
+    ]
+  },
+  {
+    "type": "route",
+    "method": "POST",
+    "path": "/profile/password",
+    "middlewareCount": 2,
+    "handlers": [
+      "<anonymous>",
+      "<anonymous>"
+    ]
+  },
+  {
+    "type": "route",
+    "method": "GET",
+    "path": "/schools",
+    "middlewareCount": 1,
+    "handlers": [
+      "<anonymous>"
+    ]
+  },
+  {
+    "type": "route",
+    "method": "POST",
+    "path": "/schools",
+    "middlewareCount": 2,
+    "handlers": [
+      "<anonymous>",
+      "<anonymous>"
+    ]
+  },
+  {
+    "type": "route",
+    "method": "POST",
+    "path": "/schools/:id/credentials",
+    "middlewareCount": 2,
+    "handlers": [
+      "<anonymous>",
+      "<anonymous>"
+    ]
+  },
+  {
+    "type": "route",
+    "method": "GET",
+    "path": "/schools/:id",
+    "middlewareCount": 1,
+    "handlers": [
+      "<anonymous>"
+    ]
+  },
+  {
+    "type": "route",
+    "method": "PUT",
+    "path": "/schools/:id",
+    "middlewareCount": 2,
+    "handlers": [
+      "<anonymous>",
+      "handleUpdateSchool"
+    ]
+  },
+  {
+    "type": "route",
+    "method": "PATCH",
+    "path": "/schools/:id",
+    "middlewareCount": 2,
+    "handlers": [
+      "<anonymous>",
+      "handleUpdateSchool"
+    ]
+  },
+  {
+    "type": "route",
+    "method": "PATCH",
+    "path": "/schools/:id/status",
+    "middlewareCount": 2,
+    "handlers": [
+      "<anonymous>",
+      "handleSchoolStatusUpdate"
+    ]
+  },
+  {
+    "type": "route",
+    "method": "POST",
+    "path": "/schools/:id/status",
+    "middlewareCount": 2,
+    "handlers": [
+      "<anonymous>",
+      "handleSchoolStatusUpdate"
+    ]
+  },
+  {
+    "type": "route",
+    "method": "GET",
+    "path": "/schools/:id/deletion-summary",
+    "middlewareCount": 2,
+    "handlers": [
+      "<anonymous>",
+      "<anonymous>"
+    ]
+  },
+  {
+    "type": "route",
+    "method": "DELETE",
+    "path": "/schools/:id",
+    "middlewareCount": 2,
+    "handlers": [
+      "<anonymous>",
+      "<anonymous>"
+    ]
+  },
+  {
+    "type": "route",
+    "method": "GET",
+    "path": "/users",
+    "middlewareCount": 2,
+    "handlers": [
+      "<anonymous>",
+      "<anonymous>"
+    ]
+  },
+  {
+    "type": "route",
+    "method": "POST",
+    "path": "/users",
+    "middlewareCount": 2,
+    "handlers": [
+      "<anonymous>",
+      "<anonymous>"
+    ]
+  },
+  {
+    "type": "route",
+    "method": "GET",
+    "path": "/users/:id",
+    "middlewareCount": 2,
+    "handlers": [
+      "<anonymous>",
+      "<anonymous>"
+    ]
+  },
+  {
+    "type": "route",
+    "method": "PUT",
+    "path": "/users/:id",
+    "middlewareCount": 2,
+    "handlers": [
+      "<anonymous>",
+      "<anonymous>"
+    ]
+  },
+  {
+    "type": "route",
+    "method": "PATCH",
+    "path": "/users/:id/status",
+    "middlewareCount": 2,
+    "handlers": [
+      "<anonymous>",
+      "<anonymous>"
+    ]
+  },
+  {
+    "type": "route",
+    "method": "DELETE",
+    "path": "/users/:id",
+    "middlewareCount": 2,
+    "handlers": [
+      "<anonymous>",
+      "<anonymous>"
+    ]
+  },
+  {
+    "type": "route",
+    "method": "POST",
+    "path": "/users/:id/credentials",
+    "middlewareCount": 2,
+    "handlers": [
+      "<anonymous>",
+      "<anonymous>"
+    ]
+  },
+  {
+    "type": "route",
+    "method": "GET",
+    "path": "/templates",
+    "middlewareCount": 1,
+    "handlers": [
+      "<anonymous>"
+    ]
+  },
+  {
+    "type": "route",
+    "method": "POST",
+    "path": "/templates",
+    "middlewareCount": 2,
+    "handlers": [
+      "<anonymous>",
+      "<anonymous>"
+    ]
+  },
+  {
+    "type": "route",
+    "method": "GET",
+    "path": "/templates/:id",
+    "middlewareCount": 1,
+    "handlers": [
+      "<anonymous>"
+    ]
+  },
+  {
+    "type": "route",
+    "method": "PATCH",
+    "path": "/templates/:id/status",
+    "middlewareCount": 2,
+    "handlers": [
+      "<anonymous>",
+      "updateTemplateStatusHandler"
+    ]
+  },
+  {
+    "type": "route",
+    "method": "POST",
+    "path": "/templates/:id/status",
+    "middlewareCount": 2,
+    "handlers": [
+      "<anonymous>",
+      "updateTemplateStatusHandler"
+    ]
+  },
+  {
+    "type": "route",
+    "method": "PUT",
+    "path": "/templates/:id",
+    "middlewareCount": 2,
+    "handlers": [
+      "<anonymous>",
+      "<anonymous>"
+    ]
+  },
+  {
+    "type": "route",
+    "method": "DELETE",
+    "path": "/templates/:id",
+    "middlewareCount": 2,
+    "handlers": [
+      "<anonymous>",
+      "<anonymous>"
+    ]
+  },
+  {
+    "type": "route",
+    "method": "POST",
+    "path": "/upload",
+    "middlewareCount": 2,
+    "handlers": [
+      "<anonymous>",
+      "<anonymous>"
+    ]
+  },
+  {
+    "type": "route",
+    "method": "GET",
+    "path": "/schools/:schoolId/templates",
+    "middlewareCount": 1,
+    "handlers": [
+      "<anonymous>"
+    ]
+  },
+  {
+    "type": "route",
+    "method": "POST",
+    "path": "/schools/:schoolId/templates/select",
+    "middlewareCount": 2,
+    "handlers": [
+      "<anonymous>",
+      "<anonymous>"
+    ]
+  },
+  {
+    "type": "route",
+    "method": "POST",
+    "path": "/schools/:schoolId/templates/unselect",
+    "middlewareCount": 2,
+    "handlers": [
+      "<anonymous>",
+      "<anonymous>"
+    ]
+  },
+  {
+    "type": "route",
+    "method": "POST",
+    "path": "/schools/:schoolId/templates/lock",
+    "middlewareCount": 2,
+    "handlers": [
+      "<anonymous>",
+      "<anonymous>"
+    ]
+  },
+  {
+    "type": "route",
+    "method": "POST",
+    "path": "/schools/:schoolId/templates/unlock",
+    "middlewareCount": 2,
+    "handlers": [
+      "<anonymous>",
+      "<anonymous>"
+    ]
+  },
+  {
+    "type": "route",
+    "method": "GET",
+    "path": "/id-cards",
+    "middlewareCount": 1,
+    "handlers": [
+      "<anonymous>"
+    ]
+  },
+  {
+    "type": "route",
+    "method": "POST",
+    "path": "/id-cards",
+    "middlewareCount": 2,
+    "handlers": [
+      "<anonymous>",
+      "<anonymous>"
+    ]
+  },
+  {
+    "type": "route",
+    "method": "GET",
+    "path": "/id-cards/:id",
+    "middlewareCount": 1,
+    "handlers": [
+      "<anonymous>"
+    ]
+  },
+  {
+    "type": "route",
+    "method": "PUT",
+    "path": "/id-cards/:id",
+    "middlewareCount": 2,
+    "handlers": [
+      "<anonymous>",
+      "<anonymous>"
+    ]
+  },
+  {
+    "type": "route",
+    "method": "DELETE",
+    "path": "/id-cards/:id",
+    "middlewareCount": 2,
+    "handlers": [
+      "<anonymous>",
+      "<anonymous>"
+    ]
+  },
+  {
+    "type": "route",
+    "method": "POST",
+    "path": "/id-cards/:id/submit",
+    "middlewareCount": 2,
+    "handlers": [
+      "<anonymous>",
+      "<anonymous>"
+    ]
+  },
+  {
+    "type": "route",
+    "method": "POST",
+    "path": "/approvals/:id/review",
+    "middlewareCount": 2,
+    "handlers": [
+      "<anonymous>",
+      "<anonymous>"
+    ]
+  },
+  {
+    "type": "route",
+    "method": "POST",
+    "path": "/approvals/:id/request-changes",
+    "middlewareCount": 2,
+    "handlers": [
+      "<anonymous>",
+      "<anonymous>"
+    ]
+  },
+  {
+    "type": "route",
+    "method": "POST",
+    "path": "/approvals/:id/resubmit",
+    "middlewareCount": 2,
+    "handlers": [
+      "<anonymous>",
+      "<anonymous>"
+    ]
+  },
+  {
+    "type": "route",
+    "method": "POST",
+    "path": "/approvals/:id/approve",
+    "middlewareCount": 2,
+    "handlers": [
+      "<anonymous>",
+      "<anonymous>"
+    ]
+  },
+  {
+    "type": "route",
+    "method": "POST",
+    "path": "/approvals/:id/reject",
+    "middlewareCount": 2,
+    "handlers": [
+      "<anonymous>",
+      "<anonymous>"
+    ]
+  },
+  {
+    "type": "route",
+    "method": "POST",
+    "path": "/id-cards/:id/review",
+    "middlewareCount": 2,
+    "handlers": [
+      "<anonymous>",
+      "<anonymous>"
+    ]
+  },
+  {
+    "type": "route",
+    "method": "POST",
+    "path": "/id-cards/:id/request-changes",
+    "middlewareCount": 2,
+    "handlers": [
+      "<anonymous>",
+      "<anonymous>"
+    ]
+  },
+  {
+    "type": "route",
+    "method": "POST",
+    "path": "/id-cards/:id/resubmit",
+    "middlewareCount": 2,
+    "handlers": [
+      "<anonymous>",
+      "<anonymous>"
+    ]
+  },
+  {
+    "type": "route",
+    "method": "POST",
+    "path": "/id-cards/:id/approve",
+    "middlewareCount": 2,
+    "handlers": [
+      "<anonymous>",
+      "<anonymous>"
+    ]
+  },
+  {
+    "type": "route",
+    "method": "POST",
+    "path": "/id-cards/:id/reject",
+    "middlewareCount": 2,
+    "handlers": [
+      "<anonymous>",
+      "<anonymous>"
+    ]
+  },
+  {
+    "type": "route",
+    "method": "POST",
+    "path": "/approvals/bulk-approve",
+    "middlewareCount": 3,
+    "handlers": [
+      "<anonymous>",
+      "<anonymous>",
+      "<anonymous>"
+    ]
+  },
+  {
+    "type": "route",
+    "method": "POST",
+    "path": "/approvals/bulk-reject",
+    "middlewareCount": 3,
+    "handlers": [
+      "<anonymous>",
+      "<anonymous>",
+      "<anonymous>"
+    ]
+  },
+  {
+    "type": "route",
+    "method": "POST",
+    "path": "/id-cards/bulk-approve",
+    "middlewareCount": 3,
+    "handlers": [
+      "<anonymous>",
+      "<anonymous>",
+      "<anonymous>"
+    ]
+  },
+  {
+    "type": "route",
+    "method": "POST",
+    "path": "/id-cards/bulk-reject",
+    "middlewareCount": 3,
+    "handlers": [
+      "<anonymous>",
+      "<anonymous>",
+      "<anonymous>"
+    ]
+  },
+  {
+    "type": "route",
+    "method": "POST",
+    "path": "/id-cards/bulk-remove-approved",
+    "middlewareCount": 3,
+    "handlers": [
+      "<anonymous>",
+      "<anonymous>",
+      "<anonymous>"
+    ]
+  },
+  {
+    "type": "route",
+    "method": "POST",
+    "path": "/id-cards/:id/print",
+    "middlewareCount": 2,
+    "handlers": [
+      "<anonymous>",
+      "<anonymous>"
+    ]
+  },
+  {
+    "type": "route",
+    "method": "POST",
+    "path": "/id-cards/:id/mark-printed",
+    "middlewareCount": 2,
+    "handlers": [
+      "<anonymous>",
+      "<anonymous>"
+    ]
+  },
+  {
+    "type": "route",
+    "method": "POST",
+    "path": "/id-cards/bulk-print",
+    "middlewareCount": 3,
+    "handlers": [
+      "<anonymous>",
+      "<anonymous>",
+      "<anonymous>"
+    ]
+  },
+  {
+    "type": "route",
+    "method": "GET",
+    "path": "/id-cards/:id/pdf",
+    "middlewareCount": 3,
+    "handlers": [
+      "<anonymous>",
+      "<anonymous>",
+      "<anonymous>"
+    ]
+  },
+  {
+    "type": "route",
+    "method": "POST",
+    "path": "/id-cards/bulk-pdf",
+    "middlewareCount": 3,
+    "handlers": [
+      "<anonymous>",
+      "<anonymous>",
+      "<anonymous>"
+    ]
+  },
+  {
+    "type": "route",
+    "method": "POST",
+    "path": "/id-cards/:id/files",
+    "middlewareCount": 3,
+    "handlers": [
+      "<anonymous>",
+      "<anonymous>",
+      "<anonymous>"
+    ]
+  },
+  {
+    "type": "route",
+    "method": "GET",
+    "path": "/notifications",
+    "middlewareCount": 1,
+    "handlers": [
+      "<anonymous>"
+    ]
+  },
+  {
+    "type": "route",
+    "method": "POST",
+    "path": "/notifications/:id/read",
+    "middlewareCount": 1,
+    "handlers": [
+      "<anonymous>"
+    ]
+  },
+  {
+    "type": "route",
+    "method": "DELETE",
+    "path": "/notifications",
+    "middlewareCount": 1,
+    "handlers": [
+      "<anonymous>"
+    ]
+  },
+  {
+    "type": "route",
+    "method": "GET",
+    "path": "/audit-logs",
+    "middlewareCount": 1,
+    "handlers": [
+      "<anonymous>"
+    ]
+  },
+  {
+    "type": "route",
+    "method": "DELETE",
+    "path": "/audit-logs",
+    "middlewareCount": 1,
+    "handlers": [
+      "<anonymous>"
+    ]
+  },
+  {
+    "type": "route",
+    "method": "GET",
+    "path": "/reports/removed-cards",
+    "middlewareCount": 3,
+    "handlers": [
+      "<anonymous>",
+      "<anonymous>",
+      "<anonymous>"
+    ]
+  },
+  {
+    "type": "route",
+    "method": "GET",
+    "path": "/approvals",
+    "middlewareCount": 1,
+    "handlers": [
+      "<anonymous>"
+    ]
+  },
+  {
+    "type": "route",
+    "method": "GET",
+    "path": "/id-card-requests/example-excel",
+    "middlewareCount": 1,
+    "handlers": [
+      "<anonymous>"
+    ]
+  },
+  {
+    "type": "route",
+    "method": "POST",
+    "path": "/id-card-requests/upload-excel",
+    "middlewareCount": 3,
+    "handlers": [
+      "<anonymous>",
+      "<anonymous>",
+      "<anonymous>"
+    ]
+  },
+  {
+    "type": "route",
+    "method": "POST",
+    "path": "/id-card-requests/bulk-upload-photos,/id-cards/bulk-upload-photos",
+    "middlewareCount": 3,
+    "handlers": [
+      "<anonymous>",
+      "<anonymous>",
+      "<anonymous>"
+    ]
+  },
+  {
+    "type": "route",
+    "method": "GET",
+    "path": "/orders/schools",
+    "middlewareCount": 2,
+    "handlers": [
+      "<anonymous>",
+      "<anonymous>"
+    ]
+  },
+  {
+    "type": "route",
+    "method": "POST",
+    "path": "/orders",
+    "middlewareCount": 2,
+    "handlers": [
+      "<anonymous>",
+      "<anonymous>"
+    ]
+  },
+  {
+    "type": "route",
+    "method": "GET",
+    "path": "/orders",
+    "middlewareCount": 2,
+    "handlers": [
+      "<anonymous>",
+      "<anonymous>"
+    ]
+  },
+  {
+    "type": "route",
+    "method": "GET",
+    "path": "/orders/:id",
+    "middlewareCount": 2,
+    "handlers": [
+      "<anonymous>",
+      "<anonymous>"
+    ]
+  },
+  {
+    "type": "route",
+    "method": "PATCH",
+    "path": "/orders/:id/status",
+    "middlewareCount": 2,
+    "handlers": [
+      "<anonymous>",
+      "<anonymous>"
+    ]
+  },
+  {
+    "type": "route",
+    "method": "PATCH",
+    "path": "/orders/:id/cancel",
+    "middlewareCount": 2,
+    "handlers": [
+      "<anonymous>",
+      "<anonymous>"
+    ]
+  }
+]

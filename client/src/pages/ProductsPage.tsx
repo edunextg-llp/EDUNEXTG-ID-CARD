@@ -1,13 +1,15 @@
 import { useEffect } from "react";
 import PublicLayout from "@/components/PublicLayout";
 import { useRevealOnScroll } from "@/hooks/useRevealOnScroll";
+import ProductIdCardArt from "@/components/ProductIdCardArt";
 
 interface ProductItem {
   id: string;
   category: "idcards" | "lanyards" | "holders" | "clips";
   title: "ID CARDS" | "LANYARDS / RIBBONS" | "ID CARD HOLDERS" | "CLAMPS & HOOKS";
   displayTitle: string;
-  image: string;
+  image?: string;
+  art?: string;
 }
 
 const PRODUCTS_DATA: ProductItem[] = [
@@ -16,7 +18,7 @@ const PRODUCTS_DATA: ProductItem[] = [
     category: "idcards",
     title: "ID CARDS",
     displayTitle: "Student & Staff PVC ID Cards",
-    image: "/home/product-idcards.webp",
+    art: "idcards",
   },
   {
     id: "lanyards",
@@ -72,17 +74,24 @@ export default function ProductsPage() {
             {PRODUCTS_DATA.map((product) => (
               <div key={product.id} className="lp-product-showcase-card">
                 <div className="lp-product-showcase-image-wrapper">
-                  <picture>
-                    <source type="image/webp" srcSet={product.image} />
-                    <img
-                      src={product.image}
-                      alt={product.displayTitle}
+                  {product.art === "idcards" ? (
+                    <ProductIdCardArt
                       className="lp-product-showcase-image"
-                      loading="lazy"
-                      width={400}
-                      height={280}
+                      label={product.displayTitle}
                     />
-                  </picture>
+                  ) : (
+                    <picture>
+                      <source type="image/webp" srcSet={product.image} />
+                      <img
+                        src={product.image}
+                        alt={product.displayTitle}
+                        className="lp-product-showcase-image"
+                        loading="lazy"
+                        width={400}
+                        height={280}
+                      />
+                    </picture>
+                  )}
                   <span className="lp-product-category-tag">{product.title}</span>
                 </div>
 

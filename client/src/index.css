@@ -564,60 +564,230 @@ button:active:not(:disabled) { transform: scale(0.97); }
   text-underline-offset: 4px;
 }
 
-/* ===================== FULL-WIDTH HERO CAROUSEL ===================== */
+/* ===================== FULL-WIDTH HERO ===================== */
 .landing-root .lp-hero.lp-hero-full-bg {
-  position: relative;
-  min-height: 480px;
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  align-items: stretch;
+  min-height: 0;
   overflow: hidden;
-  background: #f7fafc;
+  position: relative;
+  background: linear-gradient(180deg, #eaf6ef 0%, #d5eedf 50%, #bde4ce 100%);
 }
 
-/* Full background carousel spanning edge to edge */
-.landing-root .lp-hero-full-carousel {
+/* Layer 2: Glows & top light wash (mobile/tablet base) */
+.landing-root .lp-hero.lp-hero-full-bg::before {
+  content: "";
   position: absolute;
   inset: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 1;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.35) 0%, rgba(255, 255, 255, 0) 38%),
+    radial-gradient(360px 250px at 15% 25%, color-mix(in srgb, var(--chart-1) 45%, transparent), transparent 70%),
+    radial-gradient(380px 260px at 55% 12%, color-mix(in srgb, var(--chart-4) 36%, transparent), transparent 70%),
+    radial-gradient(360px 250px at 85% 65%, color-mix(in srgb, var(--chart-2) 42%, transparent), transparent 70%),
+    radial-gradient(320px 220px at 60% 92%, color-mix(in srgb, var(--chart-3) 38%, transparent), transparent 70%);
 }
 
-.landing-root .lp-hero-full-slide {
+/* Layer 3: Floor wash */
+.landing-root .lp-hero.lp-hero-full-bg::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 120px;
+  pointer-events: none;
+  z-index: 0;
+  background: linear-gradient(to top, rgba(16, 75, 40, 0.18), transparent);
+}
+
+/* Layer 2b: Dot grid with ellipse fade (hidden on mobile, enabled on desktop) */
+.landing-root .lp-hero-dots {
+  display: none;
   position: absolute;
   inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background: radial-gradient(rgba(16, 75, 40, 0.22) 1.2px, transparent 1.6px) 0 0 / 22px 22px;
+  -webkit-mask-image: radial-gradient(ellipse 90% 80% at 50% 55%, #000 45%, transparent 100%);
+  mask-image: radial-gradient(ellipse 90% 80% at 50% 55%, #000 45%, transparent 100%);
+}
+
+.landing-root .lp-hero-rail {
   width: 100%;
-  height: 100%;
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 600ms cubic-bezier(0.4, 0, 0.2, 1),
-              visibility 600ms cubic-bezier(0.4, 0, 0.2, 1);
-  will-change: opacity;
+  max-width: none;
+  margin: 0;
+  padding: 0;
 }
 
-.landing-root .lp-hero-full-slide.active {
-  opacity: 1;
-  visibility: visible;
+/* Hide component internal dot grid so only page-level grid renders */
+.landing-root .lp-hero-rail [data-slot="team-lanyard-rail"] > div[aria-hidden="true"] {
+  display: none !important;
 }
 
-.landing-root .lp-hero-full-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center right;
-  display: block;
-}
-
-/* Text naturally placed over the left area of the image without any box */
+/* Text naturally placed over the left area without any box */
 .landing-root .lp-hero.lp-hero-full-bg .lp-hero-content {
   position: relative;
   z-index: 3;
   width: 100%;
   max-width: 580px;
-  padding: 60px 24px 60px 80px;
+  padding: 56px 24px 8px 80px;
   background: transparent !important;
   border: none !important;
   box-shadow: none !important;
+}
+
+/* ===================== DESKTOP HERO (MIN-WIDTH: 1024PX) ===================== */
+@media (min-width: 1024px) {
+  .landing-root .lp-hero.lp-hero-full-bg {
+    position: relative;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    min-height: 520px;
+    overflow: hidden;
+  }
+
+  /* Desktop glows at full scale */
+  .landing-root .lp-hero.lp-hero-full-bg::before {
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.35) 0%, rgba(255, 255, 255, 0) 38%),
+      radial-gradient(560px 400px at 12% 30%, color-mix(in srgb, var(--chart-1) 50%, transparent), transparent 70%),
+      radial-gradient(600px 420px at 55% 15%, color-mix(in srgb, var(--chart-4) 40%, transparent), transparent 70%),
+      radial-gradient(560px 400px at 88% 70%, color-mix(in srgb, var(--chart-2) 46%, transparent), transparent 70%),
+      radial-gradient(480px 340px at 60% 95%, color-mix(in srgb, var(--chart-3) 42%, transparent), transparent 70%);
+  }
+
+  /* Show masked dot grid on desktop */
+  .landing-root .lp-hero-dots {
+    display: block;
+  }
+
+  .landing-root .lp-hero-rail {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 8px;
+    bottom: 0;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    width: 100%;
+    max-width: none;
+  }
+
+  .landing-root .lp-hero.lp-hero-full-bg .lp-hero-content {
+    position: relative;
+    z-index: 3;
+    max-width: 471px;
+    margin-left: clamp(20px, 2.5vw, 44px);
+    padding: 36px 32px 36px 30px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.46)) !important;
+    -webkit-backdrop-filter: blur(16px) saturate(140%);
+    backdrop-filter: blur(16px) saturate(140%);
+    border: 1px solid rgba(255, 255, 255, 0.65) !important;
+    border-radius: 24px;
+    box-shadow: 0 18px 50px rgba(15, 60, 40, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
+  }
+
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .landing-root .lp-hero.lp-hero-full-bg .lp-hero-content {
+      background: rgba(255, 255, 255, 0.92) !important;
+    }
+  }
+}
+
+/* Stepwise card width rules (gap-aligned with lanyard rail badges) */
+@media (min-width: 1024px) and (max-width: 1099px) {
+  .landing-root .lp-hero.lp-hero-full-bg .lp-hero-content {
+    max-width: 471px;
+    padding: 34px 30px 34px 28px;
+  }
+}
+
+@media (min-width: 1100px) and (max-width: 1179px) {
+  .landing-root .lp-hero.lp-hero-full-bg .lp-hero-content {
+    max-width: 506px;
+    padding: 38px 36px 38px 32px;
+  }
+}
+
+@media (min-width: 1180px) and (max-width: 1279px) {
+  .landing-root .lp-hero.lp-hero-full-bg .lp-hero-content {
+    max-width: 544px;
+    padding: 40px 38px 40px 34px;
+  }
+}
+
+@media (min-width: 1280px) and (max-width: 1339px) {
+  .landing-root .lp-hero.lp-hero-full-bg .lp-hero-content {
+    max-width: 452px;
+    padding: 36px 30px 36px 28px;
+  }
+}
+
+@media (min-width: 1340px) and (max-width: 1365px) {
+  .landing-root .lp-hero.lp-hero-full-bg .lp-hero-content {
+    max-width: 472px;
+    padding: 38px 32px 38px 30px;
+  }
+}
+
+@media (min-width: 1366px) and (max-width: 1439px) {
+  .landing-root .lp-hero.lp-hero-full-bg .lp-hero-content {
+    max-width: 481px;
+    padding: 38px 34px 38px 32px;
+  }
+}
+
+@media (min-width: 1440px) and (max-width: 1535px) {
+  .landing-root .lp-hero.lp-hero-full-bg .lp-hero-content {
+    max-width: 509px;
+    padding: 40px 38px 40px 36px;
+  }
+}
+
+@media (min-width: 1536px) and (max-width: 1679px) {
+  .landing-root .lp-hero.lp-hero-full-bg .lp-hero-content {
+    max-width: 546px;
+    padding: 40px 40px 40px 36px;
+  }
+}
+
+@media (min-width: 1680px) and (max-width: 1919px) {
+  .landing-root .lp-hero.lp-hero-full-bg .lp-hero-content {
+    max-width: 422px;
+    padding: 34px 28px 34px 28px;
+  }
+  .landing-root .lp-hero h1 {
+    font-size: 42px;
+  }
+}
+
+@media (min-width: 1920px) and (max-width: 2199px) {
+  .landing-root .lp-hero.lp-hero-full-bg .lp-hero-content {
+    max-width: 526px;
+    padding: 40px 40px 40px 36px;
+  }
+}
+
+@media (min-width: 2200px) {
+  .landing-root .lp-hero.lp-hero-full-bg .lp-hero-content {
+    max-width: 460px;
+    padding: 36px 32px 36px 30px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-root .lp-hero.lp-hero-full-bg::before,
+  .landing-root .lp-hero.lp-hero-full-bg::after,
+  .landing-root .lp-hero-dots {
+    animation: none;
+    transition: none;
+  }
 }
 
 .landing-root .lp-hero-tagline {
@@ -679,105 +849,6 @@ button:active:not(:disabled) { transform: scale(0.97); }
 .landing-root .lp-hero-cta:focus-visible {
   outline: 2px solid var(--lp-green);
   outline-offset: 3px;
-}
-
-/* Carousel Prev/Next Buttons on the banner */
-.landing-root .lp-carousel-arrow {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  z-index: 5;
-  width: 44px;
-  height: 44px;
-  min-width: 44px;
-  min-height: 44px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.9);
-  border: 1px solid rgba(0, 137, 77, 0.2);
-  color: var(--lp-dark-green);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.12);
-  transition: background 180ms ease, color 180ms ease, transform 180ms ease, box-shadow 180ms ease;
-  opacity: 0.9;
-  touch-action: manipulation;
-}
-
-@media (hover: hover) {
-  .landing-root .lp-hero:hover .lp-carousel-arrow {
-    opacity: 1;
-  }
-  .landing-root .lp-carousel-arrow:hover {
-    background: #ffffff;
-    color: var(--lp-green);
-    transform: translateY(-50%) scale(1.08);
-  }
-}
-
-.landing-root .lp-carousel-arrow:active {
-  transform: translateY(-50%) scale(0.94);
-}
-
-.landing-root .lp-carousel-arrow:focus-visible {
-  outline: 2px solid var(--lp-green);
-  outline-offset: 2px;
-}
-
-.landing-root .lp-carousel-prev {
-  left: 20px;
-}
-
-.landing-root .lp-carousel-next {
-  right: 20px;
-}
-
-/* Carousel Pagination Dots */
-.landing-root .lp-carousel-dots {
-  position: absolute;
-  bottom: 16px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 5;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: rgba(255, 255, 255, 0.85);
-  padding: 6px 14px;
-  border-radius: 24px;
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
-}
-
-.landing-root .lp-carousel-dot {
-  width: 9px;
-  height: 9px;
-  min-width: 9px;
-  min-height: 9px;
-  border-radius: 50%;
-  background: rgba(0, 137, 77, 0.35);
-  border: none;
-  cursor: pointer;
-  padding: 0;
-  transition: width 240ms cubic-bezier(0.34, 1.56, 0.64, 1),
-              background 240ms ease,
-              border-radius 240ms ease,
-              box-shadow 240ms ease;
-  touch-action: manipulation;
-}
-
-.landing-root .lp-carousel-dot:focus-visible {
-  outline: 2px solid var(--lp-green);
-  outline-offset: 2px;
-}
-
-.landing-root .lp-carousel-dot.active {
-  width: 26px;
-  border-radius: 12px;
-  background: var(--lp-green);
-  box-shadow: 0 0 10px rgba(0, 137, 77, 0.4);
 }
 
 /* =================== OUR CLIENTS =================== */
@@ -1039,6 +1110,7 @@ button:active:not(:disabled) { transform: scale(0.97); }
   width: 100%;
   height: 200px;
   object-fit: cover;
+  display: block;
 }
 
 .landing-root .lp-product-card .card-body {
@@ -1868,7 +1940,7 @@ button:active:not(:disabled) { transform: scale(0.97); }
 }
 
 /* =================== RESPONSIVE =================== */
-@media (max-width: 1024px) {
+@media (max-width: 1023px) {
   .landing-root .lp-hero-content {
     padding-left: 40px;
   }
@@ -1937,36 +2009,18 @@ button:active:not(:disabled) { transform: scale(0.97); }
 
   /* Hero on mobile */
   .landing-root .lp-hero.lp-hero-full-bg {
-    min-height: 440px;
-    align-items: flex-start;
+    min-height: 0;
+    align-items: stretch;
   }
 
   .landing-root .lp-hero.lp-hero-full-bg .lp-hero-content {
     max-width: 100%;
-    padding: 36px 20px 48px;
+    padding: 36px 20px 8px;
     text-align: left;
   }
 
   .landing-root .lp-hero-desc {
     max-width: 100%;
-  }
-
-  .landing-root .lp-carousel-arrow {
-    width: 32px;
-    height: 32px;
-  }
-
-  .landing-root .lp-carousel-prev {
-    left: 8px;
-  }
-
-  .landing-root .lp-carousel-next {
-    right: 8px;
-  }
-
-  .landing-root .lp-carousel-dots {
-    bottom: 8px;
-    padding: 3px 8px;
   }
 
   .landing-root .lp-hero h1 {
@@ -2272,6 +2326,7 @@ button:active:not(:disabled) { transform: scale(0.97); }
   width: 100%;
   height: 100%;
   object-fit: cover;
+  display: block;
 }
 
 .landing-root .lp-product-category-tag {
@@ -2599,35 +2654,50 @@ button:active:not(:disabled) { transform: scale(0.97); }
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #f0f7ff 0%, #eaf5ee 50%, #f6fbf7 100%);
+  background: linear-gradient(135deg, #dcecfe 0%, #c8efe0 48%, #dbf5ea 100%);
   overflow: hidden;
 }
 
+/* Layer 1: Soft color glows (desktop full scale) */
 .landing-root .lp-login-section::before {
   content: "";
   position: absolute;
   inset: 0;
-  background-image: 
-    radial-gradient(rgba(11, 106, 162, 0.08) 1.5px, transparent 1.5px),
-    radial-gradient(circle at 10% 20%, rgba(27, 74, 124, 0.08) 0%, transparent 40%),
-    radial-gradient(circle at 90% 80%, rgba(126, 217, 87, 0.12) 0%, transparent 45%);
-  background-size: 24px 24px, 100% 100%, 100% 100%;
   pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(560px 380px at 8% 25%, color-mix(in srgb, var(--chart-1, #40c8bb) 48%, transparent), transparent 70%),
+    radial-gradient(540px 400px at 50% 5%, color-mix(in srgb, var(--chart-4, #6a78d4) 38%, transparent), transparent 70%),
+    radial-gradient(580px 400px at 92% 85%, color-mix(in srgb, var(--chart-2, #f28a63) 44%, transparent), transparent 70%),
+    radial-gradient(460px 320px at 30% 100%, color-mix(in srgb, var(--chart-3, #f2c94c) 40%, transparent), transparent 70%);
+}
+
+/* Layer 2: Dot grid with ellipse fade mask */
+.landing-root .lp-login-section::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background: radial-gradient(rgba(11, 106, 162, 0.18) 1.2px, transparent 1.6px) 0 0 / 24px 24px;
+  -webkit-mask-image: radial-gradient(ellipse 85% 75% at 50% 50%, #000 40%, transparent 100%);
+  mask-image: radial-gradient(ellipse 85% 75% at 50% 50%, #000 40%, transparent 100%);
 }
 
 .landing-root .lp-login-container {
   width: 100%;
-  max-width: 1080px;
+  max-width: 1200px;
   position: relative;
   z-index: 2;
   display: grid;
-  grid-template-columns: 1.15fr 0.85fr;
-  gap: 48px;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 72px;
   align-items: center;
 }
 
 .landing-root .lp-login-brand-col {
-  padding-right: 12px;
+  position: relative;
+  padding-right: 180px;
 }
 
 .landing-root .lp-login-brand-badge {
@@ -2652,7 +2722,7 @@ button:active:not(:disabled) { transform: scale(0.97); }
   font-weight: 700;
   color: #1b4a7c;
   line-height: 1.25;
-  margin-bottom: 16px;
+  margin-bottom: 14px;
 }
 
 .landing-root .lp-login-brand-desc {
@@ -2662,10 +2732,202 @@ button:active:not(:disabled) { transform: scale(0.97); }
   margin-bottom: 28px;
 }
 
+/* Decorative hanging ID card */
+.landing-root .lp-login-hang {
+  position: absolute;
+  top: 12px;
+  right: 0;
+  width: 160px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: none;
+  user-select: none;
+  z-index: 1;
+  transform-origin: top center;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .landing-root .lp-login-hang {
+    animation: lp-login-swing 6s ease-in-out infinite alternate;
+  }
+}
+
+@keyframes lp-login-swing {
+  0% { transform: rotate(-3deg); }
+  100% { transform: rotate(3deg); }
+}
+
+.landing-root .lp-login-hang-strap {
+  width: 14px;
+  height: 110px;
+  background:
+    repeating-linear-gradient(135deg, transparent 0 2.5px, rgba(255, 255, 255, 0.2) 2.5px 3.5px),
+    linear-gradient(180deg, #2dd4bf 0%, #0d9488 50%, #042f2e 100%);
+  border-radius: 2px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12);
+}
+
+.landing-root .lp-login-hang-clip {
+  width: 16px;
+  height: 18px;
+  margin-top: -2px;
+  background: linear-gradient(180deg, #64748b 0%, #334155 50%, #1e293b 100%);
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.22);
+  position: relative;
+  z-index: 2;
+}
+
+.landing-root .lp-login-hang-clip::after {
+  content: "";
+  position: absolute;
+  bottom: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 8px;
+  height: 6px;
+  border-radius: 50%;
+  background: #0f172a;
+}
+
+.landing-root .lp-login-card-stack {
+  position: relative;
+  width: 150px;
+  height: 220px;
+  margin-top: -2px;
+}
+
+.landing-root .lp-login-card {
+  position: absolute;
+  inset: 0;
+  width: 150px;
+  height: 220px;
+  border-radius: 14px;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 16px 36px -6px rgba(15, 60, 40, 0.18), 0 4px 12px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+}
+
+.landing-root .lp-login-card-back {
+  transform: rotate(8deg) translate(8px, 6px);
+  z-index: 0;
+  opacity: 0.88;
+}
+
+.landing-root .lp-login-card-back::before {
+  content: "";
+  display: block;
+  height: 24px;
+  background: var(--chart-2, #f28a63);
+}
+
+.landing-root .lp-login-card-front {
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 14px 14px;
+}
+
+.landing-root .lp-login-card-band {
+  width: calc(100% + 28px);
+  margin-left: -14px;
+  margin-right: -14px;
+  height: 28px;
+  background: var(--chart-1, #40c8bb);
+}
+
+.landing-root .lp-login-card-hole {
+  width: 22px;
+  height: 5px;
+  border-radius: 3px;
+  background: #cbd5e1;
+  margin-top: -20px;
+  margin-bottom: 12px;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.25);
+}
+
+.landing-root .lp-login-card-avatar {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: #e2e8f0;
+  border: 2px solid #ffffff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  margin-bottom: 12px;
+  position: relative;
+  overflow: hidden;
+}
+
+.landing-root .lp-login-card-avatar::before {
+  content: "";
+  position: absolute;
+  top: 9px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: #94a3b8;
+}
+
+.landing-root .lp-login-card-avatar::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 30px;
+  height: 15px;
+  border-radius: 15px 15px 0 0;
+  background: #94a3b8;
+}
+
+.landing-root .lp-login-card-lines {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: auto;
+}
+
+.landing-root .lp-login-card-lines span:first-child {
+  width: 70%;
+  height: 6px;
+  background: #94a3b8;
+  border-radius: 3px;
+}
+
+.landing-root .lp-login-card-lines span:last-child {
+  width: 45%;
+  height: 5px;
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+.landing-root .lp-login-card-barcode {
+  width: 80%;
+  height: 16px;
+  background: repeating-linear-gradient(
+    90deg,
+    #1e293b 0 2px,
+    transparent 2px 4px,
+    #1e293b 4px 5px,
+    transparent 5px 8px,
+    #1e293b 8px 11px,
+    transparent 11px 13px,
+    #1e293b 13px 14px
+  );
+  margin-top: 6px;
+}
+
 .landing-root .lp-login-features-list {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 16px;
   margin-bottom: 32px;
 }
 
@@ -2700,7 +2962,7 @@ button:active:not(:disabled) { transform: scale(0.97); }
   font-size: 12px;
   color: #6b7280;
   margin: 0;
-  line-height: 1.4;
+  line-height: 1.45;
 }
 
 .landing-root .lp-login-trust-card {
@@ -2744,11 +3006,42 @@ button:active:not(:disabled) { transform: scale(0.97); }
   border: 1px solid rgba(11, 106, 162, 0.15);
   border-radius: 24px;
   padding: 36px 32px;
-  box-shadow: 0 20px 48px -10px rgba(27, 74, 124, 0.16);
+  box-shadow: 0 24px 60px -12px rgba(27, 74, 124, 0.22);
   position: relative;
 }
 
+.landing-root .lp-login-form-card::before {
+  content: "";
+  position: absolute;
+  top: -10%;
+  left: -10%;
+  width: 120%;
+  height: 120%;
+  background: radial-gradient(closest-side, rgba(11, 106, 162, 0.18), transparent 70%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+@media (min-width: 961px) and (max-width: 1199px) {
+  .landing-root .lp-login-container {
+    gap: 40px;
+  }
+  .landing-root .lp-login-brand-col {
+    padding-right: 0;
+  }
+  .landing-root .lp-login-hang {
+    display: none;
+  }
+}
+
 @media (max-width: 960px) {
+  .landing-root .lp-login-section::before {
+    background:
+      radial-gradient(340px 240px at 10% 25%, color-mix(in srgb, var(--chart-1, #40c8bb) 42%, transparent), transparent 70%),
+      radial-gradient(340px 250px at 50% 5%, color-mix(in srgb, var(--chart-4, #6a78d4) 34%, transparent), transparent 70%),
+      radial-gradient(360px 250px at 90% 85%, color-mix(in srgb, var(--chart-2, #f28a63) 38%, transparent), transparent 70%),
+      radial-gradient(280px 200px at 30% 98%, color-mix(in srgb, var(--chart-3, #f2c94c) 35%, transparent), transparent 70%);
+  }
   .landing-root .lp-login-container {
     grid-template-columns: 1fr;
     max-width: 480px;
@@ -2821,10 +3114,6 @@ button:active:not(:disabled) { transform: scale(0.97); }
 }
 
 /* 3. Skeleton / Blur Placeholders for imagery */
-.landing-root .lp-hero-full-carousel {
-  background: linear-gradient(135deg, #e8f4f1 0%, #ddf1f8 50%, #e2ece5 100%);
-}
-
 .landing-root .lp-clients-marquee,
 .landing-root .lp-clients-panel {
   background: #eef7f0;

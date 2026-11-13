@@ -83,6 +83,9 @@ importers:
       framer-motion:
         specifier: ^14.6.0
         version: 14.6.0(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
+      india-state-district:
+        specifier: ^1.0.5
+        version: 1.0.5
       jose:
         specifier: 6.1.0
         version: 6.1.0
@@ -2336,6 +2339,10 @@ packages:
 
   immediate@3.0.6:
     resolution: {integrity: sha512-XXOFtyqDjNDAQxVfYxuF7g9Il/IbWmmlQg2MYKOH8ExIT1qg6xc4zyS3HaEEATgs1btfzxq15ciUiY7gjSXRGQ==}
+
+  india-state-district@1.0.5:
+    resolution: {integrity: sha512-mjAFIU3NeyWTC6VBNYEIa2fxBALIw0YmmtpYku7Wduo14yXoadpdC1/kv/N5wGRf5Rt17GAvCvqBN6BICm8bhA==}
+    engines: {node: '>=14.0.0'}
 
   inflight@1.0.6:
     resolution: {integrity: sha512-k92I/b08q4wvFscXCLvqfsHCrjrF7yiXsQuIVvVE7N82W3+aqpzuUdBbfhWcy/FZR3/4IgflMgKLOsvPDrGCJA==}
@@ -5483,6 +5490,8 @@ snapshots:
   ieee754@1.2.1: {}
 
   immediate@3.0.6: {}
+
+  india-state-district@1.0.5: {}
 
   inflight@1.0.6:
     dependencies:
