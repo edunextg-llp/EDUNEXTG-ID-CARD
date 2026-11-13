@@ -9,6 +9,11 @@
 ### 🏢 Multi-Tenant Architecture & Role-Based Access Control (RBAC)
 - **Role Hierarchy**: Strict role separation between `SUPER_ADMIN`, `MARKETING_ADMIN`, `SCHOOL_ADMIN`, `SCHOOL_OPERATOR`, and `VIEWER`.
 - **Tenant Data Isolation**: Schools operate in strictly isolated tenant scopes at database, API, and session layers. Cross-school data exposure is prevented by design.
+- **Modern Public Experience & Institutional Showcase**:
+  - **Interactive Hero & 3D Physics Lanyard Rail**: Full-width interactive badge rail simulating suspended ID cards on physics-based pendulums, responsive across all screen sizes with real-time drag, flip, and spring physics.
+  - **Dynamic Card Sizing & Gap-Alignment**: Desktop frosted-glass text overlay algorithmically sized and gap-aligned across breakpoints so card edges never bisect hanging badges.
+  - **Crisp SVG Product Showcase**: Vector artwork with studio mint lighting and close-up framing for ID card product displays alongside lanyards, holders, and clamps.
+  - **Streamlined Public Layouts**: Clean navigation and unified footers across institutional landing, login, products, and privacy pages.
 - **Super Admin Portal (`/admin`)**:
   - **School Governance**: Register new schools, configure unique short codes, manage school contact metadata, generate login credentials (`ID Pass`), and delete schools with automatic cascading cleanup.
   - **User Management**: Provision, activate, or deactivate school operators, school admins, and marketing admins.
