@@ -98,12 +98,7 @@ export default function HeroLanyardRail() {
     <div className="lp-hero-rail">
       <TeamLanyardRail
         items={HERO_BADGES}
-        caption=""
-        labels={{
-          flip: "",
-          back: "",
-          show: "Show",
-        }}
+        caption="Hover to meet someone, click a badge to flip it."
         autoplay
         interval={2800}
         className="bg-transparent! min-h-0"

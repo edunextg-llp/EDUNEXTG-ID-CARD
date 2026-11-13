@@ -582,11 +582,6 @@ button:active:not(:disabled) { transform: scale(0.97); }
   padding: 0;
 }
 
-.landing-root .lp-hero-rail [id$="-caption"],
-.landing-root .lp-hero-rail [data-slot="team-lanyard-rail"] > .relative.z-10.flex.flex-col {
-  display: none !important;
-}
-
 /* Text naturally placed over the left area without any box */
 .landing-root .lp-hero.lp-hero-full-bg .lp-hero-content {
   position: relative;
@@ -597,6 +592,59 @@ button:active:not(:disabled) { transform: scale(0.97); }
   background: transparent !important;
   border: none !important;
   box-shadow: none !important;
+}
+
+/* ===================== DESKTOP HERO (MIN-WIDTH: 1024PX) ===================== */
+@media (min-width: 1024px) {
+  .landing-root .lp-hero.lp-hero-full-bg {
+    position: relative;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    min-height: 580px;
+    overflow: hidden;
+  }
+
+  .landing-root .lp-hero-rail {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 24px;
+    bottom: 0;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    width: 100%;
+    max-width: none;
+  }
+
+  .landing-root .lp-hero.lp-hero-full-bg .lp-hero-content {
+    position: relative;
+    z-index: 3;
+    max-width: 540px;
+    margin-left: clamp(24px, 5vw, 80px);
+    padding: 40px 44px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.46)) !important;
+    -webkit-backdrop-filter: blur(16px) saturate(140%);
+    backdrop-filter: blur(16px) saturate(140%);
+    border: 1px solid rgba(255, 255, 255, 0.65) !important;
+    border-radius: 24px;
+    box-shadow: 0 18px 50px rgba(15, 60, 40, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
+  }
+
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .landing-root .lp-hero.lp-hero-full-bg .lp-hero-content {
+      background: rgba(255, 255, 255, 0.92) !important;
+    }
+  }
+}
+
+@media (min-width: 1024px) and (max-width: 1279px) {
+  .landing-root .lp-hero.lp-hero-full-bg .lp-hero-content {
+    max-width: 460px;
+    padding: 28px 30px;
+  }
 }
 
 .landing-root .lp-hero-tagline {
@@ -1748,7 +1796,7 @@ button:active:not(:disabled) { transform: scale(0.97); }
 }
 
 /* =================== RESPONSIVE =================== */
-@media (max-width: 1024px) {
+@media (max-width: 1023px) {
   .landing-root .lp-hero-content {
     padding-left: 40px;
   }

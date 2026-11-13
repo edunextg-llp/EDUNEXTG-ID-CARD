@@ -944,7 +944,7 @@ export function TeamLanyardRail({
   const person = current === null ? null : items[current] ?? null;
   const showingBack = current !== null && current === flipped;
   const centerIndex = size.carousel ? (active ?? live.current.carouselIndex) : null;
-  const line1 = caption === "" || caption === null ? "" : person ? `${person.name} — ${person.role}` : caption;
+  const line1 = person ? `${person.name} — ${person.role}` : caption;
   const line2 = person ? (showingBack ? labels.back : labels.flip) : "";
 
   return (
@@ -1118,16 +1118,14 @@ export function TeamLanyardRail({
         </div>
       )}
 
-      {(line1 || line2 || action) && (
-        <div className="relative z-10 flex flex-col items-center gap-3 px-6 pb-7 pt-3 text-center">
-          <div id={`${uid}-caption`} aria-live="polite" className="min-h-[2.6rem]">
-            {line1 && <p className="text-sm font-medium">{line1}</p>}
-            {line2 && <p className="mt-0.5 text-[13px] text-muted-foreground">{line2}</p>}
-            {showingBack && person?.bio && <span className="sr-only">{person.bio}</span>}
-          </div>
-          {action}
+      <div className="relative z-10 flex flex-col items-center gap-3 px-6 pb-7 pt-3 text-center">
+        <div id={`${uid}-caption`} aria-live="polite" className="min-h-[2.6rem]">
+          <p className="text-sm font-medium">{line1}</p>
+          <p className="mt-0.5 text-[13px] text-muted-foreground">{line2}</p>
+          {showingBack && person?.bio && <span className="sr-only">{person.bio}</span>}
         </div>
-      )}
+        {action}
+      </div>
     </section>
   );
 }
