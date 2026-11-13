@@ -67,7 +67,15 @@ export const users = mysqlTable(
   ],
 );
 
-export const schoolBoardValues = ["ICSE", "CBSE", "WBBSE", "WBBME(Madrasah)"] as const;
+export const schoolBoardValues = [
+  "ICSE",
+  "ISC",
+  "CBSE",
+  "WBBSE",
+  "WBCHSE",
+  "WBBME(Madrasah)",
+  "Other State Board",
+] as const;
 
 export const schools = mysqlTable(
   "schools",

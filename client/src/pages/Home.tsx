@@ -2942,9 +2942,12 @@ export default function Home({
                     <SelectContent>
                       <SelectItem value="none">-- Select Board --</SelectItem>
                       <SelectItem value="ICSE">ICSE</SelectItem>
+                      <SelectItem value="ISC">ISC</SelectItem>
                       <SelectItem value="CBSE">CBSE</SelectItem>
                       <SelectItem value="WBBSE">WBBSE</SelectItem>
+                      <SelectItem value="WBCHSE">WBCHSE</SelectItem>
                       <SelectItem value="WBBME(Madrasah)">WBBME(Madrasah)</SelectItem>
+                      <SelectItem value="Other State Board">Other State Board</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
