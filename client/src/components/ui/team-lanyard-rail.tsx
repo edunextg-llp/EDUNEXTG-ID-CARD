@@ -969,7 +969,7 @@ export function TeamLanyardRail({
         role="group"
         aria-label={heading ?? "Team"}
         aria-roledescription="lanyard rail"
-        className="relative mt-4 w-full touch-pan-y select-none"
+        className={`relative w-full touch-pan-y select-none ${eyebrow || heading ? "mt-4" : ""}`}
         style={{ height: g.height, overflowX: "clip" }}
         onPointerMove={onPointerMove}
         onPointerDown={onPointerDown}

@@ -607,14 +607,11 @@ button:active:not(:disabled) { transform: scale(0.97); }
 
   .landing-root .lp-hero-rail {
     position: absolute;
-    left: 0;
-    right: 0;
-    top: 24px;
-    bottom: 0;
+    inset: 0;
     z-index: 1;
     display: flex;
     flex-direction: column;
-    justify-content: flex-end;
+    justify-content: center;
     width: 100%;
     max-width: none;
   }
@@ -623,7 +620,7 @@ button:active:not(:disabled) { transform: scale(0.97); }
     position: relative;
     z-index: 3;
     max-width: 540px;
-    margin-left: clamp(24px, 5vw, 80px);
+    margin-left: clamp(20px, 2.5vw, 44px);
     padding: 40px 44px;
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.46)) !important;
     -webkit-backdrop-filter: blur(16px) saturate(140%);
@@ -643,6 +640,7 @@ button:active:not(:disabled) { transform: scale(0.97); }
 @media (min-width: 1024px) and (max-width: 1279px) {
   .landing-root .lp-hero.lp-hero-full-bg .lp-hero-content {
     max-width: 460px;
+    margin-left: clamp(16px, 2vw, 28px);
     padding: 28px 30px;
   }
 }
