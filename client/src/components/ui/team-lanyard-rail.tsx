@@ -78,8 +78,8 @@ const REST_Z = [-1.6, 1.2, -2, 1.5, -1, 1.8, -1.3, 2];
 const DROPS = [6, 20, 0, 13, 22, 4, 16, 9];
 const TONES = ["text-chart-1", "text-chart-2", "text-chart-3", "text-chart-4", "text-chart-5"] as const;
 const DEFAULT_LABELS: TeamLanyardRailLabels = {
-  flip: "Click or press Enter to flip the badge",
-  back: "Click again or press Esc to turn it back",
+  flip: "",
+  back: "",
   show: "Show",
 };
 const METAL = "linear-gradient(to right, color-mix(in oklab, var(--color-muted-foreground) 70%, black), color-mix(in oklab, var(--color-muted-foreground) 22%, white) 38%, var(--color-muted-foreground) 70%, color-mix(in oklab, var(--color-muted-foreground) 65%, black))";
@@ -944,8 +944,6 @@ export function TeamLanyardRail({
   const person = current === null ? null : items[current] ?? null;
   const showingBack = current !== null && current === flipped;
   const centerIndex = size.carousel ? (active ?? live.current.carouselIndex) : null;
-  const line1 = person ? `${person.name} — ${person.role}` : caption;
-  const line2 = person ? (showingBack ? labels.back : labels.flip) : "";
 
   return (
     <section
@@ -1118,14 +1116,15 @@ export function TeamLanyardRail({
         </div>
       )}
 
-      <div className="relative z-10 flex flex-col items-center gap-3 px-6 pb-7 pt-3 text-center">
-        <div id={`${uid}-caption`} aria-live="polite" className="min-h-[2.6rem]">
-          <p className="text-sm font-medium">{line1}</p>
-          <p className="mt-0.5 text-[13px] text-muted-foreground">{line2}</p>
-          {showingBack && person?.bio && <span className="sr-only">{person.bio}</span>}
-        </div>
-        {action}
+      <div id={`${uid}-caption`} aria-live="polite" className="sr-only">
+        {person ? `${person.name}, ${person.role}` : ""}
+        {showingBack && person?.bio && <span>{person.bio}</span>}
       </div>
+      {action && (
+        <div className="relative z-10 flex flex-col items-center gap-3 px-6 pb-7 pt-3 text-center">
+          {action}
+        </div>
+      )}
     </section>
   );
 }
