@@ -1037,6 +1037,7 @@ button:active:not(:disabled) { transform: scale(0.97); }
   width: 100%;
   height: 200px;
   object-fit: cover;
+  display: block;
 }
 
 .landing-root .lp-product-card .card-body {
@@ -2252,6 +2253,7 @@ button:active:not(:disabled) { transform: scale(0.97); }
   width: 100%;
   height: 100%;
   object-fit: cover;
+  display: block;
 }
 
 .landing-root .lp-product-category-tag {

@@ -27,6 +27,7 @@ import StatItem from "@/components/StatItem";
 import FaqAccordion from "@/components/FaqAccordion";
 import { InteractiveHoverButton } from "@/components/ui/interactive-hover-button";
 import HeroLanyardRail from "@/components/HeroLanyardRail";
+import ProductIdCardArt from "@/components/ProductIdCardArt";
 
 /* ───────────────────────────────────────────
    Nav links
@@ -56,10 +57,14 @@ const CLIENT_LOGOS = [...ORIGINAL_CLIENT_LOGOS, ...EXTRA_CLIENT_LOGOS];
 /* ───────────────────────────────────────────
    Product cards data
    ─────────────────────────────────────────── */
-const PRODUCT_CARDS = [
+type ProductCardItem =
+  | { title: string; art: "idcards"; image?: string }
+  | { title: string; image: string; art?: undefined };
+
+const PRODUCT_CARDS: ProductCardItem[] = [
   {
     title: "ID CARDS",
-    image: "/home/product-idcards.webp",
+    art: "idcards",
   },
   {
     title: "LANYARDS / RIBBONS",
@@ -73,7 +78,7 @@ const PRODUCT_CARDS = [
     title: "CLAMPS & HOOKS",
     image: "/home/product-clips.webp",
   },
-] as const;
+];
 
 /* ───────────────────────────────────────────
    Why choose us features
@@ -323,7 +328,8 @@ export default function Landing() {
               Lanyard Solutions
             </h1>
             <p className="lp-hero-desc">
-              Quality ID Cards, Lanyards, Holders &amp; Accessories for Schools, Colleges, Institutions &amp;
+              Quality ID Cards, Lanyards, Holders &amp; Accessories
+              for Schools, Colleges, Institutions &amp;
               Organizations.
             </p>
             <div className="mt-4">
@@ -365,14 +371,18 @@ export default function Landing() {
             <div className="lp-products-grid lp-stagger-grid">
               {PRODUCT_CARDS.map((card) => (
                 <div key={card.title} className="lp-product-card">
-                  <img
-                    src={card.image}
-                    alt={card.title}
-                    className="card-img"
-                    loading="lazy"
-                    width={280}
-                    height={200}
-                  />
+                  {card.art === "idcards" ? (
+                    <ProductIdCardArt className="card-img" label="ID Cards" />
+                  ) : (
+                    <img
+                      src={card.image}
+                      alt={card.title}
+                      className="card-img"
+                      loading="lazy"
+                      width={280}
+                      height={200}
+                    />
+                  )}
                   <div className="card-body">
                     <h3>{card.title}</h3>
                     <div className="card-body-footer">
